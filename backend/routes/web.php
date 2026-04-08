@@ -65,4 +65,8 @@ Route::prefix('admin')->middleware([EnsureAdmin::class])->group(function () {
 // Search
 Route::get('/search', [SearchController::class, 'index'])->name('search');
 
+use App\Http\Controllers\Api\TestController;
+
+Route::get('/test', [TestController::class, 'index']);
+
 // Messages & friendships are now under auth group
