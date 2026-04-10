@@ -8,21 +8,6 @@ use App\Models\User;
 
 class RegistrationController extends Controller
 {
-    public function showRoleSelect()
-    {
-        return view('register_role_select');
-    }
-
-    public function showPsikologForm()
-    {
-        return view('register_psikolog');
-    }
-
-    public function showAnonimForm()
-    {
-        return view('register_anonim');
-    }
-
     public function storePsikolog(Request $request)
     {
         $request->validate([
@@ -36,7 +21,7 @@ class RegistrationController extends Controller
         $strPath = $request->file('str_file')->store('str_files', 'public');
         $ijazahPath = $request->file('ijazah_file')->store('ijazah_files', 'public');
 
-        User::create([
+        $user = User::create([
             'name' => $request->username,
             'username' => $request->username,
             'email' => $request->email,
@@ -47,7 +32,7 @@ class RegistrationController extends Controller
             'ijazah_file' => $ijazahPath,
         ]);
 
-        return redirect()->route('login')->with('success', 'Registrasi berhasil! Akun Anda menunggu verifikasi admin. Silakan login setelah diverifikasi.');
+        return response()->json(['message' => 'Registrasi berhasil! Akun Anda menunggu verifikasi admin. Silakan login setelah diverifikasi.', 'user' => $user]);
     }
 
     public function storeAnonim(Request $request)
@@ -58,7 +43,7 @@ class RegistrationController extends Controller
             'password' => 'required|min:6|confirmed',
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->username,
             'username' => $request->username,
             'email' => $request->email,
@@ -67,6 +52,6 @@ class RegistrationController extends Controller
             'is_verified' => true,
         ]);
 
-        return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
+        return response()->json(['message' => 'Registrasi berhasil! Silakan login.', 'user' => $user]);
     }
 }

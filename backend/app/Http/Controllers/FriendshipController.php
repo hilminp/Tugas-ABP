@@ -7,63 +7,60 @@ use App\Models\User;
 
 class FriendshipController extends Controller
 {
-    public function send($id)
+    public function send(\Illuminate\Http\Request $request, $id)
     {
-        // Block admin while viewing-as-user from sending friend requests
-        if (session('is_admin') && session('viewing_as_user')) {
-            return back()->withErrors(['friend' => 'Admin tidak dapat menambah teman saat mode lihat sebagai user.']);
+        $me = $request->user();
+        if ($me->is_admin && $request->query('viewing_as_user')) {
+            return response()->json(['message' => 'Admin tidak dapat menambah teman saat mode lihat sebagai user.'], 403);
         }
-        $meId = session('user_id');
-        if ($meId == $id) return back()->withErrors(['friend' => 'Tidak bisa menambahkan diri sendiri']);
-        $me = User::find($meId);
+        $meId = $me->id;
+        if ($meId == $id) return response()->json(['message' => 'Tidak bisa menambahkan diri sendiri'], 400);
         if ($me && method_exists($me, 'hasFriendRequestTo') && $me->hasFriendRequestTo($id)) {
-            return back()->with('info', 'Permintaan pertemanan sudah ada.');
+            return response()->json(['message' => 'Permintaan pertemanan sudah ada.']);
         }
         Friendship::create([
             'user_id' => $meId,
             'friend_id' => $id,
             'status' => 'pending',
         ]);
-        return back()->with('success', 'Permintaan pertemanan terkirim.');
+        return response()->json(['message' => 'Permintaan pertemanan terkirim.']);
     }
 
-    public function incoming()
+    public function incoming(\Illuminate\Http\Request $request)
     {
-        $meId = session('user_id');
+        $meId = $request->user()->id;
         $requests = Friendship::where('friend_id', $meId)
             ->where('status', 'pending')
             ->with('requester')
             ->get();
-        return view('friend_requests', ['requests' => $requests]);
+        return response()->json(['requests' => $requests]);
     }
 
-    public function accept($id)
+    public function accept(\Illuminate\Http\Request $request, $id)
     {
-        // Block admin while viewing-as-user from accepting requests
-        if (session('is_admin') && session('viewing_as_user')) {
-            return back()->withErrors(['friend' => 'Admin tidak dapat mengelola pertemanan saat mode lihat sebagai user.']);
+        if ($request->user()->is_admin && $request->query('viewing_as_user')) {
+            return response()->json(['message' => 'Admin tidak dapat mengelola pertemanan saat mode lihat sebagai user.'], 403);
         }
-        $meId = session('user_id');
+        $meId = $request->user()->id;
         $f = Friendship::where('user_id', $id)->where('friend_id', $meId)->first();
-        if (!$f) return back()->withErrors(['friend' => 'Permintaan tidak ditemukan']);
+        if (!$f) return response()->json(['message' => 'Permintaan tidak ditemukan'], 404);
         $f->update(['status' => 'accepted']);
         Friendship::firstOrCreate([
             'user_id' => $meId,
             'friend_id' => $id,
         ], ['status' => 'accepted']);
-        return redirect()->back()->with('success', 'Permintaan pertemanan diterima.');
+        return response()->json(['message' => 'Permintaan pertemanan diterima.']);
     }
 
-    public function reject($id)
+    public function reject(\Illuminate\Http\Request $request, $id)
     {
-        // Block admin while viewing-as-user from rejecting requests
-        if (session('is_admin') && session('viewing_as_user')) {
-            return back()->withErrors(['friend' => 'Admin tidak dapat mengelola pertemanan saat mode lihat sebagai user.']);
+        if ($request->user()->is_admin && $request->query('viewing_as_user')) {
+            return response()->json(['message' => 'Admin tidak dapat mengelola pertemanan saat mode lihat sebagai user.'], 403);
         }
-        $meId = session('user_id');
+        $meId = $request->user()->id;
         $f = Friendship::where('user_id', $id)->where('friend_id', $meId)->first();
-        if (!$f) return back()->withErrors(['friend' => 'Permintaan tidak ditemukan']);
+        if (!$f) return response()->json(['message' => 'Permintaan tidak ditemukan'], 404);
         $f->delete();
-        return redirect()->back()->with('success', 'Permintaan pertemanan ditolak.');
+        return response()->json(['message' => 'Permintaan pertemanan ditolak.']);
     }
 }

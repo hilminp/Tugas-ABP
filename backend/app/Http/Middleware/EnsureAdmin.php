@@ -9,11 +9,11 @@ class EnsureAdmin
 {
     public function handle(Request $request, Closure $next)
     {
-        if (!session('user_id')) {
-            return redirect('/login');
+        if (!$request->user()) {
+            return response()->json(['message' => 'Unauthorized'], 401);
         }
-        if (!session('is_admin')) {
-            abort(403);
+        if (!$request->user()->is_admin) {
+            return response()->json(['message' => 'Forbidden'], 403);
         }
         return $next($request);
     }

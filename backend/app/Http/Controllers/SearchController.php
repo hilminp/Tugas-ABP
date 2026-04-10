@@ -11,7 +11,7 @@ class SearchController extends Controller
     {
         $q = $request->query('q');
         if (!$q) {
-            return view('search_results', ['results' => collect(), 'query' => '']);
+            return response()->json(['results' => [], 'query' => '']);
         }
 
         $results = User::where('is_admin', false)
@@ -22,6 +22,6 @@ class SearchController extends Controller
             })
             ->get();
 
-        return view('search_results', ['results' => $results, 'query' => $q]);
+        return response()->json(['results' => $results, 'query' => $q]);
     }
 }
