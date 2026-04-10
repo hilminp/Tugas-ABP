@@ -1,24 +1,113 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthProvider';
+import { useAuth } from './hooks/useAuth';
+import { api } from './lib/api';
+import AppLoadingScreen from './components/AppLoadingScreen';
 
-function App() {
-  const [data, setData] = useState("loading...")
+// Pages
+import Welcome from './pages/Welcome';
+import Login from './pages/auth/Login';
+import RegisterRoleSelect from './pages/auth/RegisterRoleSelect';
+import RegisterAnonim from './pages/auth/RegisterAnonim';
+import RegisterPsikolog from './pages/auth/RegisterPsikolog';
+import Home from './pages/Home';
+import FriendRequests from './pages/FriendRequests';
+import SearchResults from './pages/SearchResults';
+import MessagesIndex from './pages/messages/MessagesIndex';
+import MessagesThread from './pages/messages/MessagesThread';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminVerifications from './pages/admin/AdminVerifications';
 
-  useEffect(() => {
-    fetch('http://localhost:8000/test')
-      .then(res => res.json())
-      .then(data => setData(data))
-      .catch(err => {
-        console.error(err)
-        setData("ERROR FETCH")
-      })
-  }, [])
+// Protected Route Component
+const ProtectedRoute = ({ children, adminOnly = false }) => {
+    const { user, loading } = useAuth();
+    
+    if (loading) return <AppLoadingScreen progress={80} />;
+    
+    if (!user) {
+        return <Navigate to="/login" replace />;
+    }
 
-  return (
-    <div>
-      <h1>Frontend React 🔥</h1>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
-    </div>
-  )
+    if (adminOnly && !user.is_admin) {
+        return <Navigate to="/home" replace />;
+    }
+
+    return children;
+};
+
+function AppRoutes() {
+    return (
+        <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Welcome />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<RegisterRoleSelect />} />
+            <Route path="/register/anonim" element={<RegisterAnonim />} />
+            <Route path="/register/psikolog" element={<RegisterPsikolog />} />
+
+            {/* Protected User Routes */}
+            <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+            <Route path="/search" element={<ProtectedRoute><SearchResults /></ProtectedRoute>} />
+            <Route path="/friend-requests" element={<ProtectedRoute><FriendRequests /></ProtectedRoute>} />
+            <Route path="/messages" element={<ProtectedRoute><MessagesIndex /></ProtectedRoute>} />
+            <Route path="/messages/:id" element={<ProtectedRoute><MessagesThread /></ProtectedRoute>} />
+
+            {/* Protected Admin Routes */}
+            <Route path="/admin/dashboard" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/users" element={<ProtectedRoute adminOnly><AdminUsers /></ProtectedRoute>} />
+            <Route path="/admin/verifications" element={<ProtectedRoute adminOnly><AdminVerifications /></ProtectedRoute>} />
+
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+    );
 }
 
-export default App
+function App() {
+    const [bootLoading, setBootLoading] = useState(true);
+    const [bootProgress, setBootProgress] = useState(20);
+
+    useEffect(() => {
+        let mounted = true;
+
+        const bootstrap = async () => {
+            setBootProgress(35);
+            const minDelay = new Promise((resolve) => setTimeout(resolve, 900));
+
+            try {
+                await Promise.all([
+                    api.get('/status'),
+                    minDelay,
+                ]);
+                if (mounted) setBootProgress(100);
+            } catch {
+                if (mounted) setBootProgress(75);
+            } finally {
+                if (mounted) {
+                    setTimeout(() => setBootLoading(false), 250);
+                }
+            }
+        };
+
+        bootstrap();
+        return () => {
+            mounted = false;
+        };
+    }, []);
+
+    if (bootLoading) {
+        return <AppLoadingScreen progress={bootProgress} />;
+    }
+
+    return (
+        <Router>
+            <AuthProvider>
+                <AppRoutes />
+            </AuthProvider>
+        </Router>
+    );
+}
+
+export default App;

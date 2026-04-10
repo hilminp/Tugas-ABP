@@ -1,0 +1,13 @@
+.msg-box { max-width: 980px; margin: 0 auto; }
+.msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.msg-title { font-weight: 700; font-size: 24px; color: #F0679F; }
+.msg-back { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid rgba(240,103,159,.18); color: #F0679F; padding: 8px 12px; border-radius: 12px; text-decoration: none; box-shadow: 0 6px 14px rgba(240,103,159,.08); }
+.msg-list { background: #fff; border-radius: 16px; box-shadow: 0 10px 24px rgba(240,103,159,.12); padding: 8px; }
+.msg-friend { background: #fff; border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; transition: background .2s ease; }
+.msg-friend + .msg-friend { border-top: 1px solid #f1f5f9; }
+.msg-friend:hover { background: #fff6fb; }
+.msg-name { font-weight: 600; }
+.msg-email { font-size: 13px; color: #6b7280; }
+.msg-btn { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg,#F78BB8,#F0679F); color: #fff; border: none; padding: 10px 14px; border-radius: 12px; cursor: pointer; text-decoration: none; box-shadow: 0 10px 20px rgba(240,103,159,.22); }
+.msg-btn:hover { filter: brightness(1.03); }
+.msg-empty { padding: 18px; color: #6b7280; }

@@ -1,0 +1,4 @@
+.box { max-width: 900px; margin: 0 auto; }
+.req { background: #fff; border-radius: 10px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+.btn { background: #FF6FA3; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; margin-left: 6px; }
+.actions { display: flex; }

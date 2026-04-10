@@ -1,0 +1,191 @@
+.loading-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff8f8;
+  color: #3c2f32;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Manrope', sans-serif;
+}
+
+.loading-bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+.loading-gradient-base {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #fff8f8 0%, #fff0f2 55%, rgba(243, 221, 225, 0.4) 100%);
+}
+
+.loading-blob {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(100px);
+}
+
+.loading-blob-one {
+  top: -10%;
+  left: -5%;
+  width: 60%;
+  height: 60%;
+  background: rgba(232, 159, 179, 0.18);
+}
+
+.loading-blob-two {
+  bottom: -5%;
+  right: -10%;
+  width: 50%;
+  height: 50%;
+  background: rgba(225, 189, 234, 0.2);
+}
+
+.loading-blob-three {
+  top: 35%;
+  left: 40%;
+  width: 30%;
+  height: 30%;
+  background: rgba(255, 217, 225, 0.12);
+}
+
+.loading-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+.loading-main {
+  position: relative;
+  z-index: 2;
+  width: min(440px, 100%);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loading-logo-wrap {
+  position: relative;
+}
+
+.loading-logo-glow {
+  position: absolute;
+  inset: 0;
+  background: rgba(137, 77, 95, 0.2);
+  filter: blur(36px);
+  border-radius: 50%;
+  transform: scale(1.35);
+}
+
+.loading-logo-shell {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-logo-shell img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.breathing-logo {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+.loading-main h1 {
+  margin-top: 16px;
+  margin-bottom: 26px;
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #894d5f;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.loading-progress-wrap {
+  width: min(290px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.loading-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #fce9ec;
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.loading-progress-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(90deg, #894d5f, #f7acc1);
+  border-radius: 999px;
+  box-shadow: 0 0 12px rgba(137, 77, 95, 0.3);
+}
+
+.progress-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.42), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.loading-copy {
+  text-align: center;
+}
+
+.loading-copy p {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: #6b5b5f;
+}
+
+.loading-copy small {
+  margin-top: 4px;
+  display: block;
+  color: rgba(107, 91, 95, 0.75);
+}
+
+.loading-corner {
+  position: fixed;
+  color: rgba(232, 159, 179, 0.45);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.loading-corner-top {
+  top: 24px;
+  left: 24px;
+  font-size: 48px;
+}
+
+.loading-corner-bottom {
+  bottom: 20px;
+  right: 20px;
+  font-size: 60px;
+}
