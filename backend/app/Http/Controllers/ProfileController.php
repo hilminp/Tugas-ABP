@@ -13,13 +13,7 @@ class ProfileController extends Controller
      */
     public function update(Request $request)
     {
-        $userId = session('user_id');
-
-        if (!$userId) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
-        $user = User::find($userId);
+        $user = $request->user();
 
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);
@@ -66,15 +60,9 @@ class ProfileController extends Controller
     /**
      * Get user profile data
      */
-    public function show()
+    public function show(Request $request)
     {
-        $userId = session('user_id');
-
-        if (!$userId) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
-        $user = User::find($userId);
+        $user = $request->user();
 
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);

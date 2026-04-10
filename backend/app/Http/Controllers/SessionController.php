@@ -8,11 +8,6 @@ use App\Models\User;
 
 class SessionController extends Controller
 {
-    public function showLogin()
-    {
-        return view('auth.login');
-    }
-
     public function login(Request $request)
     {
         $request->validate([
@@ -25,33 +20,35 @@ class SessionController extends Controller
             if ($user->is_suspended) {
                 $msg = 'Akun Anda telah disuspend oleh admin.';
                 if ($user->suspended_reason) $msg .= ' Alasan: ' . $user->suspended_reason;
-                return back()->withErrors(['suspended' => $msg]);
+                return response()->json(['message' => $msg], 403);
             }
 
             if ($user->role == 'psikolog' && !$user->is_verified) {
-                return back()->withErrors(['email' => 'Akun Anda belum diverifikasi oleh admin. Silakan tunggu konfirmasi.']);
+                return response()->json(['message' => 'Akun Anda belum diverifikasi oleh admin. Silakan tunggu konfirmasi.'], 403);
             }
 
-            session([
-                'user_id' => $user->id,
-                'user_name' => $user->name,
-                'user_role' => $user->role,
-                'is_admin' => $user->is_admin,
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            return response()->json([
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'role' => $user->role,
+                    'is_admin' => $user->is_admin,
+                ]
             ]);
-
-            if ($user->is_admin) {
-                return redirect('/admin/dashboard');
-            }
-
-            return redirect('/home');
         }
 
-        return back()->withErrors(['email' => 'Email atau password salah']);
+        return response()->json(['message' => 'Email atau password salah'], 401);
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        session()->flush();
-        return redirect('/login');
+        if ($request->user()) {
+            $request->user()->currentAccessToken()->delete();
+        }
+        return response()->json(['message' => 'Logged out successfully']);
     }
 }

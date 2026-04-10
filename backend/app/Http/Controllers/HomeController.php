@@ -6,9 +6,9 @@ use App\Models\User;
 
 class HomeController extends Controller
 {
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
-        $me = User::find(session('user_id'));
-        return view('home', ['me' => $me]);
+        $me = $request->user();
+        return response()->json(['me' => $me]);
     }
 }

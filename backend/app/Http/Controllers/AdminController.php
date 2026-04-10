@@ -18,21 +18,7 @@ class AdminController extends Controller
         $pendingPsikolog = User::where('role', 'psikolog')->where('is_admin', false)->where('is_verified', false)->latest()->get();
         $recentUsers = User::latest()->take(10)->get();
 
-        session()->forget('viewing_as_user');
-
-        return view('admin_dashboard', compact('totalUsers', 'totalPsikolog', 'totalAnonim', 'pendingCount', 'pendingPsikolog', 'recentUsers'));
-    }
-
-    public function viewAsUser()
-    {
-        session(['viewing_as_user' => true]);
-        return redirect('/home');
-    }
-
-    public function exitView()
-    {
-        session()->forget('viewing_as_user');
-        return redirect('/admin/dashboard')->with('success', 'Anda kembali ke Admin Dashboard');
+        return response()->json(compact('totalUsers', 'totalPsikolog', 'totalAnonim', 'pendingCount', 'pendingPsikolog', 'recentUsers'));
     }
 
     public function verifications()
@@ -40,53 +26,53 @@ class AdminController extends Controller
         $pendingCount = User::where('role', 'psikolog')->where('is_admin', false)->where('is_verified', false)->count();
         $pendingPsikolog = User::where('role', 'psikolog')->where('is_admin', false)->where('is_verified', false)->latest()->get();
         $verifiedPsikolog = User::where('role', 'psikolog')->where('is_admin', false)->where('is_verified', true)->latest()->take(10)->get();
-        return view('admin_verifications', compact('pendingCount', 'pendingPsikolog', 'verifiedPsikolog'));
+        return response()->json(compact('pendingCount', 'pendingPsikolog', 'verifiedPsikolog'));
     }
 
     public function verify($id)
     {
         $user = User::findOrFail($id);
         if ($user->role != 'psikolog') {
-            return back()->with('error', 'User ini bukan psikolog');
+            return response()->json(['message' => 'User ini bukan psikolog'], 400);
         }
         $user->update(['is_verified' => true]);
-        return back()->with('success', 'Psikolog ' . $user->name . ' berhasil diverifikasi!');
+        return response()->json(['message' => 'Psikolog ' . $user->name . ' berhasil diverifikasi!']);
     }
 
     public function reject($id)
     {
         $user = User::findOrFail($id);
         if ($user->role != 'psikolog') {
-            return back()->with('error', 'User ini bukan psikolog');
+            return response()->json(['message' => 'User ini bukan psikolog'], 400);
         }
         $name = $user->name;
         $user->delete();
-        return back()->with('success', 'Verifikasi psikolog ' . $name . ' ditolak dan akun dihapus.');
+        return response()->json(['message' => 'Verifikasi psikolog ' . $name . ' ditolak dan akun dihapus.']);
     }
 
-    public function users()
+    public function users(Request $request)
     {
         $users = User::latest()->get();
-        $me = User::find(session('user_id'));
-        return view('admin_users', compact('users', 'me'));
+        $me = $request->user();
+        return response()->json(compact('users', 'me'));
     }
 
     public function toggleAdmin(Request $request, $id)
     {
-        $meId = session('user_id');
+        $meId = $request->user()->id;
         $u = User::find($id);
-        if (!$u) return redirect()->back()->withErrors(['user' => 'User not found']);
+        if (!$u) return response()->json(['message' => 'User not found'], 404);
         if ($u->id == $meId && $u->is_admin && $request->input('allow_self_demote') !== '1') {
-            return back()->withErrors(['user' => 'Cannot demote yourself from admin.']);
+            return response()->json(['message' => 'Cannot demote yourself from admin.'], 400);
         }
         $u->update(['is_admin' => !$u->is_admin]);
-        return redirect()->route('admin.users')->with('success', 'Updated user admin status.');
+        return response()->json(['message' => 'Updated user admin status.']);
     }
 
     public function suspend(Request $request, $id)
     {
         $u = User::find($id);
-        if (!$u) return redirect()->route('admin.users')->withErrors(['user' => 'User not found']);
+        if (!$u) return response()->json(['message' => 'User not found'], 404);
         $action = $request->input('action', 'suspend');
         if ($action === 'suspend') {
             $reason = (string) $request->input('reason');
@@ -94,15 +80,15 @@ class AdminController extends Controller
         } else {
             $u->update(['is_suspended' => false, 'suspended_reason' => null]);
         }
-        return redirect()->route('admin.users')->with('success', 'User suspension status updated.');
+        return response()->json(['message' => 'User suspension status updated.']);
     }
 
     public function message(Request $request, $id)
     {
         $request->validate(['body' => 'required|string']);
-        $meId = session('user_id');
+        $meId = $request->user()->id;
         $u = User::find($id);
-        if (!$u) return redirect()->route('admin.users')->withErrors(['user' => 'User not found']);
+        if (!$u) return response()->json(['message' => 'User not found'], 404);
         $clean = trim((string) $request->body);
         $clean = preg_replace("/(\r?\n){3,}/", "\n\n", $clean);
         $message = Message::create([
@@ -111,6 +97,6 @@ class AdminController extends Controller
             'body' => $clean,
         ]);
         try { event(new \App\Events\MessageSent($message)); } catch (\Throwable $e) { logger()->warning('Broadcast failed: ' . $e->getMessage()); }
-        return redirect()->route('admin.users')->with('success', 'Message sent to user.');
+        return response()->json(['message' => 'Message sent to user.']);
     }
 }
