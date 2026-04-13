@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../lib/api';
+import Skeleton from '../../components/ui/Skeleton';
 import './MessagesIndex.css';
 
 const MessagesIndex = () => {
@@ -21,8 +22,6 @@ const MessagesIndex = () => {
         fetchFriends();
     }, []);
 
-    if (loading) return <div style={{padding:'24px'}}>Loading...</div>;
-
     return (
         <div style={{fontFamily: "'Poppins', sans-serif", background: '#FFF8EE', minHeight: '100vh', padding: '24px', color: '#2a1f25'}}>
             <div className="msg-box">
@@ -31,10 +30,23 @@ const MessagesIndex = () => {
                     <Link className="msg-back" to="/home">↩ Back to Home</Link>
                 </div>
                 <div className="msg-list">
-                    {friends.length === 0 && <div className="msg-empty">No friends yet</div>}
-                    
-                    {friends.map(f => (
-                        <div className="msg-friend" key={f.id}>
+                    {loading ? (
+                        Array.from({ length: 4 }).map((_, idx) => (
+                            <div className="msg-friend" key={`skeleton-${idx}`}>
+                                <div style={{ width: '50%' }}>
+                                    <Skeleton width="60%" height="18px" style={{ marginBottom: '6px' }} />
+                                    <Skeleton width="40%" height="13px" />
+                                </div>
+                                <div>
+                                    <Skeleton type="button" width="140px" height="40px" style={{ borderRadius: '12px' }} />
+                                </div>
+                            </div>
+                        ))
+                    ) : friends.length === 0 ? (
+                        <div className="msg-empty">No friends yet</div>
+                    ) : (
+                        friends.map(f => (
+                            <div className="msg-friend" key={f.id}>
                             <div>
                                 <div className="msg-name">{f.name} ({f.username})</div>
                                 <div className="msg-email">{f.email}</div>
@@ -43,7 +55,8 @@ const MessagesIndex = () => {
                                 <Link className="msg-btn" to={`/messages/${f.id}`}>✉️ Send Message</Link>
                             </div>
                         </div>
-                    ))}
+                        ))
+                    )}
                 </div>
             </div>
         </div>

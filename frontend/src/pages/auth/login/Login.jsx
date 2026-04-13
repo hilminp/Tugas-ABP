@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import { api } from '../../lib/api';
-import logoCurhatin from '../../assets/logoCurhatin.png';
+import { useAuth } from '../../../hooks/useAuth';
+import { api } from '../../../lib/api';
+import logoCurhatin from '../../../assets/logoCurhatin.png';
 import './Auth.css';
 
 const Login = () => {
@@ -27,7 +27,23 @@ const Login = () => {
                 navigate('/home');
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Login failed.');
+            if (err.response?.data?.is_rejected) {
+                setError({ type: 'rejected', message: err.response.data.message });
+            } else {
+                setError({ type: 'general', message: err.response?.data?.message || 'Login failed.' });
+            }
+        }
+    };
+
+    const handleReapply = async () => {
+        if (!window.confirm("Yakin ingin mereset pendaftaran lama Anda agar bisa mendaftar ulang? (Data lama akan dibersihkan)")) return;
+        try {
+            const res = await api.post('/reapply', { email, password });
+            alert(res.data.message);
+            setError(null);
+            navigate('/register/psikolog');
+        } catch (err) {
+            alert(err.response?.data?.message || 'Gagal menghapus data lama');
         }
     };
 
@@ -83,7 +99,30 @@ const Login = () => {
                             </div>
 
                             {location.state?.message && <div className="auth-alert success">{location.state.message}</div>}
-                            {error && <div className="auth-alert error">{error}</div>}
+                            {error && (
+                                <div className="auth-alert error" style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                                    <div>{error.message || error}</div>
+                                    {error.type === 'rejected' && (
+                                        <button 
+                                            type="button" 
+                                            onClick={handleReapply}
+                                            style={{
+                                                background: '#fff', 
+                                                color: '#e74c3c', 
+                                                border: '1px solid #e74c3c', 
+                                                padding: '8px 14px', 
+                                                borderRadius: '8px',
+                                                fontWeight: 600,
+                                                cursor: 'pointer',
+                                                alignSelf: 'flex-start',
+                                                fontSize: '13px'
+                                            }}
+                                        >
+                                            Hapus data lama & Daftar Ulang
+                                        </button>
+                                    )}
+                                </div>
+                            )}
 
                             <form className="login-modern-form" onSubmit={handleSubmit}>
                                 <div className="modern-field">

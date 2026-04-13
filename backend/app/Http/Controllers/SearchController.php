@@ -20,6 +20,7 @@ class SearchController extends Controller
                       ->orWhere('username', 'like', "%{$q}%")
                       ->orWhere('email', 'like', "%{$q}%");
             })
+            ->select('id', 'name', 'username', 'is_suspended', 'suspended_reason')
             ->get();
 
         return response()->json(['results' => $results, 'query' => $q]);

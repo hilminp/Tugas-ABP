@@ -24,6 +24,12 @@ class SessionController extends Controller
             }
 
             if ($user->role == 'psikolog' && !$user->is_verified) {
+                if ($user->is_rejected) {
+                    return response()->json([
+                        'message' => 'Pendaftaran Anda sebagai psikolog ditolak. Alasan: ' . ($user->rejected_reason ?: 'Tidak ada alasan.'),
+                        'is_rejected' => true
+                    ], 403);
+                }
                 return response()->json(['message' => 'Akun Anda belum diverifikasi oleh admin. Silakan tunggu konfirmasi.'], 403);
             }
 
@@ -50,5 +56,21 @@ class SessionController extends Controller
             $request->user()->currentAccessToken()->delete();
         }
         return response()->json(['message' => 'Logged out successfully']);
+    }
+
+    public function reapply(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+        
+        $user = User::where('email', $request->email)->first();
+        if ($user && Hash::check($request->password, $user->password) && $user->is_rejected) {
+            // Delete the rejected user so they can completely re-register with the same email
+            $user->delete();
+            return response()->json(['message' => 'Akun lama berhasil dihapus. Anda sekarang dapat mendaftar ulang.']);
+        }
+        return response()->json(['message' => 'Tidak valid.'], 400);
     }
 }

@@ -29,9 +29,12 @@ class User extends Authenticatable
         'suspended_reason',
         'role',
         'is_verified',
+        'is_rejected',
+        'rejected_reason',
         'str_file',
         'ijazah_file',
         'profile_image',
+        'spesialisasi',
     ];
 
     /**
@@ -79,6 +82,7 @@ class User extends Authenticatable
             'is_admin' => 'boolean',
             'is_suspended' => 'boolean',
             'is_verified' => 'boolean',
+            'is_rejected' => 'boolean',
         ];
     }
 }
