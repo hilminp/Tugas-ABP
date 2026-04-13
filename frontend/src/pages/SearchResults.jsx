@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
+import Skeleton from '../components/ui/Skeleton';
 import './FriendRequests.css'; // Reusing some CSS
 
 const SearchResults = () => {
@@ -66,17 +67,27 @@ const SearchResults = () => {
         }
     };
 
-    if (loading) return <div style={{padding:'20px'}}>Loading...</div>;
-
     const adminViewing = false; // Add state if we are simulating viewing as user, ignored for now
 
     return (
         <div style={{fontFamily: "'Poppins', sans-serif", background: '#FFF8EE', minHeight: '100vh', padding: '20px'}}>
             <div className="box">
                 <h2>Hasil pencarian untuk "{query}"</h2>
-                <div style={{color: '#666', marginBottom: '12px'}}>{results.length} hasil ditemukan</div>
+                <div style={{color: '#666', marginBottom: '12px'}}>{loading ? 'Mencari...' : `${results.length} hasil ditemukan`}</div>
 
-                {results.length === 0 ? (
+                {loading ? (
+                    Array.from({ length: 3 }).map((_, idx) => (
+                        <div className="req" key={`skeleton-${idx}`}>
+                            <div style={{ width: '60%' }}>
+                                <Skeleton width="70%" height="18px" style={{ marginBottom: '8px' }} />
+                                <Skeleton width="40%" height="13px" />
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Skeleton type="button" width="100px" height="34px" />
+                            </div>
+                        </div>
+                    ))
+                ) : results.length === 0 ? (
                     <div style={{background: '#F8F9FA', padding: '24px', borderRadius: '10px', textAlign: 'center', color: '#666', margin: '20px 0'}}>
                         <div style={{fontSize: '48px', marginBottom: '12px'}}>🔍</div>
                         <div style={{fontSize: '16px', fontWeight: 600}}>Tidak ada hasil yang ditemukan</div>
@@ -89,8 +100,8 @@ const SearchResults = () => {
                     results.map(u => (
                         <div className="req" key={u.id}>
                             <div>
-                                <div style={{fontWeight: 600}}>{u.name} ({u.username})</div>
-                                <div style={{fontSize: '13px', color: '#777'}}>{u.email}</div>
+                                <div style={{fontWeight: 600}}>{u.name}</div>
+                                <div style={{fontSize: '13px', color: '#777'}}>@{u.username}</div>
                             </div>
                             <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
                                 {!adminViewing && (

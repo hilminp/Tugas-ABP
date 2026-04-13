@@ -6,7 +6,6 @@ export const STORAGE_BASE_URL = (import.meta.env.VITE_STORAGE_URL || 'http://loc
 export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
     Accept: 'application/json',
   },
 });

@@ -7,11 +7,12 @@ import AppLoadingScreen from './components/AppLoadingScreen';
 
 // Pages
 import Welcome from './pages/Welcome';
-import Login from './pages/auth/Login';
-import RegisterRoleSelect from './pages/auth/RegisterRoleSelect';
-import RegisterAnonim from './pages/auth/RegisterAnonim';
-import RegisterPsikolog from './pages/auth/RegisterPsikolog';
+import Login from './pages/auth/login/Login';
+import RegisterRoleSelect from './pages/auth/register/RegisterRoleSelect';
+import RegisterAnonim from './pages/auth/register/RegisterAnonim';
+import RegisterPsikolog from './pages/auth/register/RegisterPsikolog';
 import Home from './pages/Home';
+import Profile from './pages/Profile';
 import FriendRequests from './pages/FriendRequests';
 import SearchResults from './pages/SearchResults';
 import MessagesIndex from './pages/messages/MessagesIndex';
@@ -49,6 +50,7 @@ function AppRoutes() {
 
             {/* Protected User Routes */}
             <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/search" element={<ProtectedRoute><SearchResults /></ProtectedRoute>} />
             <Route path="/friend-requests" element={<ProtectedRoute><FriendRequests /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><MessagesIndex /></ProtectedRoute>} />

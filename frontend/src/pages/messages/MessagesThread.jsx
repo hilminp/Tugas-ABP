@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { api } from '../../lib/api';
+import Skeleton from '../../components/ui/Skeleton';
 import './MessagesThread.css';
 
 const MessagesThread = () => {
@@ -60,7 +61,33 @@ const MessagesThread = () => {
         e.target.style.height = `${Math.min(e.target.scrollHeight, 160)}px`;
     };
 
-    if (loading) return <div style={{padding:'20px'}}>Loading...</div>;
+    if (loading) return (
+        <div style={{fontFamily: "'Poppins', sans-serif", background: '#f1f5f9', minHeight: '100vh', padding: '20px', color: '#0f172a'}}>
+            <div className="thread-box" style={{background: '#fff', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', height: '80vh'}}>
+                <div className="thread-header" style={{borderBottom: '1px solid #eee', paddingBottom: '16px', marginBottom: '16px'}}>
+                    <div>
+                        <Skeleton width="150px" height="24px" style={{marginBottom: '8px'}} />
+                        <Skeleton width="100px" height="12px" />
+                    </div>
+                </div>
+                <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: '16px'}}>
+                    <div style={{alignSelf: 'flex-start', width: '60%'}}>
+                        <Skeleton height="60px" style={{borderRadius: '16px', borderTopLeftRadius: 0}} />
+                    </div>
+                    <div style={{alignSelf: 'flex-end', width: '50%'}}>
+                        <Skeleton height="50px" style={{borderRadius: '16px', borderTopRightRadius: 0}} />
+                    </div>
+                    <div style={{alignSelf: 'flex-start', width: '70%'}}>
+                        <Skeleton height="80px" style={{borderRadius: '16px', borderTopLeftRadius: 0}} />
+                    </div>
+                </div>
+                <div style={{marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid #eee', display: 'flex', gap: '12px'}}>
+                    <Skeleton width="100%" height="48px" style={{borderRadius: '24px'}} />
+                    <Skeleton width="80px" height="48px" style={{borderRadius: '24px'}} />
+                </div>
+            </div>
+        </div>
+    );
 
     if (!friend) return <div style={{padding:'20px'}}>User not found</div>;
 

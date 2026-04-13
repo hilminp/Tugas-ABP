@@ -1,50 +1,28 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { api } from '../../lib/api';
-import logoCurhatin from '../../assets/logoCurhatin.png';
-import './Auth.css';
+import { api } from '../../../lib/api';
+import logoCurhatin from '../../../assets/logoCurhatin.png';
+import '../login/Auth.css';
 
-const RegisterPsikolog = () => {
+const RegisterAnonim = () => {
     const [formData, setFormData] = useState({
         email: '',
         username: '',
         password: '',
         password_confirmation: ''
     });
-    const [strFile, setStrFile] = useState(null);
-    const [ijazahFile, setIjazahFile] = useState(null);
     const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
         setFormData({...formData, [e.target.name]: e.target.value});
     };
 
-    const handleFileChange = (e) => {
-        if (e.target.name === 'str_file') setStrFile(e.target.files[0]);
-        if (e.target.name === 'ijazah_file') setIjazahFile(e.target.files[0]);
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
-        setLoading(true);
-        
         try {
-            const data = new FormData();
-            data.append('email', formData.email);
-            data.append('username', formData.username);
-            data.append('password', formData.password);
-            data.append('password_confirmation', formData.password_confirmation);
-            if (strFile) data.append('str_file', strFile);
-            if (ijazahFile) data.append('ijazah_file', ijazahFile);
-
-            const res = await api.post('/register/psikolog', data, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
+            const res = await api.post('/register/anonim', formData);
             navigate('/login', { state: { message: res.data.message } });
         } catch (err) {
             setError(err.response?.data?.message || err.response?.data?.error || 'Registration failed.');
@@ -52,8 +30,6 @@ const RegisterPsikolog = () => {
                 const msgs = Object.values(err.response.data.errors).flat().join('\n');
                 setError(msgs);
             }
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -62,8 +38,8 @@ const RegisterPsikolog = () => {
             <div className="login-card">
                 <div className="login-left" style={{background: '#FDF9F0', flexDirection: 'column'}}>
                     <form className="login-form" onSubmit={handleSubmit} style={{maxHeight: '85vh', overflowY: 'auto'}}>
-                        <div className="login-title">Register Psikolog</div>
-                        <div className="login-subtitle" style={{textAlign: 'center', marginBottom: '16px', color: '#666', fontSize: '13px'}}>Daftar sebagai psikolog profesional</div>
+                        <div className="login-title">Register Anonim</div>
+                        <div className="login-subtitle" style={{textAlign: 'center', marginBottom: '16px', color: '#666', fontSize: '13px'}}>Daftar sebagai pengguna anonim</div>
                         
                         {error && (
                             <div style={{ background: '#ffebee', padding: '12px', borderRadius: '8px', marginBottom: '12px', color: '#c62828', fontSize: '13px', whiteSpace: 'pre-wrap' }}>
@@ -83,15 +59,7 @@ const RegisterPsikolog = () => {
                         <div className="login-label">Konfirmasi Password</div>
                         <input className="login-input" type="password" name="password_confirmation" value={formData.password_confirmation} onChange={handleChange} placeholder="konfirmasi password" required />
                         
-                        <div className="login-label">STR Psikolog (PDF/JPG/PNG)</div>
-                        <input className="file-input" type="file" name="str_file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} required />
-                        
-                        <div className="login-label">Ijazah (PDF/JPG/PNG)</div>
-                        <input className="file-input" type="file" name="ijazah_file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} required />
-                        
-                        <button type="submit" className="login-button" style={{background: '#FF0B55'}} disabled={loading}>
-                            {loading ? 'Mengunggah...' : 'Daftar Psikolog'}
-                        </button>
+                        <button type="submit" className="login-button" style={{background: '#FF0B55'}}>Daftar Anonim</button>
                         <Link to="/register" className="login-back">← Pilih Role Lain</Link>
                     </form>
                 </div>
@@ -107,4 +75,4 @@ const RegisterPsikolog = () => {
     );
 };
 
-export default RegisterPsikolog;
+export default RegisterAnonim;

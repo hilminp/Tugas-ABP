@@ -14,19 +14,21 @@ class AdminController extends Controller
         $totalUsers = User::count();
         $totalPsikolog = User::where('role', 'psikolog')->where('is_admin', false)->count();
         $totalAnonim = User::where('role', 'anonim')->where('is_admin', false)->count();
-        $pendingCount = User::where('role', 'psikolog')->where('is_admin', false)->where('is_verified', false)->count();
-        $pendingPsikolog = User::where('role', 'psikolog')->where('is_admin', false)->where('is_verified', false)->latest()->get();
+        $pendingCount = User::where('role', 'psikolog')->where('is_admin', false)->where('is_verified', false)->where('is_rejected', false)->count();
+        $pendingPsikolog = User::where('role', 'psikolog')->where('is_admin', false)->where('is_verified', false)->where('is_rejected', false)->latest()->get();
+        $totalSuspended = User::where('is_suspended', true)->count();
         $recentUsers = User::latest()->take(10)->get();
 
-        return response()->json(compact('totalUsers', 'totalPsikolog', 'totalAnonim', 'pendingCount', 'pendingPsikolog', 'recentUsers'));
+        return response()->json(compact('totalUsers', 'totalPsikolog', 'totalAnonim', 'pendingCount', 'pendingPsikolog', 'totalSuspended', 'recentUsers'));
     }
 
     public function verifications()
     {
-        $pendingCount = User::where('role', 'psikolog')->where('is_admin', false)->where('is_verified', false)->count();
-        $pendingPsikolog = User::where('role', 'psikolog')->where('is_admin', false)->where('is_verified', false)->latest()->get();
+        $pendingCount = User::where('role', 'psikolog')->where('is_admin', false)->where('is_verified', false)->where('is_rejected', false)->count();
+        $pendingPsikolog = User::where('role', 'psikolog')->where('is_admin', false)->where('is_verified', false)->where('is_rejected', false)->latest()->get();
         $verifiedPsikolog = User::where('role', 'psikolog')->where('is_admin', false)->where('is_verified', true)->latest()->take(10)->get();
-        return response()->json(compact('pendingCount', 'pendingPsikolog', 'verifiedPsikolog'));
+        $rejectedPsikolog = User::where('role', 'psikolog')->where('is_admin', false)->where('is_rejected', true)->latest()->get();
+        return response()->json(compact('pendingCount', 'pendingPsikolog', 'verifiedPsikolog', 'rejectedPsikolog'));
     }
 
     public function verify($id)
@@ -39,15 +41,19 @@ class AdminController extends Controller
         return response()->json(['message' => 'Psikolog ' . $user->name . ' berhasil diverifikasi!']);
     }
 
-    public function reject($id)
+    public function reject(Request $request, $id)
     {
         $user = User::findOrFail($id);
         if ($user->role != 'psikolog') {
             return response()->json(['message' => 'User ini bukan psikolog'], 400);
         }
         $name = $user->name;
-        $user->delete();
-        return response()->json(['message' => 'Verifikasi psikolog ' . $name . ' ditolak dan akun dihapus.']);
+        $reason = (string) $request->input('reason');
+        $user->update([
+            'is_rejected' => true,
+            'rejected_reason' => $reason
+        ]);
+        return response()->json(['message' => 'Verifikasi psikolog ' . $name . ' ditolak.']);
     }
 
     public function users(Request $request)

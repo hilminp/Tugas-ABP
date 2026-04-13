@@ -10,6 +10,7 @@ use App\Http\Controllers\FriendshipController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PostController;
 use Illuminate\Http\Request;
 
 Route::get('/status', function () {
@@ -22,6 +23,7 @@ Route::get('/status', function () {
 
 // Public Auth
 Route::post('/login', [SessionController::class, 'login']);
+Route::post('/reapply', [SessionController::class, 'reapply']);
 Route::post('/register/psikolog', [RegistrationController::class, 'storePsikolog']);
 Route::post('/register/anonim', [RegistrationController::class, 'storeAnonim']);
 
@@ -31,6 +33,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Home
     Route::get('/home', [HomeController::class, 'index']);
+
+    // Posts
+    Route::get('/posts', [PostController::class, 'index']);
+    Route::post('/posts', [PostController::class, 'store']);
 
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'show']);
