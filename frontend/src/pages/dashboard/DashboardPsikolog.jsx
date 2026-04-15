@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import PaymentButton from '../components/PaymentButton';
-import { useAuth } from '../hooks/useAuth';
-import { api } from '../lib/api';
-import { PSYCHOLOGIST_CATEGORIES } from '../constants/psychologistCategories';
-import './Home.css';
+import Sidebar from '../../components/Sidebar';
+import { useAuth } from '../../hooks/useAuth';
+import { api } from '../../lib/api';
+import '../Home.css';
 
-const Home = () => {
+const DashboardPsikolog = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
@@ -62,16 +60,16 @@ const Home = () => {
             <Sidebar />
             <div className="main-container relative overflow-hidden">
                 <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-                    <div className="absolute -top-24 right-8 h-72 w-72 rounded-full bg-[#c987a8]/20 blur-3xl" />
-                    <div className="absolute top-1/3 -left-16 h-64 w-64 rounded-full bg-[#9f6d89]/15 blur-3xl" />
-                    <div className="absolute -bottom-20 right-1/4 h-72 w-72 rounded-full bg-[#7eb295]/15 blur-3xl" />
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-[#f5d7e4]/30" />
+                    <div className="absolute -top-24 right-8 h-72 w-72 rounded-full bg-[#1e40af]/20 blur-3xl" />
+                    <div className="absolute top-1/3 -left-16 h-64 w-64 rounded-full bg-[#3b82f6]/15 blur-3xl" />
+                    <div className="absolute -bottom-20 right-1/4 h-72 w-72 rounded-full bg-[#0ea5e9]/15 blur-3xl" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-[#e0f2fe]/30" />
                 </div>
                 <div className="relative z-10">
                 <form className="search" onSubmit={handleSearch}>
                     <input
                         type="text"
-                        placeholder="Cari topik atau konselor..."
+                        placeholder="Cari keluhan atau curhatan pengguna..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -87,33 +85,21 @@ const Home = () => {
 
                 <div className="home-grid">
                     <section className="feed-section">
-                        <div className="hero-card">
+                        <div className="hero-card" style={{ background: 'linear-gradient(135deg, #1e40af, #3b82f6)' }}>
                             <div className="hero-content">
-                                <h1>Bagaimana perasaanmu hari ini?</h1>
-                                <p>Ruang aman untuk berbagi beban pikiran tanpa takut dihakimi. Mulai percakapan pertamamu secara anonim.</p>
-                                <Link className="hero-button" to="/messages">Mulai Konsultasi</Link>
+                                <h1>Dashboard Psikolog</h1>
+                                <p>Selamat datang di ruang kerja Anda. Jadilah pendengar yang baik dan bantu mereka menemukan ketenangan.</p>
+                                <Link className="hero-button" style={{ color: '#1e40af' }} to="/messages">Lihat Pesan Klien</Link>
                             </div>
                             <div className="hero-pattern" />
                         </div>
 
-                        <div className="popular-header">
-                            <h2>Kategori Psikolog</h2>
-                            <button type="button">Lihat Semua</button>
-                        </div>
-                        <div className="topic-grid">
-                            {PSYCHOLOGIST_CATEGORIES.map((category) => (
-                                <button key={category.value} className="topic-item" type="button">
-                                    {category.label}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="post-create">
+                        <div className="post-create mt-8">
                             <form onSubmit={handlePostSubmit}>
                                 <textarea
                                     value={body}
                                     onChange={(e) => setBody(e.target.value)}
-                                    placeholder="Bagikan apa yang ada di pikiranmu secara anonim..."
+                                    placeholder="Bagikan tips atau artikel seputar kesehatan mental..."
                                     required
                                 />
                                 <div className="post-actions">
@@ -122,8 +108,8 @@ const Home = () => {
                                         accept="image/*"
                                         onChange={(e) => setImage(e.target.files[0])}
                                     />
-                                    <button type="submit" disabled={loading}>
-                                        {loading ? 'Memposting...' : 'Kirim Post'}
+                                    <button type="submit" disabled={loading} style={{ background: '#1e40af' }}>
+                                        {loading ? 'Memposting...' : 'Bagikan Edukasi'}
                                     </button>
                                 </div>
                             </form>
@@ -153,7 +139,7 @@ const Home = () => {
                             ))}
                             {posts.length === 0 && (
                                 <div className="empty-posts">
-                                    Belum ada postingan. Jadilah yang pertama!
+                                    Belum ada postingan dari pengguna.
                                 </div>
                             )}
                         </div>
@@ -161,39 +147,24 @@ const Home = () => {
 
                     <aside className="right-section">
                         <div className="side-card">
-                            <div className="side-card-title">Sesi Terbaru</div>
+                            <div className="side-card-title">Jadwal Anda</div>
                             <div className="session-item">
                                 <div>
                                     <small>Mendatang</small>
-                                    <strong>Dr. Sarah Wijaya</strong>
+                                    <strong>Konsultasi Anonim</strong>
                                     <span>Besok, 14:00</span>
                                 </div>
                             </div>
                             <div className="session-item muted">
                                 <div>
                                     <small>Selesai</small>
-                                    <strong>Bpk Andi Pratama</strong>
+                                    <strong>Konsultasi Keluarga</strong>
                                     <span>3 hari lalu</span>
                                 </div>
                             </div>
                             <Link to="/friend-requests" className="side-link">
-                                Lihat Semua Riwayat
+                                Kelola Jadwal
                             </Link>
-                        </div>
-
-                        <div className="quick-return-card">
-                            <h3>Pesan Kembali Cepat</h3>
-                            <p>Lanjutkan progresmu dengan konselor yang sama.</p>
-                            <Link to="/messages" className="quick-return-button">Pesan Sekarang</Link>
-                        </div>
-
-                        {/* Midtrans Payment Test */}
-                        <div className="side-card" style={{ marginTop: '20px' }}>
-                            <div className="side-card-title">Top Up Saldo (Test)</div>
-                            <p style={{ fontSize: '14px', color: '#666', marginBottom: '16px' }}>
-                                Coba integrasi Midtrans Snap dengan isi saldo simulasi.
-                            </p>
-                            <PaymentButton amount={50000} />
                         </div>
                     </aside>
                 </div>
@@ -203,6 +174,7 @@ const Home = () => {
                         type="button"
                         onClick={() => document.querySelector('.post-create textarea')?.focus()}
                         aria-label="Buat postingan"
+                        style={{ background: '#1e40af' }}
                     >
                         +
                     </button>
@@ -213,4 +185,4 @@ const Home = () => {
     );
 };
 
-export default Home;
+export default DashboardPsikolog;
