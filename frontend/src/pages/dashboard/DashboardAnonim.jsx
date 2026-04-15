@@ -16,13 +16,14 @@ import '../Home.css';
 >>>>>>> fd50238 (mempisahkan folder anoni/register):frontend/src/pages/dashboard/DashboardAnonim.jsx
 
 const DashboardAnonim = () => {
-    const { user } = useAuth();
+    const { user, updateUser } = useAuth();
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [posts, setPosts] = useState([]);
     const [body, setBody] = useState('');
     const [image, setImage] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [isPaying, setIsPaying] = useState(false);
 
     useEffect(() => {
         fetchPosts();
@@ -65,6 +66,47 @@ const DashboardAnonim = () => {
         }
     };
 
+    const handleUpgradePremium = async () => {
+        if (isPaying) return;
+        setIsPaying(true);
+        try {
+            const res = await api.post('/payment/token', { amount: 15000 });
+            
+            if (window.snap) {
+                window.snap.pay(res.data.snap_token, {
+                    onSuccess: async function(result){ 
+                        alert("Pembayaran sukses! Akun Anda kini Premium."); 
+                        try {
+                            const successRes = await api.post('/payment/success');
+                            if (successRes.data.user) {
+                                updateUser(successRes.data.user);
+                            }
+                        } catch(e) { console.error('Gagal update status premium', e); }
+                        setIsPaying(false);
+                    },
+                    onPending: function(result){ 
+                        alert("Menunggu pembayaran!"); 
+                        setIsPaying(false);
+                    },
+                    onError: function(result){ 
+                        alert("Pembayaran gagal!"); 
+                        setIsPaying(false);
+                    },
+                    onClose: function(){ 
+                        alert('Anda menutup payment popup tanpa menyelesaikan pembayaran'); 
+                        setIsPaying(false);
+                    }
+                });
+            } else {
+                alert('Midtrans script belum ter-load sempurna!');
+                setIsPaying(false);
+            }
+        } catch (err) {
+            alert("Gagal memanggil Midtrans: " + (err.response?.data?.message || err.message));
+            setIsPaying(false);
+        }
+    };
+
     return (
         <div className="home-layout">
             <Sidebar />
@@ -99,7 +141,19 @@ const DashboardAnonim = () => {
                             <div className="hero-content">
                                 <h1>Bagaimana perasaanmu hari ini?</h1>
                                 <p>Ruang aman untuk berbagi beban pikiran tanpa takut dihakimi. Mulai percakapan pertamamu secara anonim.</p>
-                                <Link className="hero-button" to="/messages">Mulai Konsultasi</Link>
+                                <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                                    <Link className="hero-button" to="/messages">Mulai Konsultasi</Link>
+                                    {!user?.is_premium && (
+                                        <button 
+                                            onClick={handleUpgradePremium} 
+                                            disabled={isPaying}
+                                            style={{ padding: '12px 24px', borderRadius: '30px', background: isPaying ? '#ccc' : '#ffd700', color: '#8b6508', border: 'none', fontWeight: 'bold', cursor: isPaying ? 'wait' : 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                                            className="hover:-translate-y-1 transition-transform"
+                                        >
+                                            {isPaying ? 'Memproses...' : '⭐ Upgrade Premium (Rp 15.000)'}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                             <div className="hero-pattern" />
                         </div>
@@ -116,26 +170,42 @@ const DashboardAnonim = () => {
                             ))}
                         </div>
 
-                        <div className="post-create">
-                            <form onSubmit={handlePostSubmit}>
-                                <textarea
-                                    value={body}
-                                    onChange={(e) => setBody(e.target.value)}
-                                    placeholder="Bagikan apa yang ada di pikiranmu secara anonim..."
-                                    required
-                                />
-                                <div className="post-actions">
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => setImage(e.target.files[0])}
+                        {!user?.is_premium ? (
+                            <div className="post-create" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '40px 20px', background: '#fff', border: '2px dashed #fbd8e1', borderRadius: '16px' }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#db7391', marginBottom: '10px' }}>lock</span>
+                                <h3 style={{ fontSize: '18px', margin: '0 0 10px', color: '#1a3635' }}>Fitur Ekslusif Premium</h3>
+                                <p style={{ margin: '0 0 20px', color: '#666', fontSize: '14px', maxWidth: '400px' }}>
+                                    Anda harus menjadi pengguna Premium untuk mempublikasikan curhatan secara publik.
+                                </p>
+                                <button 
+                                    onClick={handleUpgradePremium}
+                                    style={{ padding: '12px 24px', borderRadius: '30px', background: '#ffd700', color: '#8b6508', border: 'none', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                                >
+                                    ⭐ Upgrade Sekarang
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="post-create">
+                                <form onSubmit={handlePostSubmit}>
+                                    <textarea
+                                        value={body}
+                                        onChange={(e) => setBody(e.target.value)}
+                                        placeholder="Bagikan apa yang ada di pikiranmu secara anonim..."
+                                        required
                                     />
-                                    <button type="submit" disabled={loading}>
-                                        {loading ? 'Memposting...' : 'Kirim Post'}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                                    <div className="post-actions">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => setImage(e.target.files[0])}
+                                        />
+                                        <button type="submit" disabled={loading}>
+                                            {loading ? 'Memposting...' : 'Kirim Post'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        )}
 
                         <div className="post-list">
                             {posts.map((post) => (
@@ -206,15 +276,17 @@ const DashboardAnonim = () => {
                     </aside>
                 </div>
 
-                <div className="floating-action">
-                    <button
-                        type="button"
-                        onClick={() => document.querySelector('.post-create textarea')?.focus()}
-                        aria-label="Buat postingan"
-                    >
-                        +
-                    </button>
-                </div>
+                {user?.is_premium && (
+                    <div className="floating-action">
+                        <button
+                            type="button"
+                            onClick={() => document.querySelector('.post-create textarea')?.focus()}
+                            aria-label="Buat postingan"
+                        >
+                            +
+                        </button>
+                    </div>
+                )}
             </div>
             </div>
         </div>

@@ -49,6 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Payments (Midtrans)
     Route::post('/payment/token', [PaymentController::class, 'getToken']);
+    Route::post('/payment/success', [PaymentController::class, 'verifySuccess']);
 
     // Friendships
     Route::post('/friend/{id}', [FriendshipController::class, 'send']);
