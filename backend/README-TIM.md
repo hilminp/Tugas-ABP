@@ -8,11 +8,14 @@
 git clone [url-repository]
 cd [nama-folder]
 
-# 2. Jalankan setup otomatis (PowerShell)
+# 2. Jalankan setup otomatis (Terminal/CMD/PowerShell)
 copy .env.example .env
 php artisan key:generate
 type NUL > database\database.sqlite
 php artisan migrate
+
+# 3. Install Package (Wajib agar Midtrans ter-install di lokal teman)
+composer install
 npm install
 npm run build
 php artisan serve

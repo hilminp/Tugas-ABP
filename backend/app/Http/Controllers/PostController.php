@@ -9,13 +9,13 @@ class PostController extends Controller
 {
     public function index()
     {
-        $posts = Post::with('user:id,name,role,profile_image,username')
+        $posts = Post::with('user:id,name,role,profile_image,username,is_premium')
             ->latest()
             ->get()
             ->map(function ($post) {
                 // If user role is anonim, alter their name and profile image shown in feed
                 if ($post->user && $post->user->role === 'anonim') {
-                    $post->user->name = 'Anonim';
+                    $post->user->name = $post->user->is_premium ? 'Anonim ⭐' : 'Anonim';
                     $post->user->profile_image = null; // optionally hide their avatar
                     $post->user->username = 'anonim';
                 }
@@ -27,6 +27,10 @@ class PostController extends Controller
 
     public function store(Request $request)
     {
+        if ($request->user()->role === 'anonim' && !$request->user()->is_premium) {
+            return response()->json(['message' => 'Silakan upgrade akun ke Premium untuk mempublikasikan curhatan Anda.'], 403);
+        }
+
         $request->validate([
             'body' => 'required|string',
             'image' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:10240',
@@ -44,9 +48,9 @@ class PostController extends Controller
         ]);
 
         // Return the created post with user, and apply the anonim rule
-        $post->load('user:id,name,role,profile_image,username');
+        $post->load('user:id,name,role,profile_image,username,is_premium');
         if ($post->user && $post->user->role === 'anonim') {
-            $post->user->name = 'Anonim';
+            $post->user->name = $post->user->is_premium ? 'Anonim ⭐' : 'Anonim';
             $post->user->profile_image = null;
             $post->user->username = 'anonim';
         }
