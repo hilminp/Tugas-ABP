@@ -11,7 +11,7 @@ import Login from './pages/auth/login/Login';
 import RegisterRoleSelect from './pages/auth/register/RegisterRoleSelect';
 import RegisterAnonim from './pages/auth/register/RegisterAnonim';
 import RegisterPsikolog from './pages/auth/register/RegisterPsikolog';
-import Home from './pages/Home';
+import HomeComponentSwitcher from './pages/dashboard/HomeComponentSwitcher';
 import Profile from './pages/Profile';
 import FriendRequests from './pages/FriendRequests';
 import SearchResults from './pages/SearchResults';
@@ -49,7 +49,7 @@ function AppRoutes() {
             <Route path="/register/psikolog" element={<RegisterPsikolog />} />
 
             {/* Protected User Routes */}
-            <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+            <Route path="/home" element={<ProtectedRoute><HomeComponentSwitcher /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/search" element={<ProtectedRoute><SearchResults /></ProtectedRoute>} />
             <Route path="/friend-requests" element={<ProtectedRoute><FriendRequests /></ProtectedRoute>} />
