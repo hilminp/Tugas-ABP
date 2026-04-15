@@ -13,6 +13,7 @@ const Profile = () => {
     const [previewImage, setPreviewImage] = useState(null);
     
     const [loading, setLoading] = useState(false);
+    const [isPaying, setIsPaying] = useState(false); // <--- Add isPaying state
     const [message, setMessage] = useState({ text: '', type: '' });
     
     const fileInputRef = useRef(null);
@@ -61,6 +62,45 @@ const Profile = () => {
             });
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleTestPayment = async () => {
+        if (isPaying) return;
+        setIsPaying(true);
+        try {
+            // Memanggil route backend yang baru saja dibuat
+            const res = await api.post('/payment/token', { amount: 150000 });
+            
+            if (window.snap) {
+                window.snap.pay(res.data.snap_token, {
+                    onSuccess: function(result){ 
+                        alert("Pembayaran sukses!"); 
+                        console.log(result); 
+                        setIsPaying(false);
+                    },
+                    onPending: function(result){ 
+                        alert("Menunggu pembayaran!"); 
+                        console.log(result); 
+                        setIsPaying(false);
+                    },
+                    onError: function(result){ 
+                        alert("Pembayaran gagal!"); 
+                        console.log(result); 
+                        setIsPaying(false);
+                    },
+                    onClose: function(){ 
+                        alert('Anda menutup payment popup tanpa menyelesaikan pembayaran'); 
+                        setIsPaying(false);
+                    }
+                });
+            } else {
+                setMessage({ text: 'Midtrans script belum ter-load sempurna!', type: 'error' });
+                setIsPaying(false);
+            }
+        } catch (err) {
+            setMessage({ text: "Gagal memanggil Midtrans: " + (err.response?.data?.message || err.message), type: 'error' });
+            setIsPaying(false);
         }
     };
 
@@ -165,6 +205,30 @@ const Profile = () => {
                             </button>
                         </div>
                     </form>
+
+                    <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '40px 0 30px' }} />
+                    
+                    <div style={{ background: '#f8fbff', borderRadius: '12px', padding: '25px', border: '1px solid #e1ecf8' }}>
+                        <h3 style={{ margin: '0 0 10px', color: '#1a4371', fontSize: '16px' }}>💳 Test Integrasi Midtrans</h3>
+                        <p style={{ color: '#5b7c9f', fontSize: '13px', margin: '0 0 20px', lineHeight: '1.5' }}>
+                            Simulasi pembayaran (Top-Up / Biaya Sesi) menggunakan Snap Midtrans. 
+                            <strong>Pastikan tidak membayar menggunakan uang asli Anda sendiri secara tidak sengaja karena Anda memasukkan kunci Production!</strong>
+                        </p>
+                        <button 
+                            onClick={handleTestPayment}
+                            disabled={isPaying}
+                            style={{ width: '100%', padding: '12px', borderRadius: '8px', background: isPaying ? '#8ca9a8' : '#356765', color: '#FFF', border: 'none', fontWeight: 600, cursor: isPaying ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+                        >
+                            {isPaying ? (
+                                <>Memproses Midtrans...</>
+                            ) : (
+                                <>
+                                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>payments</span>
+                                    Test Bayar Rp 150.000
+                                </>
+                            )}
+                        </button>
+                    </div>
 
                 </div>
             </div>
