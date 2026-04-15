@@ -1,56 +1,146 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import './RegisterRoleSelect.css';
+
+/* -------------------------------------------------------
+   Small reusable helpers
+------------------------------------------------------- */
+
+/** Render a Material Symbols Outlined icon */
+const Icon = ({ name, className = '' }) => (
+    <span className={`rrs-material-icon ${className}`} aria-hidden="true">
+        {name}
+    </span>
+);
+
+/** Feature list item */
+const Feature = ({ icon, iconClass, children }) => (
+    <li className="rrs-feature-item">
+        <Icon name={icon} className={`rrs-feature-icon--${iconClass}`} />
+        {children}
+    </li>
+);
+
+/* -------------------------------------------------------
+   Main component
+------------------------------------------------------- */
 
 const RegisterRoleSelect = () => {
+    const navigate = useNavigate();
+
     return (
-        <div style={{
-            minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-            padding: '40px', background: '#FFF8EE', fontFamily: "'Poppins', sans-serif"
-        }}>
-            <div style={{ width: '100%', maxWidth: '900px', textAlign: 'center' }}>
-                <h1 style={{ fontSize: '36px', fontWeight: 700, color: '#BE5985', marginBottom: '16px' }}>
-                    Pilih Jenis Akun Anda
-                </h1>
-                <p style={{ fontSize: '18px', color: '#555', marginBottom: '48px' }}>
-                    Silakan pilih apakah Anda ingin mendaftar sebagai Psikolog atau pengguna Anonim
-                </p>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
-                    <Link to="/register/psikolog" style={{
-                        background: '#FFF', borderRadius: '24px', padding: '48px 32px', 
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.12)', textDecoration: 'none', color: 'inherit', display: 'block',
-                        transition: 'transform 0.3s ease, box-shadow 0.3s ease'
-                    }} 
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.18)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.12)'; }}
-                    >
-                        <div style={{ fontSize: '72px', marginBottom: '24px' }}>👨‍⚕️</div>
-                        <div style={{ fontSize: '28px', fontWeight: 700, color: '#BE5985', marginBottom: '12px' }}>Psikolog</div>
-                        <div style={{ fontSize: '15px', color: '#666', lineHeight: 1.6 }}>
-                            Daftar sebagai psikolog profesional. Anda perlu mengunggah STR Psikolog dan Ijazah untuk verifikasi.
-                        </div>
-                    </Link>
-                    
-                    <Link to="/register/anonim" style={{
-                        background: '#FFF', borderRadius: '24px', padding: '48px 32px', 
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.12)', textDecoration: 'none', color: 'inherit', display: 'block',
-                        transition: 'transform 0.3s ease, box-shadow 0.3s ease'
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.18)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.12)'; }}
-                    >
-                        <div style={{ fontSize: '72px', marginBottom: '24px' }}>🙋</div>
-                        <div style={{ fontSize: '28px', fontWeight: 700, color: '#BE5985', marginBottom: '12px' }}>Anonim</div>
-                        <div style={{ fontSize: '15px', color: '#666', lineHeight: 1.6 }}>
-                            Daftar sebagai pengguna anonim untuk berbagi cerita dan mendapat dukungan dari komunitas.
-                        </div>
-                    </Link>
+        <div className="rrs-page">
+
+            {/* ── Decorative overlays (absolute inside .rrs-page) ── */}
+            {/* Animated blobs handled by CSS ::before / ::after on .rrs-page */}
+            <div className="rrs-streak"      aria-hidden="true" />
+            <div className="rrs-grain-layer" aria-hidden="true" />
+
+            {/* ── Main content (z-index: 2 so it sits above blobs) ── */}
+            <main className="rrs-main" style={{ position: 'relative', zIndex: 2 }}>
+
+                {/* Brand */}
+                <div className="rrs-brand">
+                    <h1 className="rrs-brand-title">Curhatin</h1>
+                    <p className="rrs-brand-sub">Step into your digital sanctuary.</p>
                 </div>
-                
-                <Link to="/" style={{ display: 'inline-block', marginTop: '32px', color: '#BE5985', textDecoration: 'none', fontWeight: 600, fontSize: '16px' }}>
-                    ← Kembali ke Beranda
-                </Link>
-            </div>
+
+                {/* Registration path cards */}
+                <div className="rrs-grid">
+
+                    {/* ── Card: Anonim ── */}
+                    <div className="rrs-card rrs-card--anonim">
+                        <div className="rrs-card-header">
+                            <div className="rrs-icon-box rrs-icon-box--primary">
+                                <Icon name="masks" />
+                            </div>
+                            <h2 className="rrs-card-title">Anonim</h2>
+                            <p className="rrs-card-desc">
+                                Seek peace and clarity without judgment. Share your heart in a
+                                space built for absolute privacy and empathy.
+                            </p>
+                        </div>
+
+                        <div className="rrs-card-footer">
+                            <ul className="rrs-feature-list">
+                                <Feature icon="check_circle" iconClass="primary">
+                                    No real name required
+                                </Feature>
+                                <Feature icon="check_circle" iconClass="primary">
+                                    Encrypted personal diaries
+                                </Feature>
+                            </ul>
+
+                            <button
+                                className="rrs-btn rrs-btn--primary"
+                                onClick={() => navigate('/register/anonim')}
+                                type="button"
+                            >
+                                Start Your Journey
+                                <Icon name="arrow_forward" />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* ── Card: Psikolog ── */}
+                    <div className="rrs-card rrs-card--psikolog">
+                        <div className="rrs-card-header">
+                            <div className="rrs-icon-box rrs-icon-box--tertiary">
+                                <Icon name="psychology" />
+                            </div>
+                            <h2 className="rrs-card-title">Psikolog</h2>
+                            <p className="rrs-card-desc">
+                                Join our circle of professionals. Guide others through their fog
+                                with your expertise and compassionate voice.
+                            </p>
+                        </div>
+
+                        <div className="rrs-card-footer">
+                            <ul className="rrs-feature-list">
+                                <Feature icon="verified" iconClass="tertiary">
+                                    Verified professional badge
+                                </Feature>
+                                <Feature icon="verified" iconClass="tertiary">
+                                    Secure consultation portal
+                                </Feature>
+                            </ul>
+
+                            <button
+                                className="rrs-btn rrs-btn--tertiary"
+                                onClick={() => navigate('/register/psikolog')}
+                                type="button"
+                            >
+                                Apply to Guide
+                                <Icon name="assignment_ind" />
+                            </button>
+                        </div>
+                    </div>
+
+                </div>{/* /grid */}
+
+                {/* Secondary navigation */}
+                <div className="rrs-secondary-nav">
+                    <p className="rrs-signin-text">
+                        Already part of the sanctuary?
+                        <Link to="/login" className="rrs-signin-link">Sign in here</Link>
+                    </p>
+
+                    <nav className="rrs-footer-links" aria-label="Footer links">
+                        <a href="#">Safe Spaces</a>
+                        <span className="rrs-dot" aria-hidden="true" />
+                        <a href="#">Our Philosophy</a>
+                        <span className="rrs-dot" aria-hidden="true" />
+                        <a href="#">Privacy</a>
+                    </nav>
+                </div>
+
+            </main>
+
+            {/* Footer */}
+            <footer className="rrs-footer" style={{ position: 'relative', zIndex: 2 }}>
+                <p>© 2024 The Sanctuary • Intentional Design</p>
+            </footer>
+
         </div>
     );
 };
