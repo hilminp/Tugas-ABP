@@ -12,6 +12,11 @@ const AdminVerifications = () => {
     const [filter, setFilter] = useState('semua'); // semua, pending, verified
     const [searchTerm, setSearchTerm] = useState('');
 
+    // Modal state
+    const [modalConfig, setModalConfig] = useState({ isOpen: false, type: '', id: null, name: '' });
+    const [rejectReason, setRejectReason] = useState('');
+    const [modalLoading, setModalLoading] = useState(false);
+
     const fetchVerifications = async () => {
         try {
             const res = await api.get('/admin/verifications');
@@ -27,29 +32,47 @@ const AdminVerifications = () => {
         fetchVerifications();
     }, []);
 
-    const handleVerify = async (id, name) => {
-        if (!window.confirm(`Verifikasi psikolog ${name}?`)) return;
+    const openVerifyModal = (id, name) => {
+        setModalConfig({ isOpen: true, type: 'verify', id, name });
+    };
+
+    const openRejectModal = (id, name) => {
+        setModalConfig({ isOpen: true, type: 'reject', id, name });
+        setRejectReason('');
+    };
+
+    const closeModal = () => {
+        setModalConfig({ isOpen: false, type: '', id: null, name: '' });
+        setRejectReason('');
+    };
+
+    const submitVerify = async () => {
+        setModalLoading(true);
         try {
-            await api.post(`/admin/verify/${id}`);
+            await api.post(`/admin/verify/${modalConfig.id}`);
             fetchVerifications();
+            closeModal();
         } catch (err) {
             alert(err.response?.data?.message || 'Gagal memverifikasi');
+        } finally {
+            setModalLoading(false);
         }
     };
 
-    const handleReject = async (id, name) => {
-        const reason = window.prompt(`Masukkan alasan penolakan untuk ${name} (wajib diisi):`);
-        if (reason === null) return;
-        if (!reason.trim()) {
+    const submitReject = async () => {
+        if (!rejectReason.trim()) {
             alert('Alasan penolakan tidak boleh kosong.');
             return;
         }
-        
+        setModalLoading(true);
         try {
-            await api.post(`/admin/reject/${id}`, { reason: reason.trim() });
+            await api.post(`/admin/reject/${modalConfig.id}`, { reason: rejectReason.trim() });
             fetchVerifications();
+            closeModal();
         } catch (err) {
             alert(err.response?.data?.message || 'Gagal menolak');
+        } finally {
+            setModalLoading(false);
         }
     };
 
@@ -286,10 +309,10 @@ const AdminVerifications = () => {
 
                                             {u.statusType === 'pending' ? (
                                                 <div className="flex gap-3">
-                                                    <button onClick={() => handleVerify(u.id, u.name)} className="group/approve flex-1 py-3 bg-white border border-outline-variant/30 text-on-surface-variant rounded-full text-sm font-bold hover:bg-green-600 hover:text-white hover:border-green-600 hover:shadow-lg hover:-translate-y-1 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2">
+                                                    <button onClick={() => openVerifyModal(u.id, u.name)} className="group/approve flex-1 py-3 bg-white border border-outline-variant/30 text-on-surface-variant rounded-full text-sm font-bold hover:bg-green-600 hover:text-white hover:border-green-600 hover:shadow-lg hover:-translate-y-1 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2">
                                                         <span className="material-symbols-outlined text-base group-hover/approve:scale-125 transition-transform duration-300" style={{fontVariationSettings: "'FILL' 1"}}>check_circle</span> Setujui
                                                     </button>
-                                                    <button onClick={() => handleReject(u.id, u.name)} className="group/reject flex-1 py-3 border border-outline-variant/30 text-on-surface-variant rounded-full text-sm font-bold hover:bg-red-600 hover:text-white hover:border-red-600 hover:shadow-lg hover:-translate-y-1 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2">
+                                                    <button onClick={() => openRejectModal(u.id, u.name)} className="group/reject flex-1 py-3 border border-outline-variant/30 text-on-surface-variant rounded-full text-sm font-bold hover:bg-red-600 hover:text-white hover:border-red-600 hover:shadow-lg hover:-translate-y-1 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2">
                                                         <span className="material-symbols-outlined text-base group-hover/reject:rotate-90 transition-transform duration-300">cancel</span> Tolak
                                                     </button>
                                                 </div>
@@ -331,6 +354,76 @@ const AdminVerifications = () => {
                 </div>
                 )}
             </main>
+
+            {/* Confirmation Modal */}
+            {modalConfig.isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-teal-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100 opacity-100">
+                        {/* Header */}
+                        <div className={`p-6 text-white ${modalConfig.type === 'verify' ? 'bg-[#356765]' : 'bg-red-600'}`}>
+                            <div className="flex items-center gap-3">
+                                <span className="material-symbols-outlined text-3xl">
+                                    {modalConfig.type === 'verify' ? 'verified_user' : 'warning'}
+                                </span>
+                                <h3 className="text-xl font-bold">
+                                    {modalConfig.type === 'verify' ? 'Konfirmasi Persetujuan' : 'Konfirmasi Penolakan'}
+                                </h3>
+                            </div>
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-6">
+                            <p className="text-slate-700 dark:text-slate-300 mb-6">
+                                {modalConfig.type === 'verify' ? (
+                                    <>Apakah Anda yakin ingin memverifikasi psikolog <strong>{modalConfig.name}</strong>? Mereka akan mendapatkan akses penuh ke platform.</>
+                                ) : (
+                                    <>Anda akan menolak permohonan <strong>{modalConfig.name}</strong>. Silakan tuliskan alasan penolakan di bawah ini.</>
+                                )}
+                            </p>
+
+                            {modalConfig.type === 'reject' && (
+                                <div className="mb-4">
+                                    <label htmlFor="reason" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                                        Alasan Penolakan (Wajib)
+                                    </label>
+                                    <textarea
+                                        id="reason"
+                                        rows="3"
+                                        className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all text-sm resize-none"
+                                        placeholder="Beritahu pengguna alasan spesifik agar mereka bisa memperbaiki..."
+                                        value={rejectReason}
+                                        onChange={(e) => setRejectReason(e.target.value)}
+                                        autoFocus
+                                    ></textarea>
+                                </div>
+                            )}
+
+                            {/* Actions */}
+                            <div className="flex gap-3 justify-end mt-8">
+                                <button
+                                    onClick={closeModal}
+                                    disabled={modalLoading}
+                                    className="px-6 py-2.5 rounded-full font-bold text-slate-500 hover:bg-slate-100 transition-colors disabled:opacity-50"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    onClick={modalConfig.type === 'verify' ? submitVerify : submitReject}
+                                    disabled={modalLoading || (modalConfig.type === 'reject' && !rejectReason.trim())}
+                                    className={`px-6 py-2.5 rounded-full font-bold text-white shadow-lg transition-all flex items-center justify-center min-w-[120px] disabled:opacity-60 disabled:cursor-not-allowed
+                                        ${modalConfig.type === 'verify' ? 'bg-[#356765] hover:bg-teal-800 shadow-teal-900/30' : 'bg-red-600 hover:bg-red-700 shadow-red-600/30'}`}
+                                >
+                                    {modalLoading ? (
+                                        <span className="material-symbols-outlined animate-spin text-lg">autorenew</span>
+                                    ) : (
+                                        modalConfig.type === 'verify' ? 'Setujui' : 'Tolak'
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
