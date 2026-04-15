@@ -22,10 +22,10 @@ return new class extends Migration
             if (!Schema::hasColumn('users', 'ijazah_file')) {
                 $table->string('ijazah_file')->nullable()->after('str_file');
             }
+             if (!Schema::hasColumn('users', 'role')) {
+                $table->enum('role', ['anonim', 'psikolog'])->default('anonim')->after('password');
+            }
         });
-        
-        // Update role enum jika perlu
-        DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('anonim', 'psikolog') DEFAULT 'anonim'");
     }
 
     /**
