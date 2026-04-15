@@ -11,6 +11,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Http\Request;
 
 Route::get('/status', function () {
@@ -41,6 +42,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::post('/profile/update', [ProfileController::class, 'update']);
+
+    // Payments (Midtrans)
+    Route::post('/payment/token', [PaymentController::class, 'getToken']);
 
     // Friendships
     Route::post('/friend/{id}', [FriendshipController::class, 'send']);
