@@ -28,6 +28,7 @@ class User extends Authenticatable
         'is_suspended',
         'suspended_reason',
         'role',
+        'is_premium',
         'is_verified',
         'is_rejected',
         'rejected_reason',
@@ -81,6 +82,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_admin' => 'boolean',
             'is_suspended' => 'boolean',
+            'is_premium' => 'boolean',
             'is_verified' => 'boolean',
             'is_rejected' => 'boolean',
         ];

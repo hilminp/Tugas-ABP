@@ -54,4 +54,18 @@ class PaymentController extends Controller
             ], 500);
         }
     }
+
+    public function verifySuccess(Request $request)
+    {
+        $user = $request->user();
+        if ($user) {
+            $user->update(['is_premium' => true]);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Account upgraded to premium!',
+                'user' => $user
+            ]);
+        }
+        return response()->json(['error' => 'Unauthorized'], 401);
+    }
 }
