@@ -12,6 +12,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ChatbotController;
 use Illuminate\Http\Request;
 
 Route::get('/status', function () {
@@ -27,6 +28,9 @@ Route::post('/login', [SessionController::class, 'login']);
 Route::post('/reapply', [SessionController::class, 'reapply']);
 Route::post('/register/psikolog', [RegistrationController::class, 'storePsikolog']);
 Route::post('/register/anonim', [RegistrationController::class, 'storeAnonim']);
+Route::get('/chat/start', [ChatbotController::class, 'start']);
+Route::post('/chat/next', [ChatbotController::class, 'next']);
+Route::post('/chat/reset', [ChatbotController::class, 'reset']);
 
 // Protected Routes
 Route::middleware('auth:sanctum')->group(function () {
