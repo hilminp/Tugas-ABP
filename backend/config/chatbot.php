@@ -2,63 +2,58 @@
 
 return [
     'start_node' => 'start',
-    'payment_node' => 'lanjut ke pembayaran',
 
     'flow' => [
         'start' => [
             'text' => 'Kamu lagi kenapa?',
-            'options' => ['sedih', 'marah', 'overthinking', 'lelah'],
+            'options' => ['iya nih aku lagi sedih', 'aku sekarang marah banget', 'aku lagi kepikiran sesuatu', 'aku lagi cape pengen ada temen ngobrol'],
         ],
-        'sedih' => [
-            'text' => 'Aku di sini ya. Kamu nggak sendirian.',
+        'iya nih aku lagi sedih' => [
+            'text' => 'Aku di sini ya 🤍 Kamu nggak sendirian.',
             'options' => ['cerita', 'distraksi'],
         ],
-        'marah' => [
-            'text' => 'Coba tarik napas dulu ya.',
+        'aku sekarang marah banget' => [
+            'text' => 'Coba tarik napas dulu ya 😤',
             'options' => ['tenangin diri', 'curhat'],
         ],
-        'overthinking' => [
+        'aku lagi kepikiran sesuatu' => [
             'text' => 'Kepikiran apa?',
             'options' => ['masa depan', 'hubungan'],
         ],
         'lelah' => [
-            'text' => 'Kamu butuh istirahat.',
+            'text' => 'Kamu butuh istirahat 😴',
             'options' => ['tidur', 'hiburan'],
         ],
-        'cerita' => [
-            'text' => 'Coba cerita ke orang yang kamu percaya ya. Kalau kamu mau lanjut ke sesi yang lebih serius, aku bisa arahin ke pembayaran.',
-            'options' => ['lanjut ke pembayaran'],
+        'aku lagi cape pengen ada temen ngobrol' => [
+            'text' => 'Coba cerita ke orang yang kamu percaya ya 🤍',
+            'options' => [],
         ],
         'distraksi' => [
-            'text' => 'Coba nonton atau denger musik dulu. Kalau kamu merasa butuh pendampingan lebih lanjut, aku bisa arahin ke pembayaran.',
-            'options' => ['lanjut ke pembayaran'],
+            'text' => 'Coba nonton atau denger musik 🎧',
+            'options' => [],
         ],
         'tenangin diri' => [
-            'text' => 'Tarik napas 5 detik, hembuskan pelan. Kalau kamu ingin lanjut ke bantuan yang lebih intens, aku bisa arahin ke pembayaran.',
-            'options' => ['lanjut ke pembayaran'],
+            'text' => 'Tarik napas 5 detik, hembuskan pelan 🧘',
+            'options' => [],
         ],
         'curhat' => [
-            'text' => 'Aku dengerin kok. Kalau kamu mau lanjut ke sesi berbayar, aku bisa arahin ke pembayaran.',
-            'options' => ['lanjut ke pembayaran'],
+            'text' => 'Aku dengerin kok 🤍',
+            'options' => [],
         ],
         'masa depan' => [
-            'text' => 'Pelan-pelan ya, masa depan nggak harus jelas sekarang. Kalau kamu ingin dibantu lebih lanjut, aku bisa arahin ke pembayaran.',
-            'options' => ['lanjut ke pembayaran'],
+            'text' => 'Pelan-pelan ya, masa depan nggak harus jelas sekarang 🌱',
+            'options' => [],
         ],
         'hubungan' => [
-            'text' => 'Hubungan itu butuh komunikasi. Kalau kamu mau lanjut ke sesi berbayar, aku bisa arahin ke pembayaran.',
-            'options' => ['lanjut ke pembayaran'],
+            'text' => 'Hubungan itu butuh komunikasi 🤝',
+            'options' => [],
         ],
         'tidur' => [
-            'text' => 'Istirahat yang cukup ya. Kalau kamu perlu bantuan lanjutan, aku bisa arahin ke pembayaran.',
-            'options' => ['lanjut ke pembayaran'],
+            'text' => 'Istirahat yang cukup ya 😴',
+            'options' => [],
         ],
         'hiburan' => [
-            'text' => 'Coba nonton film favorit kamu dulu. Kalau kamu mau lanjut ke sesi premium, aku bisa arahin ke pembayaran.',
-            'options' => ['lanjut ke pembayaran'],
-        ],
-        'lanjut ke pembayaran' => [
-            'text' => 'Oke, aku arahin kamu ke halaman pembayaran yang sudah tersedia ya.',
+            'text' => 'Coba nonton film favorit kamu 🎬',
             'options' => [],
         ],
     ],
