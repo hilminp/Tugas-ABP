@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import PaymentButton from '../components/PaymentButton';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
 import { PSYCHOLOGIST_CATEGORIES } from '../constants/psychologistCategories';
@@ -184,6 +185,15 @@ const Home = () => {
                             <h3>Pesan Kembali Cepat</h3>
                             <p>Lanjutkan progresmu dengan konselor yang sama.</p>
                             <Link to="/messages" className="quick-return-button">Pesan Sekarang</Link>
+                        </div>
+
+                        {/* Midtrans Payment Test */}
+                        <div className="side-card" style={{ marginTop: '20px' }}>
+                            <div className="side-card-title">Top Up Saldo (Test)</div>
+                            <p style={{ fontSize: '14px', color: '#666', marginBottom: '16px' }}>
+                                Coba integrasi Midtrans Snap dengan isi saldo simulasi.
+                            </p>
+                            <PaymentButton amount={50000} />
                         </div>
                     </aside>
                 </div>
