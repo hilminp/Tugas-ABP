@@ -22,26 +22,32 @@ const Sidebar = () => {
 
     return (
         <div className="sidebar">
-            <div className="user-section" onClick={() => navigate('/profile')}>
-                <div className="user-section-content">
-                    <img 
-                        id="sidebarUserPhoto" 
-                        src={user?.profile_image ? `${STORAGE_BASE_URL}/${user.profile_image}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
-                        alt="User" 
-                    />
-                    <span>{user?.username || 'USER'}</span>
+            <div className="sidebar-brand" onClick={() => navigate('/home')}>
+                <div className="sidebar-brand-icon">A</div>
+                <div className="sidebar-brand-text">
+                    <strong>Anonim</strong>
+                    <span>Safe Space</span>
                 </div>
             </div>
-            
+
+            <div className="user-section" onClick={() => navigate('/profile')}>
+                <img
+                    id="sidebarUserPhoto"
+                    src={user?.profile_image ? `${STORAGE_BASE_URL}/${user.profile_image}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
+                    alt="User"
+                />
+                <span>@{user?.username || 'user'}</span>
+            </div>
+
             <nav className="sidebar-nav">
-                <Link to="/home"><span>🏠</span>&nbsp; Home</Link>
-                <Link to="/messages"><span>💬</span>&nbsp; Masagge</Link>
-                <Link to="#"><span>📝</span>&nbsp; Posting</Link>
-                <Link to="#"><span>✉️</span>&nbsp; Email</Link>
-                {user?.is_admin && <Link to="/admin/dashboard" style={{color: '#BE5985'}}><span>⚙️</span>&nbsp; Admin Dashboard</Link>}
+                <Link to="/home"><span>🏠</span>Beranda</Link>
+                <Link to="/home"><span>📈</span>Linimasa</Link>
+                <Link to="/messages"><span>💬</span>Pesan</Link>
+                <Link to="/friend-requests"><span>🕒</span>Riwayat</Link>
+                {user?.is_admin && <Link to="/admin/dashboard"><span>⚙️</span>Admin Dashboard</Link>}
             </nav>
-            
-            <button className="logout-btn" onClick={handleLogout}>Logout</button>
+
+            <button className="logout-btn" onClick={handleLogout}>Keluar</button>
         </div>
     );
 };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../../lib/api';
+import { PSYCHOLOGIST_CATEGORIES } from '../../../constants/psychologistCategories';
 
 const RegisterPsikolog = () => {
     const [formData, setFormData] = useState({
@@ -182,11 +183,11 @@ const RegisterPsikolog = () => {
                                         className="w-full px-4 py-2.5 rounded-full bg-white border border-[#d8c2c5]/30 focus:border-[#A46477] focus:ring-2 focus:ring-[#A46477]/20 outline-none transition-all text-[#1A1416] appearance-none cursor-pointer text-sm"
                                     >
                                         <option value="" disabled>Pilih Spesialisasi Anda</option>
-                                        <option value="kesehatan_mental">Kesehatan Mental</option>
-                                        <option value="kecemasan_stres">Kecemasan &amp; Stres</option>
-                                        <option value="hubungan_percintaan">Hubungan &amp; Percintaan</option>
-                                        <option value="keluarga">Keluarga</option>
-                                        <option value="sosial_pertemanan">Sosial &amp; Pertemanan</option>
+                                        {PSYCHOLOGIST_CATEGORIES.map((category) => (
+                                            <option key={category.value} value={category.value}>
+                                                {category.label}
+                                            </option>
+                                        ))}
                                     </select>
                                     <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-[#857376] pointer-events-none text-sm">expand_more</span>
                                 </div>
