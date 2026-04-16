@@ -4,14 +4,14 @@ import { api } from '../lib/api';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('access_token') || null);
-  const [loading, setLoading] = useState(Boolean(localStorage.getItem('access_token')));
+  const [token, setToken] = useState(sessionStorage.getItem('access_token') || null);
+  const [loading, setLoading] = useState(Boolean(sessionStorage.getItem('access_token')));
 
   const logout = () => {
     setUser(null);
     setToken(null);
     setLoading(false);
-    localStorage.removeItem('access_token');
+    sessionStorage.removeItem('access_token');
   };
 
   const login = (userData, accessToken) => {
@@ -26,12 +26,12 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (!token) {
-      localStorage.removeItem('access_token');
+      sessionStorage.removeItem('access_token');
       return;
     }
 
     let isMounted = true;
-    localStorage.setItem('access_token', token);
+    sessionStorage.setItem('access_token', token);
 
     api
       .get('/profile')

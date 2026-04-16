@@ -6,7 +6,7 @@ import { api } from './lib/api';
 import AppLoadingScreen from './components/AppLoadingScreen';
 
 // Pages
-import Welcome from './pages/Welcome';
+import Welcome from './pages/welcome/Welcome';
 import Login from './pages/auth/login/Login';
 import RegisterRoleSelect from './pages/auth/register/RegisterRoleSelect';
 import RegisterAnonim from './pages/auth/register/RegisterAnonim';
