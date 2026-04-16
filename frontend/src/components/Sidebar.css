@@ -9,7 +9,7 @@
     flex-direction: column;
     padding: 20px 14px;
     border-right: 1px solid #f0dde7;
-    z-index: 100;
+    z-index: 50;
 }
 
 .sidebar-brand {

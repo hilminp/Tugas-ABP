@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, STORAGE_BASE_URL } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
@@ -9,6 +9,19 @@ const AdminDashboard = () => {
     const navigate = useNavigate();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showNotif, setShowNotif] = useState(false);
+    const [txPage, setTxPage] = useState(0);
+    const notifRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (notifRef.current && !notifRef.current.contains(event.target)) {
+                setShowNotif(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     useEffect(() => {
         const fetchDashboard = async () => {
@@ -90,7 +103,7 @@ const AdminDashboard = () => {
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 flex flex-col h-screen overflow-y-auto">
+            <main className="flex-1 flex flex-col overflow-y-auto">
                 {/* TopNavBar */}
                 <header className="w-full docked top-0 flex justify-between items-center px-8 py-3 bg-teal-50/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-teal-100/20 sticky z-20">
                     <div className="flex items-center gap-4 flex-1">
@@ -100,10 +113,57 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                     <div className="flex items-center gap-6">
+                        {/* Notification Bell */}
+                        <div className="relative" ref={notifRef}>
+                            <button 
+                                onClick={() => setShowNotif(!showNotif)}
+                                className="relative p-2 rounded-full hover:bg-teal-100/50 text-teal-700 dark:text-teal-300 transition-colors"
+                            >
+                                <span className="material-symbols-outlined">notifications</span>
+                                {data?.pendingCount > 0 && (
+                                    <span className="absolute top-1 right-1 flex h-3 w-3">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-teal-50 dark:border-slate-900"></span>
+                                    </span>
+                                )}
+                            </button>
+
+                            {/* Notification Dropdown */}
+                            {showNotif && (
+                                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-teal-100 dark:border-slate-700 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="px-4 py-3 border-b border-teal-50 dark:border-slate-700 bg-teal-50/50 dark:bg-slate-800/50 flex justify-between items-center">
+                                        <h3 className="font-bold text-sm text-teal-900 dark:text-teal-100">Notifikasi</h3>
+                                        {data?.pendingCount > 0 && (
+                                            <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-full">{data.pendingCount} Baru</span>
+                                        )}
+                                    </div>
+                                    <div className="max-h-[300px] overflow-y-auto">
+                                        {!data || data.pendingCount === 0 || !data.pendingPsikolog ? (
+                                            <div className="px-4 py-6 text-center text-sm text-slate-500">
+                                                Tidak ada notifikasi baru
+                                            </div>
+                                        ) : (
+                                            data.pendingPsikolog.slice(0, 5).map(p => (
+                                                <div key={p.id} onClick={() => {navigate('/admin/verifications'); setShowNotif(false)}} className="px-4 py-3 border-b last:border-0 border-teal-50 dark:border-slate-700 hover:bg-teal-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors">
+                                                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 line-clamp-1">{p.name} <span className="font-normal text-slate-500">mendaftar sebagai Psikolog.</span></p>
+                                                    <p className="text-[10px] text-teal-600 dark:text-teal-400 font-bold mt-1 uppercase">Menunggu Verifikasi</p>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                    {data?.pendingCount > 0 && (
+                                        <div onClick={() => {navigate('/admin/verifications'); setShowNotif(false)}} className="px-4 py-2 bg-teal-50 dark:bg-slate-800 text-center text-xs font-bold text-teal-700 dark:text-teal-400 cursor-pointer hover:bg-teal-100 dark:hover:bg-slate-700 transition-colors">
+                                            Lihat Semua Verifikasi
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
                         <div className="flex items-center gap-3 border-l border-teal-100/20 pl-6">
                             <div className="text-right">
-                                <p className="text-sm font-semibold text-teal-900">{user?.name || 'Admin Utama'}</p>
-                                <p className="text-xs text-teal-600/70">Administrator</p>
+                                <p className="text-sm font-semibold text-teal-900 dark:text-teal-50">{user?.name || 'Admin Utama'}</p>
+                                <p className="text-xs text-teal-700/80 dark:text-teal-200/60">Administrator</p>
                             </div>
                             <img alt="Administrator Profile" className="w-10 h-10 rounded-full object-cover border-2 border-primary-container shadow-sm" src={user?.profile_image ? `${STORAGE_BASE_URL}/${user.profile_image}` : "https://lh3.googleusercontent.com/aida-public/AB6AXuBm481M9tNd-xc5xbiKH6vBwwqPvECsmTBkvCgI5rCPIXYwst6G3CQRvLcybInnUcEpRcwg6rzK3ZDvMbk9oui86445Wilkp_iZLWEHc3cRPllF6klyfsTKO4xDngl3c-P94-0rtEcGNpcOxOtReGlNRLibuBOVnt93rgsi8epyI8mxPf8_v_VkeJhadFWtFTYojBYiOI-IREdst4dtsF8T6PRhP4Uccq16_vAOQiBC0OtqmwijX1DQonTPlvJLxTobFuX-J11qlGw"} />
                         </div>
@@ -125,7 +185,7 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 ) : (
-                <div className="p-8 max-w-7xl mx-auto w-full">
+                <div className="p-8 w-full">
                     {/* Welcome Header */}
                     <div className="mb-10">
                         <h2 className="text-3xl font-bold tracking-tight text-on-background">Dashboard Ringkasan</h2>
@@ -152,7 +212,7 @@ const AdminDashboard = () => {
                                 <div className="p-2 bg-tertiary/10 rounded-lg">
                                     <span className="material-symbols-outlined text-tertiary">psychology</span>
                                 </div>
-                                <span className="text-xs font-bold text-tertiary bg-tertiary-container/30 px-2 py-1 rounded-full">Verf</span>
+                                <span className="text-xs font-bold text-tertiary bg-tertiary-container/30 px-2 py-1 rounded-full">Verifikasi</span>
                             </div>
                             <div className="mt-8">
                                 <p className="text-sm text-on-surface-variant font-medium">Psikolog Terdaftar</p>
@@ -165,10 +225,10 @@ const AdminDashboard = () => {
                                 <div className="p-2 bg-secondary/10 rounded-lg">
                                     <span className="material-symbols-outlined text-secondary">person_off</span>
                                 </div>
-                                <span className="text-xs font-bold text-on-secondary-container bg-secondary-container px-2 py-1 rounded-full">Anon</span>
+                                <span className="text-xs font-bold text-on-secondary-container bg-secondary-container px-2 py-1 rounded-full">Anonim</span>
                             </div>
                             <div className="mt-8">
-                                <p className="text-sm text-on-surface-variant font-medium">Pengguna Anonim</p>
+                                <p className="text-sm text-on-surface-variant font-medium">Anonim & Premium</p>
                                 <h3 className="text-4xl font-black text-on-background mt-1">{data.totalAnonim}</h3>
                             </div>
                         </div>
@@ -234,7 +294,11 @@ const AdminDashboard = () => {
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="py-4 text-on-surface-variant capitalize">{u.role}</td>
+                                                <td className="py-4 text-on-surface-variant capitalize">
+                                                    {u.is_admin ? 'Administrator' : u.is_premium ? (
+                                                        <span className="text-[#8b6508] font-bold">Premium</span>
+                                                    ) : u.role}
+                                                </td>
                                                 <td className="py-4">
                                                     {u.is_suspended ? (
                                                         <span className="px-2 py-1 rounded-full bg-red-100 text-red-600 text-[10px] font-bold uppercase tracking-wide">Ditangguhkan</span>
@@ -256,73 +320,97 @@ const AdminDashboard = () => {
                             </div>
                         </div>
 
-                        {/* Medium Section: Psychologist Verification List */}
+                        {/* Medium Section: Aktivitas Keuangan Premium */}
                         <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
-                            <div className="bg-[#cce8e6] rounded-[2rem] p-6 shadow-sm flex-1">
-                                <div className="flex justify-between items-center mb-6 pl-2 pr-1">
-                                    <h4 className="text-[19px] font-bold text-[#143837]">Verifikasi Psikolog</h4>
-                                    {data.pendingCount > 0 && (
-                                        <span className="bg-[#b91c1c] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase">PENDING</span>
-                                    )}
+                            <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-slate-900 dark:to-slate-800 rounded-[2rem] p-8 shadow-sm flex-1 relative overflow-hidden group border border-amber-200/50">
+                                {/* Decorative elements */}
+                                <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-400/20 rounded-full blur-3xl group-hover:bg-amber-400/30 transition-all duration-700"></div>
+                                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-orange-400/20 rounded-full blur-3xl"></div>
+                                
+                                <div className="flex justify-between items-center mb-6 relative z-10">
+                                    <h4 className="text-[19px] font-bold text-amber-900 dark:text-amber-100">Keuangan Premium</h4>
+                                    <div className="w-10 h-10 rounded-full bg-amber-200/60 flex items-center justify-center text-amber-700 shadow-inner">
+                                        <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>workspace_premium</span>
+                                    </div>
                                 </div>
-                                <div className="space-y-4">
-                                    {data.pendingPsikolog?.length === 0 ? (
-                                        <div className="text-center py-6 text-on-surface-variant font-medium">Tidak ada antrian</div>
-                                    ) : (
-                                        data.pendingPsikolog?.slice(0,4).map(p => {
-                                            // Format relative time optionally, but let's just use date simply
-                                            const joinDate = new Date(p.created_at).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' });
-                                            
-                                            return (
-                                                <div key={p.id} className="flex gap-4 p-5 rounded-[2rem] bg-white shadow-sm hover:shadow-md transition-shadow">
-                                                    {p.profile_image ? (
-                                                        <img src={`${STORAGE_BASE_URL}/${p.profile_image}`} alt={p.name} className="w-[60px] h-[60px] rounded-full object-cover border border-slate-100 flex-shrink-0" />
-                                                    ) : (
-                                                        <div className="w-[60px] h-[60px] rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xl border border-slate-200 flex-shrink-0">
-                                                            {p.name?.charAt(0).toUpperCase()}
-                                                        </div>
-                                                    )}
-                                                    
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex justify-between items-start relative">
-                                                            <div className="min-w-0 pr-10">
-                                                                <p className="text-[15px] font-bold text-slate-800 line-clamp-1">{p.name}</p>
-                                                                <p className="text-[9px] font-bold text-[#A46477] uppercase tracking-wider bg-[#ffd9e2]/30 px-1 inline-block rounded">{getSpesialisasiLabel(p.spesialisasi)}</p>
-                                                            </div>
-                                                            <div className="flex flex-col items-end gap-1 shrink-0">
-                                                                <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap">{joinDate}</span>
-                                                                <Link to="/admin/verifications" className="w-8 h-8 rounded-full bg-teal-50 flex items-center justify-center text-teal-600 hover:bg-teal-600 hover:text-white transition-all shadow-sm group/view mt-1" title="Lihat Detail Verifikasi">
-                                                                    <span className="material-symbols-outlined text-xl">more_vert</span>
-                                                                </Link>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex gap-3 mt-3">
-                                                            <button 
-                                                                onClick={() => handleVerify(p.id)} 
-                                                                className="text-[12px] font-bold bg-[#356765] text-white px-5 py-1.5 rounded-full hover:bg-[#285b59] transition-colors"
-                                                            >
-                                                                Setujui
-                                                            </button>
-                                                            <button 
-                                                                onClick={() => handleReject(p.id)} 
-                                                                className="text-[12px] font-bold bg-[#fce5e5] text-[#b91c1c] px-6 py-1.5 rounded-full hover:bg-[#fecaca] transition-colors"
-                                                            >
-                                                                Tolak
-                                                            </button>
-                                                        </div>
+
+                                <div className="space-y-6 relative z-10">
+                                    {/* Monthly Revenue */}
+                                    <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm rounded-2xl p-5 border border-amber-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
+                                        <p className="text-[11px] text-amber-700/70 dark:text-amber-200/50 font-black uppercase tracking-widest mb-1">Estimasi Pendapatan</p>
+                                        <h2 className="text-3xl font-black text-amber-600 dark:text-amber-500">
+                                            {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(data.premiumRevenue || 0)}
+                                        </h2>
+                                    </div>
+
+                                    {/* Quick Stats */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm rounded-2xl p-4 border border-amber-100 dark:border-slate-700 text-center hover:-translate-y-1 transition-transform">
+                                            <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{data.totalPremiumUsers || 0}</p>
+                                            <p className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-black tracking-widest mt-1">Berlangganan</p>
+                                        </div>
+                                        <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm rounded-2xl p-4 border border-amber-100 dark:border-slate-700 text-center hover:-translate-y-1 transition-transform">
+                                            <p className="text-2xl font-black text-slate-800 dark:text-slate-100">100%</p>
+                                            <p className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-black tracking-widest mt-1">Sukses Rate</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Latest Transactions */}
+                                    <div className="pt-5 border-t border-amber-200/50 dark:border-slate-700/50 mt-2">
+                                        <div className="flex justify-between items-center mb-3">
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-[10px] font-black text-amber-800/60 dark:text-amber-200/50 uppercase tracking-widest">Transaksi Terakhir</p>
+                                                {data.latestPremiumUsers?.length > 3 && (
+                                                    <div className="flex items-center bg-amber-100/50 dark:bg-amber-900/20 rounded-full px-1 py-0.5 ml-1">
+                                                        <button 
+                                                            disabled={txPage === 0}
+                                                            onClick={() => setTxPage(p => p - 1)}
+                                                            className="p-0.5 hover:text-amber-600 dark:hover:text-amber-400 disabled:opacity-30 disabled:hover:text-inherit transition-colors"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[14px]">chevron_left</span>
+                                                        </button>
+                                                        <div className="w-[1px] h-2 bg-amber-800/20 dark:bg-amber-200/20 mx-0.5"></div>
+                                                        <button 
+                                                            disabled={(txPage + 1) * 3 >= data.latestPremiumUsers.length}
+                                                            onClick={() => setTxPage(p => p + 1)}
+                                                            className="p-0.5 hover:text-amber-600 dark:hover:text-amber-400 disabled:opacity-30 disabled:hover:text-inherit transition-colors"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                                                        </button>
                                                     </div>
+                                                )}
+                                            </div>
+                                            {data.totalPremiumUsers > 3 && (
+                                                <Link to="/admin/users" className="text-amber-600 dark:text-amber-400 hover:translate-x-1 transition-transform inline-flex items-center gap-1 group/all" title="Lihat semua transaksi">
+                                                    <span className="text-[9px] font-bold opacity-0 group-hover/all:opacity-100 transition-opacity">Kelola</span>
+                                                    <span className="material-symbols-outlined text-sm font-bold">manage_accounts</span>
+                                                </Link>
+                                            )}
+                                        </div>
+                                        <div className="space-y-1 relative min-h-[120px]">
+                                            {data.latestPremiumUsers && data.latestPremiumUsers.length > 0 ? (
+                                                <div key={txPage} className="animate-in fade-in slide-in-from-right-2 duration-300">
+                                                    {data.latestPremiumUsers.slice(txPage * 3, (txPage * 3) + 3).map(u => (
+                                                    <div key={u.id} className="flex items-center justify-between group/tx hover:bg-white/40 dark:hover:bg-slate-800/40 p-2 -mx-2 rounded-lg transition-colors">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-sm">
+                                                                <span className="material-symbols-outlined text-[16px]">payments</span>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-tight">@{u.username || u.name}</p>
+                                                                <p className="text-[9px] text-slate-500 font-medium">Upgrade Baru (Rp 15.000)</p>
+                                                            </div>
+                                                        </div>
+                                                        <span className="text-[10px] font-black text-emerald-600">Lunas</span>
+                                                    </div>
+                                                    ))}
                                                 </div>
-                                            );
-                                        })
-                                    )}
+                                            ) : (
+                                                <p className="text-[11px] text-slate-500 font-medium italic">Belum ada transaksi premium yang masuk.</p>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
-                                {data.pendingCount > 4 && (
-                                    <Link to="/admin/verifications">
-                                        <button className="w-full mt-6 py-3 border-2 border-[#95b9b8] text-[#356765] text-sm font-bold rounded-full hover:bg-white transition-colors">
-                                            Lihat {data.pendingCount - 4} Lainnya
-                                        </button>
-                                    </Link>
-                                )}
                             </div>
                         </div>
 

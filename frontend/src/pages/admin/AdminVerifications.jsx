@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { api, STORAGE_BASE_URL } from '../../lib/api';
@@ -11,6 +11,18 @@ const AdminVerifications = () => {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('semua'); // semua, pending, verified
     const [searchTerm, setSearchTerm] = useState('');
+    const [showNotif, setShowNotif] = useState(false);
+    const notifRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (notifRef.current && !notifRef.current.contains(event.target)) {
+                setShowNotif(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     // Modal state
     const [modalConfig, setModalConfig] = useState({ isOpen: false, type: '', id: null, name: '' });
@@ -124,31 +136,31 @@ const AdminVerifications = () => {
             `}</style>
             
             {/* SideNavBar */}
-            <aside className="h-screen w-64 docked left-0 bg-teal-50 dark:bg-slate-950 flex flex-col h-full border-r border-teal-100/10 shrink-0 sticky top-0">
-                <div className="p-8">
-                    <h1 className="text-lg font-black text-teal-900 dark:text-teal-50 tracking-tight">The Sanctuary</h1>
-                    <p className="text-xs font-medium text-teal-700/60 dark:text-teal-300/40 uppercase tracking-widest mt-1">Admin Console</p>
+            <aside className="h-screen w-64 docked left-0 flex flex-col h-full border-r border-teal-100/10 bg-teal-50 dark:bg-slate-950 font-plus-jakarta text-base shrink-0">
+                <div className="px-6 py-8">
+                    <h1 className="text-lg font-black text-teal-900 dark:text-teal-50">The Sanctuary</h1>
+                    <p className="text-xs text-teal-700/60 dark:text-teal-300/40 uppercase tracking-widest mt-1">Admin Console</p>
                 </div>
                 <nav className="flex-1 px-4 space-y-2">
-                    <Link to="/admin/dashboard" className="flex items-center gap-3 px-4 py-3 text-teal-700/60 dark:text-teal-300/40 hover:bg-teal-100/40 transition-all rounded-lg">
+                    <Link to="/admin/dashboard" className="flex items-center gap-3 px-4 py-3 text-teal-700/60 dark:text-teal-300/40 hover:bg-teal-100/40 dark:hover:bg-teal-800/20 transition-all rounded-lg">
                         <span className="material-symbols-outlined">dashboard</span>
-                        <span className="font-medium">Dashboard</span>
+                        <span>Dashboard</span>
                     </Link>
-                    <Link to="/admin/users" className="flex items-center gap-3 px-4 py-3 text-teal-700/60 dark:text-teal-300/40 hover:bg-teal-100/40 transition-all rounded-lg group">
+                    <Link to="/admin/users" className="flex items-center gap-3 px-4 py-3 text-teal-700/60 dark:text-teal-300/40 hover:bg-teal-100/40 dark:hover:bg-teal-800/20 transition-all rounded-lg group">
                         <span className="material-symbols-outlined">groups</span>
-                        <span className="font-medium">Kelola Pengguna</span>
+                        <span>Kelola Pengguna</span>
                     </Link>
-                    <Link to="/admin/verifications" className="flex items-center gap-3 px-4 py-3 text-[#A46477] font-bold border-r-4 border-[#A46477] bg-teal-100/20 rounded-l-lg active:translate-x-1 duration-150">
+                    <Link to="/admin/verifications" className="flex items-center gap-3 px-4 py-3 text-[#A46477] font-bold border-r-4 border-[#A46477] bg-teal-100/20 active:translate-x-1 duration-150 rounded-l-lg">
                         <span className="material-symbols-outlined">verified_user</span>
-                        <span className="font-medium">Verifikasi</span>
+                        <span>Verifikasi</span>
                     </Link>
                 </nav>
-                <div className="p-6 border-t border-teal-100/10">
-                    <button onClick={() => navigate('/home')} className="w-full py-3 bg-[#A46477] text-white rounded-full font-bold text-sm shadow-lg shadow-[#A46477]/20 hover:opacity-90 transition-opacity">
+                <div className="px-4 py-6 border-t border-teal-100/10">
+                    <button onClick={() => navigate('/home')} className="w-full bg-[#A46477] text-white py-3 rounded-full font-bold text-sm mb-6 shadow-lg shadow-[#A46477]/20 active:scale-95 transition-transform">
                         Kembali ke Aplikasi
                     </button>
-                    <div className="mt-6 space-y-2">
-                        <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-2 text-teal-700/60 dark:text-teal-300/40 text-sm hover:bg-teal-100/40 rounded-lg transition-colors">
+                    <div className="space-y-1">
+                        <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-2 text-teal-700/60 dark:text-teal-300/40 hover:bg-teal-100/40 transition-all rounded-lg text-sm">
                             <span className="material-symbols-outlined text-sm">logout</span>
                             <span>Keluar</span>
                         </button>
@@ -157,30 +169,75 @@ const AdminVerifications = () => {
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 flex flex-col h-screen overflow-y-auto silk-texture">
+            <main className="flex-1 flex flex-col overflow-y-auto silk-texture">
                 {/* TopNavBar */}
-                <header className="bg-teal-50/80 dark:bg-slate-900/80 backdrop-blur-xl w-full sticky top-0 z-40 flex justify-between items-center px-8 py-3 border-b border-teal-100/20">
-                    <div className="flex items-center gap-6 w-1/2">
-                        <div className="relative w-full max-w-md">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-teal-600/70">search</span>
+                <header className="w-full docked top-0 flex justify-between items-center px-8 py-3 bg-teal-50/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-teal-100/20 sticky z-20">
+                    <div className="flex items-center gap-4 flex-1">
+                        <div className="relative w-64">
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-teal-600/70 text-sm">search</span>
                             <input 
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 bg-teal-100/30 border-none rounded-full text-sm focus:ring-2 focus:ring-teal-200 text-teal-900 placeholder-teal-600/50" 
-                                placeholder="Cari nama psikolog..." 
-                                type="text"
+                                className="w-full bg-teal-100/50 border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-teal-600/50" 
+                                placeholder="Cari data..." 
+                                type="text" 
                             />
                         </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-3 ml-4">
+                    <div className="flex items-center gap-6">
+                        {/* Notification Bell */}
+                        <div className="relative" ref={notifRef}>
+                            <button 
+                                onClick={() => setShowNotif(!showNotif)}
+                                className="relative p-2 rounded-full hover:bg-teal-100/50 text-teal-700 dark:text-teal-300 transition-colors"
+                            >
+                                <span className="material-symbols-outlined">notifications</span>
+                                {data?.pendingCount > 0 && (
+                                    <span className="absolute top-1 right-1 flex h-3 w-3">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-teal-50 dark:border-slate-900"></span>
+                                    </span>
+                                )}
+                            </button>
+
+                            {/* Notification Dropdown */}
+                            {showNotif && (
+                                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-teal-100 dark:border-slate-700 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="px-4 py-3 border-b border-teal-50 dark:border-slate-700 bg-teal-50/50 dark:bg-slate-800/50 flex justify-between items-center">
+                                        <h3 className="font-bold text-sm text-teal-900 dark:text-teal-100">Notifikasi</h3>
+                                        {data?.pendingCount > 0 && (
+                                            <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-full">{data.pendingCount} Baru</span>
+                                        )}
+                                    </div>
+                                    <div className="max-h-[300px] overflow-y-auto">
+                                        {!data || data.pendingCount === 0 || !data.pendingPsikolog ? (
+                                            <div className="px-4 py-6 text-center text-sm text-slate-500">
+                                                Tidak ada notifikasi baru
+                                            </div>
+                                        ) : (
+                                            data.pendingPsikolog.slice(0, 5).map(p => (
+                                                <div key={p.id} onClick={() => {navigate('/admin/verifications'); setShowNotif(false)}} className="px-4 py-3 border-b last:border-0 border-teal-50 dark:border-slate-700 hover:bg-teal-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors">
+                                                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 line-clamp-1">{p.name} <span className="font-normal text-slate-500">mendaftar sebagai Psikolog.</span></p>
+                                                    <p className="text-[10px] text-teal-600 dark:text-teal-400 font-bold mt-1 uppercase">Menunggu Verifikasi</p>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                    {data?.pendingCount > 0 && (
+                                        <div onClick={() => {navigate('/admin/verifications'); setShowNotif(false)}} className="px-4 py-2 bg-teal-50 dark:bg-slate-800 text-center text-xs font-bold text-teal-700 dark:text-teal-400 cursor-pointer hover:bg-teal-100 dark:hover:bg-slate-700 transition-colors">
+                                            Lihat Semua Verifikasi
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex items-center gap-3 border-l border-teal-100/20 pl-6">
                             <div className="text-right">
-                                <p className="text-sm font-bold text-teal-900">{me?.name || 'Admin'}</p>
-                                <p className="text-[10px] text-teal-600 uppercase tracking-widest">Administrator</p>
+                                <p className="text-sm font-semibold text-teal-900 dark:text-teal-50">{me?.name || 'Admin Utama'}</p>
+                                <p className="text-xs text-teal-700/80 dark:text-teal-200/60">Administrator</p>
                             </div>
-                            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container shadow-sm">
-                                <img alt="Administrator Profile" className="w-full h-full object-cover" src={me?.profile_image ? `${STORAGE_BASE_URL}/${me.profile_image}` : "https://lh3.googleusercontent.com/aida-public/AB6AXuCAviLUwwa4BUjMc5XWOz6n6tszkTPOAmRjBf29KoW44KKBq4UlndvQDAUVpohqW35gJMKMi2NUEbZnbx56tkOqV8-aaBQdFvde_wa2rd2tEUdfluqOZJ-YA332kUEdQllyKX_xXGEdYjQ6Ll0CyP4hc8O6zkDl6L20aByFzIM9Pvr7HDl5K8r-EFVGleSVwiJIpnHe-uyL2Zi-xYKes96y_yL9Z2SGMROGqXwWFm_wTwpfecKOiTKqLNfObq4jBw8AJkWJ-rORsL4"} />
-                            </div>
+                            <img alt="Administrator Profile" className="w-10 h-10 rounded-full object-cover border-2 border-primary-container shadow-sm" src={me?.profile_image ? `${STORAGE_BASE_URL}/${me.profile_image}` : "https://lh3.googleusercontent.com/aida-public/AB6AXuBm481M9tNd-xc5xbiKH6vBwwqPvECsmTBkvCgI5rCPIXYwst6G3CQRvLcybInnUcEpRcwg6rzK3ZDvMbk9oui86445Wilkp_iZLWEHc3cRPllF6klyfsTKO4xDngl3c-P94-0rtEcGNpcOxOtReGlNRLibuBOVnt93rgsi8epyI8mxPf8_v_VkeJhadFWtFTYojBYiOI-IREdst4dtsF8T6PRhP4Uccq16_vAOQiBC0OtqmwijX1DQonTPlvJLxTobFuX-J11qlGw"} />
                         </div>
                     </div>
                 </header>
@@ -201,7 +258,7 @@ const AdminVerifications = () => {
                         </div>
                     </div>
                 ) : (
-                <div className="p-10 max-w-7xl mx-auto w-full">
+                <div className="p-10 w-full">
                     {/* Header Section */}
                     <div className="mb-12">
                         <h2 className="text-4xl font-extrabold text-on-background tracking-tight mb-2">Verifikasi Psikolog</h2>
@@ -389,7 +446,7 @@ const AdminVerifications = () => {
                                     <textarea
                                         id="reason"
                                         rows="3"
-                                        className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all text-sm resize-none"
+                                        className="w-full p-3 text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all text-sm resize-none"
                                         placeholder="Beritahu pengguna alasan spesifik agar mereka bisa memperbaiki..."
                                         value={rejectReason}
                                         onChange={(e) => setRejectReason(e.target.value)}
