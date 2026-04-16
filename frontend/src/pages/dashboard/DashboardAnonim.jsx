@@ -15,6 +15,7 @@ const DashboardAnonim = () => {
     const [image, setImage] = useState(null);
     const [loading, setLoading] = useState(false);
     const [isPaying, setIsPaying] = useState(false);
+    const [paymentStatusModal, setPaymentStatusModal] = useState({ isOpen: false, type: '', message: '' });
 
     useEffect(() => {
         fetchPosts();
@@ -66,7 +67,7 @@ const DashboardAnonim = () => {
             if (window.snap) {
                 window.snap.pay(res.data.snap_token, {
                     onSuccess: async function(result){ 
-                        alert("Pembayaran sukses! Akun Anda kini Premium."); 
+                        setPaymentStatusModal({ isOpen: true, type: 'success', message: "Pembayaran sukses! Akun Anda kini Premium." }); 
                         try {
                             const successRes = await api.post('/payment/success');
                             if (successRes.data.user) {
@@ -76,24 +77,24 @@ const DashboardAnonim = () => {
                         setIsPaying(false);
                     },
                     onPending: function(result){ 
-                        alert("Menunggu pembayaran!"); 
+                        setPaymentStatusModal({ isOpen: true, type: 'warning', message: "Menunggu konfirmasi pembayaran." }); 
                         setIsPaying(false);
                     },
                     onError: function(result){ 
-                        alert("Pembayaran gagal!"); 
+                        setPaymentStatusModal({ isOpen: true, type: 'error', message: "Transaksi pembayaran Anda gagal diproses." }); 
                         setIsPaying(false);
                     },
                     onClose: function(){ 
-                        alert('Anda menutup payment popup tanpa menyelesaikan pembayaran'); 
+                        setPaymentStatusModal({ isOpen: true, type: 'info', message: 'Anda menutup jendela pembayaran tanpa menyelesaikan transaksi.' }); 
                         setIsPaying(false);
                     }
                 });
             } else {
-                alert('Midtrans script belum ter-load sempurna!');
+                setPaymentStatusModal({ isOpen: true, type: 'error', message: 'Sistem pembayaran belum termuat sempurna. Coba lagi.' });
                 setIsPaying(false);
             }
         } catch (err) {
-            alert("Gagal memanggil Midtrans: " + (err.response?.data?.message || err.message));
+            setPaymentStatusModal({ isOpen: true, type: 'error', message: "Gagal memanggil sistem pembayaran: " + (err.response?.data?.message || err.message) });
             setIsPaying(false);
         }
     };
@@ -269,8 +270,47 @@ const DashboardAnonim = () => {
                         </button>
                     </div>
                 )}
-            </div>
-            </div>
+                </div> {/* relative z-10 */}
+            </div> {/* main-container */}
+            {paymentStatusModal.isOpen && (
+                <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity" onClick={() => setPaymentStatusModal({ isOpen: false, type: '', message: '' })}></div>
+                    <div className="relative bg-white rounded-3xl w-full max-w-sm p-8 shadow-2xl animate-in fade-in zoom-in duration-300 flex flex-col items-center text-center">
+                        <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-inner
+                            ${paymentStatusModal.type === 'success' ? 'bg-emerald-100 text-emerald-600' : 
+                              paymentStatusModal.type === 'error' ? 'bg-red-100 text-red-600' : 
+                              paymentStatusModal.type === 'warning' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'}`}>
+                            <span className="material-symbols-outlined text-4xl" style={{fontVariationSettings: "'FILL' 1"}}>
+                                {paymentStatusModal.type === 'success' ? 'check_circle' : 
+                                 paymentStatusModal.type === 'error' ? 'cancel' : 
+                                 paymentStatusModal.type === 'warning' ? 'pending_actions' : 'info'}
+                            </span>
+                        </div>
+                        <h3 className="text-2xl font-black text-slate-800 mb-2 tracking-tight">
+                            {paymentStatusModal.type === 'success' ? 'Berhasil!' : 
+                             paymentStatusModal.type === 'error' ? 'Gagal' : 
+                             paymentStatusModal.type === 'warning' ? 'Menunggu' : 'Informasi'}
+                        </h3>
+                        <p className="text-slate-500 mb-8 font-medium leading-relaxed">{paymentStatusModal.message}</p>
+                        <button 
+                            onClick={() => setPaymentStatusModal({ isOpen: false, type: '', message: '' })}
+                            className="w-full py-3.5 rounded-full font-bold text-white shadow-lg transition-all hover:-translate-y-1 active:scale-95"
+                            style={{
+                                backgroundColor: paymentStatusModal.type === 'success' ? '#10b981' : 
+                                                 paymentStatusModal.type === 'error' ? '#ef4444' : 
+                                                 paymentStatusModal.type === 'warning' ? '#f59e0b' : '#3b82f6',
+                                boxShadow: `0 10px 15px -3px ${
+                                                 paymentStatusModal.type === 'success' ? 'rgba(16, 185, 129, 0.3)' : 
+                                                 paymentStatusModal.type === 'error' ? 'rgba(239, 68, 68, 0.3)' : 
+                                                 paymentStatusModal.type === 'warning' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(59, 130, 246, 0.3)'
+                                }`
+                            }}
+                        >
+                            Mengerti
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

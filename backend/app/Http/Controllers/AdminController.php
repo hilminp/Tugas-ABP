@@ -17,9 +17,13 @@ class AdminController extends Controller
         $pendingCount = User::where('role', 'psikolog')->where('is_admin', false)->where('is_verified', false)->where('is_rejected', false)->count();
         $pendingPsikolog = User::where('role', 'psikolog')->where('is_admin', false)->where('is_verified', false)->where('is_rejected', false)->latest()->get();
         $totalSuspended = User::where('is_suspended', true)->count();
-        $recentUsers = User::latest()->take(10)->get();
+        $recentUsers = User::latest()->take(5)->get();
+        
+        $totalPremiumUsers = User::where('is_premium', true)->count();
+        $premiumRevenue = $totalPremiumUsers * 15000;
+        $latestPremiumUsers = User::where('is_premium', true)->latest('updated_at')->take(5)->get();
 
-        return response()->json(compact('totalUsers', 'totalPsikolog', 'totalAnonim', 'pendingCount', 'pendingPsikolog', 'totalSuspended', 'recentUsers'));
+        return response()->json(compact('totalUsers', 'totalPsikolog', 'totalAnonim', 'pendingCount', 'pendingPsikolog', 'totalSuspended', 'recentUsers', 'totalPremiumUsers', 'premiumRevenue', 'latestPremiumUsers'));
     }
 
     public function verifications()
@@ -60,7 +64,9 @@ class AdminController extends Controller
     {
         $users = User::latest()->get();
         $me = $request->user();
-        return response()->json(compact('users', 'me'));
+        $pendingCount = User::where('role', 'psikolog')->where('is_admin', false)->where('is_verified', false)->where('is_rejected', false)->count();
+        $pendingPsikolog = User::where('role', 'psikolog')->where('is_admin', false)->where('is_verified', false)->where('is_rejected', false)->latest()->get();
+        return response()->json(compact('users', 'me', 'pendingCount', 'pendingPsikolog'));
     }
 
     public function toggleAdmin(Request $request, $id)
