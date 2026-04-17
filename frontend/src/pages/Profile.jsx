@@ -137,7 +137,7 @@ const Profile = () => {
                         </div>
 
                         <div style={{ marginBottom: '25px' }}>
-                            <label style={{ display: 'block', marginBottom: '8px', color: '#555', fontWeight: 600 }}>Username (@)</label>
+                            <label style={{ display: 'block', marginBottom: '8px', color: '#555', fontWeight: 600 }}>Username</label>
                             <input 
                                 type="text" 
                                 value={username} 

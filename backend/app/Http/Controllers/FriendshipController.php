@@ -7,12 +7,57 @@ use App\Models\User;
 
 class FriendshipController extends Controller
 {
+    public function myPsychologistStatuses(\Illuminate\Http\Request $request)
+    {
+        $me = $request->user();
+        $meId = $me->id;
+
+        $friendships = Friendship::where(function ($query) use ($meId) {
+                $query->where('user_id', $meId)->orWhere('friend_id', $meId);
+            })
+            ->with(['requester:id,role', 'recipient:id,role'])
+            ->get();
+
+        $statuses = [];
+        foreach ($friendships as $friendship) {
+            $otherUserId = $friendship->user_id === $meId ? $friendship->friend_id : $friendship->user_id;
+            $otherRole = $friendship->user_id === $meId
+                ? optional($friendship->recipient)->role
+                : optional($friendship->requester)->role;
+
+            if ($otherRole !== 'psikolog') {
+                continue;
+            }
+
+            $currentStatus = $statuses[$otherUserId] ?? null;
+            if ($currentStatus === 'accepted') {
+                continue;
+            }
+
+            $statuses[$otherUserId] = $friendship->status;
+        }
+
+        return response()->json(['statuses' => $statuses]);
+    }
+
     public function send(\Illuminate\Http\Request $request, $id)
     {
         $me = $request->user();
         if ($me->is_admin && $request->query('viewing_as_user')) {
             return response()->json(['message' => 'Admin tidak dapat menambah teman saat mode lihat sebagai user.'], 403);
         }
+        if ($me->role !== 'anonim' || !$me->is_premium) {
+            return response()->json(['message' => 'Hanya akun anonim Premium yang dapat menambahkan psikolog.'], 403);
+        }
+
+        $targetUser = User::find($id);
+        if (!$targetUser) {
+            return response()->json(['message' => 'Psikolog tidak ditemukan.'], 404);
+        }
+        if ($targetUser->role !== 'psikolog' || !$targetUser->is_verified || $targetUser->is_rejected || $targetUser->is_suspended) {
+            return response()->json(['message' => 'Target bukan psikolog aktif.'], 400);
+        }
+
         $meId = $me->id;
         if ($meId == $id) return response()->json(['message' => 'Tidak bisa menambahkan diri sendiri'], 400);
         if ($me && method_exists($me, 'hasFriendRequestTo') && $me->hasFriendRequestTo($id)) {

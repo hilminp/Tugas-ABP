@@ -54,6 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Friendships
     Route::post('/friend/{id}', [FriendshipController::class, 'send']);
     Route::get('/friend-requests', [FriendshipController::class, 'incoming']);
+    Route::get('/friend-statuses/psychologists', [FriendshipController::class, 'myPsychologistStatuses']);
     Route::post('/friend/{id}/accept', [FriendshipController::class, 'accept']);
     Route::post('/friend/{id}/reject', [FriendshipController::class, 'reject']);
 
@@ -64,6 +65,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Search
     Route::get('/search', [SearchController::class, 'index']);
+    Route::get('/psychologists', [SearchController::class, 'psychologists']);
 
     // Admin Group
     Route::prefix('admin')->middleware(\App\Http\Middleware\EnsureAdmin::class)->group(function () {
