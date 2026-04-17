@@ -382,7 +382,7 @@ const AdminUsers = () => {
                                 {u.name}
                               </p>
                               <p className="text-xs text-on-surface-variant italic">
-                                @{u.username || "anonim"}
+                                ({u.role === "psikolog" ? "psikolog" : "anonim"})
                               </p>
                             </div>
                           </div>
@@ -706,7 +706,7 @@ const AdminUsers = () => {
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
                 Anda akan menangguhkan akun{" "}
                 <strong className="text-teal-700 dark:text-teal-300">
-                  @{suspendModal.user?.name}
+                  {suspendModal.user?.name} ({suspendModal.user?.role === "psikolog" ? "psikolog" : "anonim"})
                 </strong>
                 . Silakan berikan alasan penangguhan yang jelas.
               </p>
@@ -800,7 +800,7 @@ const AdminUsers = () => {
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
                 Apakah Anda yakin ingin mengembalikan akses untuk akun{" "}
                 <strong className="text-teal-700 dark:text-teal-300">
-                  @{unsuspendModal.user?.name}
+                  {unsuspendModal.user?.name} ({unsuspendModal.user?.role === "psikolog" ? "psikolog" : "anonim"})
                 </strong>
                 ? Pengguna akan dapat kembali menggunakan layanan di platform
                 ini.

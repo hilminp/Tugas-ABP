@@ -7,6 +7,8 @@ const DashboardPsikolog = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [posts, setPosts] = useState([]);
+    const [incomingRequests, setIncomingRequests] = useState([]);
+    const [requestActionLoadingId, setRequestActionLoadingId] = useState(null);
 
     const psychologistName = user?.name || user?.username || 'Psikolog';
     const psychologistSpecialty = user?.spesialisasi || 'Spesialis Klinis';
@@ -16,6 +18,7 @@ const DashboardPsikolog = () => {
 
     useEffect(() => {
         fetchPosts();
+        fetchIncomingRequests();
     }, []);
 
     const fetchPosts = async () => {
@@ -24,6 +27,39 @@ const DashboardPsikolog = () => {
             setPosts(res.data);
         } catch (error) {
             console.error('Error fetching posts:', error);
+        }
+    };
+
+    const fetchIncomingRequests = async () => {
+        try {
+            const res = await api.get('/friend-requests');
+            setIncomingRequests(res.data?.requests || []);
+        } catch (error) {
+            console.error('Error fetching incoming requests:', error);
+        }
+    };
+
+    const handleAcceptRequest = async (requesterId) => {
+        setRequestActionLoadingId(requesterId);
+        try {
+            await api.post(`/friend/${requesterId}/accept`);
+            fetchIncomingRequests();
+        } catch (error) {
+            alert(error.response?.data?.message || 'Gagal menerima pasien.');
+        } finally {
+            setRequestActionLoadingId(null);
+        }
+    };
+
+    const handleRejectRequest = async (requesterId) => {
+        setRequestActionLoadingId(requesterId);
+        try {
+            await api.post(`/friend/${requesterId}/reject`);
+            fetchIncomingRequests();
+        } catch (error) {
+            alert(error.response?.data?.message || 'Gagal menolak pasien.');
+        } finally {
+            setRequestActionLoadingId(null);
         }
     };
 
@@ -118,7 +154,11 @@ const DashboardPsikolog = () => {
                         <div className="flex items-center gap-4">
                             <button className="relative p-2 text-stone-600 hover:text-[#A46477] transition-all active:opacity-80" type="button">
                                 <span className="material-symbols-outlined">notifications</span>
-                                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full" />
+                                {incomingRequests.length > 0 && (
+                                    <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-[#ef4444] text-white text-[10px] font-bold inline-flex items-center justify-center">
+                                        {incomingRequests.length}
+                                    </span>
+                                )}
                             </button>
                             <div className="h-8 w-[1px] bg-stone-200 mx-2" />
                             <div className="flex items-center gap-2">
@@ -183,6 +223,50 @@ const DashboardPsikolog = () => {
                         </div>
 
                         <aside className="lg:col-span-4 space-y-6">
+                            <section className="bg-white border border-[#edd8e3] rounded-2xl p-5 shadow-sm">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-sm font-bold text-[#7a4d62] uppercase tracking-wider">Permintaan Pasien</h3>
+                                    <span className="text-xs text-[#a77990]">{incomingRequests.length} menunggu</span>
+                                </div>
+                                {incomingRequests.length === 0 ? (
+                                    <p className="text-sm text-stone-500">Belum ada permintaan pasien baru.</p>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {incomingRequests.slice(0, 4).map((request) => (
+                                            <div key={request.id} className="border border-[#f0dde7] rounded-xl p-3">
+                                                <p className="text-sm font-semibold text-[#3f2f38]">
+                                                    {request.requester?.name || 'Pasien Anonim'}
+                                                </p>
+                                                <p className="text-xs text-stone-500 mb-3">
+                                                    (anonim)
+                                                </p>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleAcceptRequest(request.user_id)}
+                                                        disabled={requestActionLoadingId === request.user_id}
+                                                        className="flex-1 py-2 rounded-lg text-xs font-bold bg-[#22c55e] text-white hover:opacity-90 disabled:opacity-70"
+                                                    >
+                                                        Terima
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRejectRequest(request.user_id)}
+                                                        disabled={requestActionLoadingId === request.user_id}
+                                                        className="flex-1 py-2 rounded-lg text-xs font-bold bg-stone-200 text-stone-700 hover:bg-stone-300 disabled:opacity-70"
+                                                    >
+                                                        Tolak
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        <Link to="/friend-requests" className="inline-flex text-sm font-semibold text-[#7a4d62] hover:underline">
+                                            Lihat semua permintaan
+                                        </Link>
+                                    </div>
+                                )}
+                            </section>
+
                             <section className="bg-[#A46477] text-white rounded-2xl p-6 shadow-xl shadow-primary/20">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-3">
