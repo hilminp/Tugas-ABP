@@ -2,9 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import { useAuth } from '../../hooks/useAuth';
-import { api } from '../../lib/api';
+import { api, STORAGE_BASE_URL } from '../../lib/api';
 import { PSYCHOLOGIST_CATEGORIES } from '../../constants/psychologistCategories';
 import '../Home.css';
+
+const CATEGORY_ICONS = {
+    kesehatan_mental: 'psychology',
+    kecemasan_stres: 'self_improvement',
+    hubungan_percintaan: 'favorite',
+    keluarga: 'groups',
+    sosial_pertemanan: 'diversity_3',
+};
 
 const DashboardAnonim = () => {
     const { user, updateUser } = useAuth();
@@ -16,9 +24,21 @@ const DashboardAnonim = () => {
     const [loading, setLoading] = useState(false);
     const [isPaying, setIsPaying] = useState(false);
     const [paymentStatusModal, setPaymentStatusModal] = useState({ isOpen: false, type: '', message: '' });
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [psychologists, setPsychologists] = useState([]);
+    const [psychologistTotal, setPsychologistTotal] = useState(0);
+    const [psychologistLoading, setPsychologistLoading] = useState(false);
+    const [loadingMorePsychologists, setLoadingMorePsychologists] = useState(false);
+    const [psychologistError, setPsychologistError] = useState('');
+    const [hasMorePsychologists, setHasMorePsychologists] = useState(false);
+    const [hasSelectedCategory, setHasSelectedCategory] = useState(false);
+    const [sendingRequestId, setSendingRequestId] = useState(null);
+    const [requestedPsychologistIds, setRequestedPsychologistIds] = useState([]);
+    const [psychologistStatuses, setPsychologistStatuses] = useState({});
 
     useEffect(() => {
         fetchPosts();
+        fetchPsychologistStatuses();
     }, []);
 
     const fetchPosts = async () => {
@@ -99,6 +119,90 @@ const DashboardAnonim = () => {
         }
     };
 
+    const fetchPsychologists = async (category = '', loadMore = false) => {
+        const limit = 6;
+        const nextOffset = loadMore ? psychologists.length : 0;
+
+        if (loadMore) {
+            setLoadingMorePsychologists(true);
+        } else {
+            setPsychologistLoading(true);
+            setPsychologistError('');
+        }
+
+        try {
+            const res = await api.get('/psychologists', {
+                params: {
+                    category: category || undefined,
+                    limit,
+                    offset: nextOffset,
+                },
+            });
+
+            const newData = Array.isArray(res.data?.data) ? res.data.data : [];
+            setPsychologists((prev) => (loadMore ? [...prev, ...newData] : newData));
+            setPsychologistTotal(Number(res.data?.total || 0));
+            setHasMorePsychologists(Boolean(res.data?.has_more));
+        } catch (error) {
+            console.error('Error fetching psychologists:', error);
+            if (!loadMore) {
+                setPsychologistError('Gagal memuat data psikolog. Coba lagi.');
+                setPsychologists([]);
+                setPsychologistTotal(0);
+                setHasMorePsychologists(false);
+            }
+        } finally {
+            setPsychologistLoading(false);
+            setLoadingMorePsychologists(false);
+        }
+    };
+
+    const fetchPsychologistStatuses = async () => {
+        try {
+            const res = await api.get('/friend-statuses/psychologists');
+            const statuses = res.data?.statuses || {};
+            setPsychologistStatuses(statuses);
+            const pendingIds = Object.entries(statuses)
+                .filter(([, status]) => status === 'pending')
+                .map(([id]) => Number(id));
+            setRequestedPsychologistIds(pendingIds);
+        } catch (error) {
+            console.error('Error fetching psychologist statuses:', error);
+        }
+    };
+
+    const handleCategoryClick = (categoryValue) => {
+        const nextCategory = selectedCategory === categoryValue ? '' : categoryValue;
+        setSelectedCategory(nextCategory);
+        setHasSelectedCategory(Boolean(nextCategory));
+        fetchPsychologists(nextCategory, false);
+    };
+
+    const selectedCategoryLabel = selectedCategory
+        ? PSYCHOLOGIST_CATEGORIES.find((category) => category.value === selectedCategory)?.label || selectedCategory
+        : 'Semua Kategori';
+
+    const handleAddPsychologist = async (psychologistId) => {
+        if (!user?.is_premium) {
+            handleUpgradePremium();
+            return;
+        }
+        if (sendingRequestId) return;
+        setSendingRequestId(psychologistId);
+
+        try {
+            const res = await api.post(`/friend/${psychologistId}`);
+            const message = res.data?.message || 'Permintaan konsultasi terkirim.';
+            alert(message);
+            setRequestedPsychologistIds((prev) => (prev.includes(psychologistId) ? prev : [...prev, psychologistId]));
+            setPsychologistStatuses((prev) => ({ ...prev, [psychologistId]: 'pending' }));
+        } catch (error) {
+            alert(error.response?.data?.message || 'Gagal mengirim permintaan ke psikolog.');
+        } finally {
+            setSendingRequestId(null);
+        }
+    };
+
     return (
         <div className="home-layout">
             <Sidebar />
@@ -150,16 +254,115 @@ const DashboardAnonim = () => {
                             <div className="hero-pattern" />
                         </div>
 
-                        <div className="popular-header">
-                            <h2>Kategori Psikolog</h2>
-                            <button type="button">Lihat Semua</button>
-                        </div>
-                        <div className="topic-grid">
-                            {PSYCHOLOGIST_CATEGORIES.map((category) => (
-                                <button key={category.value} className="topic-item" type="button">
-                                    {category.label}
-                                </button>
-                            ))}
+                        <div className="psychologist-category-box">
+                            <div className="popular-header">
+                                <div className="category-box-title">
+                                    <h2>Kategori Psikolog</h2>
+                                    <p>Pilih topik agar lebih cepat menemukan psikolog yang sesuai.</p>
+                                </div>
+                                <button type="button" onClick={() => handleCategoryClick('')}>Lihat Semua</button>
+                            </div>
+                            <div className="topic-grid">
+                                {PSYCHOLOGIST_CATEGORIES.map((category) => (
+                                    <button
+                                        key={category.value}
+                                        className={`topic-item ${selectedCategory === category.value ? 'active' : ''}`}
+                                        type="button"
+                                        onClick={() => handleCategoryClick(category.value)}
+                                    >
+                                        <span className="material-symbols-outlined topic-icon">
+                                            {CATEGORY_ICONS[category.value] || 'category'}
+                                        </span>
+                                        <span>{category.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            {hasSelectedCategory && (
+                                <div className="psychologist-result-box">
+                                    <div className="psychologist-result-header">
+                                        <h3>{selectedCategoryLabel}</h3>
+                                        <span>{psychologistTotal} psikolog tersedia</span>
+                                    </div>
+                                    {!user?.is_premium && (
+                                        <div className="empty-psychologist-state" style={{ marginBottom: '10px' }}>
+                                            Upgrade ke Premium untuk bisa menambahkan psikolog.
+                                        </div>
+                                    )}
+
+                                    {psychologistLoading ? (
+                                        <div className="empty-psychologist-state">Memuat psikolog...</div>
+                                    ) : psychologistError ? (
+                                        <div className="empty-psychologist-state">{psychologistError}</div>
+                                    ) : psychologists.length === 0 ? (
+                                        <div className="empty-psychologist-state">Belum ada psikolog pada kategori ini.</div>
+                                    ) : (
+                                        <>
+                                            <div className="psychologist-list">
+                                                {psychologists.map((psychologist) => (
+                                                    (() => {
+                                                        const status = psychologistStatuses[psychologist.id];
+                                                        const isAccepted = status === 'accepted';
+                                                        const isPending = status === 'pending' || requestedPsychologistIds.includes(psychologist.id);
+                                                        const isRequestDisabled = sendingRequestId === psychologist.id || isPending || isAccepted;
+
+                                                        return (
+                                                    <article className="psychologist-card" key={psychologist.id}>
+                                                        <div className="psychologist-card-top">
+                                                            {psychologist.profile_image ? (
+                                                                <img
+                                                                    src={`${STORAGE_BASE_URL}/${psychologist.profile_image}`}
+                                                                    alt={psychologist.name}
+                                                                />
+                                                            ) : (
+                                                                <div className="psychologist-avatar-fallback">
+                                                                    {(psychologist.name || 'P').charAt(0).toUpperCase()}
+                                                                </div>
+                                                            )}
+                                                            <div>
+                                                                <strong>{psychologist.name}</strong>
+                                                                <p>(psikolog)</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="psychologist-specialty">
+                                                            {PSYCHOLOGIST_CATEGORIES.find((c) => c.value === psychologist.spesialisasi)?.label || 'Umum'}
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            className="psychologist-contact-btn"
+                                                            onClick={() => handleAddPsychologist(psychologist.id)}
+                                                            disabled={isRequestDisabled}
+                                                        >
+                                                            {!user?.is_premium
+                                                                ? 'Premium Diperlukan'
+                                                                : sendingRequestId === psychologist.id
+                                                                ? 'Mengirim...'
+                                                                : isAccepted
+                                                                    ? 'Psikolog Tersedia'
+                                                                : isPending
+                                                                    ? 'Permintaan Terkirim'
+                                                                    : 'Tambah Psikolog'}
+                                                        </button>
+                                                    </article>
+                                                        );
+                                                    })()
+                                                ))}
+                                            </div>
+
+                                            {hasMorePsychologists && (
+                                                <button
+                                                    type="button"
+                                                    className="load-more-psychologist-btn"
+                                                    onClick={() => fetchPsychologists(selectedCategory, true)}
+                                                    disabled={loadingMorePsychologists}
+                                                >
+                                                    {loadingMorePsychologists ? 'Menambahkan psikolog...' : 'Tambah Psikolog'}
+                                                </button>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {!user?.is_premium ? (
@@ -212,7 +415,7 @@ const DashboardAnonim = () => {
                                         )}
                                         <div>
                                             <strong>{post.user?.name}</strong>
-                                            {post.user?.username && post.user?.username !== 'anonim' && <div className="post-username">@{post.user?.username}</div>}
+                                            <div className="post-username">({post.user?.role === 'psikolog' ? 'psikolog' : 'anonim'})</div>
                                         </div>
                                     </div>
                                     <p className="post-body">{post.body}</p>

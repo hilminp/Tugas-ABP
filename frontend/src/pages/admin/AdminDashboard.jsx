@@ -397,7 +397,7 @@ const AdminDashboard = () => {
                                                                 <span className="material-symbols-outlined text-[16px]">payments</span>
                                                             </div>
                                                             <div>
-                                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-tight">@{u.username || u.name}</p>
+                                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-tight">{u.name} (anonim)</p>
                                                                 <p className="text-[9px] text-slate-500 font-medium">Upgrade Baru (Rp 15.000)</p>
                                                             </div>
                                                         </div>

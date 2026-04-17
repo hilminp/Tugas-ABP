@@ -101,7 +101,7 @@ const SearchResults = () => {
                         <div className="req" key={u.id}>
                             <div>
                                 <div style={{fontWeight: 600}}>{u.name}</div>
-                                <div style={{fontSize: '13px', color: '#777'}}>@{u.username}</div>
+                                <div style={{fontSize: '13px', color: '#777'}}>({u.role === 'psikolog' ? 'psikolog' : 'anonim'})</div>
                             </div>
                             <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
                                 {!adminViewing && (

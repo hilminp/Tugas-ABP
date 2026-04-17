@@ -7,6 +7,7 @@ import './Sidebar.css';
 const Sidebar = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const roleLabel = user?.role === 'psikolog' ? 'psikolog' : 'anonim';
 
     const handleLogout = async () => {
         try {
@@ -36,7 +37,7 @@ const Sidebar = () => {
                     src={user?.profile_image ? `${STORAGE_BASE_URL}/${user.profile_image}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
                     alt="User"
                 />
-                <span>@{user?.username || 'user'}</span>
+                <span>({roleLabel})</span>
             </div>
 
             <nav className="sidebar-nav">
