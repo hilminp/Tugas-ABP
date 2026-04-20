@@ -3,22 +3,33 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Models\PostComment;
+use App\Models\PostLike;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
     public function index()
     {
-        $posts = Post::with('user:id,name,role,profile_image,username,is_premium')
+        $posts = Post::with([
+                'user:id,name,role,profile_image,username,is_premium',
+                'comments' => function ($query) {
+                    $query->latest();
+                },
+                'comments.user:id,name,role,profile_image,username,is_premium',
+            ])
+            ->withCount(['likes', 'comments'])
             ->latest()
             ->get()
             ->map(function ($post) {
-                // If user role is anonim, alter their name and profile image shown in feed
-                if ($post->user && $post->user->role === 'anonim') {
-                    $post->user->name = $post->user->is_premium ? 'Anonim ⭐' : 'Anonim';
-                    $post->user->profile_image = null; // optionally hide their avatar
-                    $post->user->username = 'anonim';
+                $this->maskAnonymousUser($post->user);
+
+                if ($post->comments) {
+                    $post->comments->each(function ($comment) {
+                        $this->maskAnonymousUser($comment->user);
+                    });
                 }
+
                 return $post;
             });
 
@@ -49,12 +60,86 @@ class PostController extends Controller
 
         // Return the created post with user, and apply the anonim rule
         $post->load('user:id,name,role,profile_image,username,is_premium');
-        if ($post->user && $post->user->role === 'anonim') {
-            $post->user->name = $post->user->is_premium ? 'Anonim ⭐' : 'Anonim';
-            $post->user->profile_image = null;
-            $post->user->username = 'anonim';
-        }
+        $this->maskAnonymousUser($post->user);
 
         return response()->json(['message' => 'Post created successfully', 'post' => $post], 201);
+    }
+
+    public function toggleLike(Request $request, $id)
+    {
+        $post = Post::find($id);
+        if (!$post) {
+            return response()->json(['message' => 'Post tidak ditemukan.'], 404);
+        }
+
+        $existingLike = PostLike::where('post_id', $post->id)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if ($existingLike) {
+            $existingLike->delete();
+
+            return response()->json([
+                'message' => 'Like dihapus.',
+                'liked' => false,
+                'likes_count' => PostLike::where('post_id', $post->id)->count(),
+            ]);
+        }
+
+        PostLike::create([
+            'post_id' => $post->id,
+            'user_id' => $request->user()->id,
+        ]);
+
+        return response()->json([
+            'message' => 'Post disukai.',
+            'liked' => true,
+            'likes_count' => PostLike::where('post_id', $post->id)->count(),
+        ]);
+    }
+
+    public function comment(Request $request, $id)
+    {
+        $post = Post::find($id);
+        if (!$post) {
+            return response()->json(['message' => 'Post tidak ditemukan.'], 404);
+        }
+
+        $request->validate([
+            'content' => 'required|string',
+        ]);
+
+        $content = trim((string) $request->content);
+        if ($content === '') {
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => [
+                    'content' => ['Kolom content wajib diisi.'],
+                ],
+            ], 422);
+        }
+
+        $comment = PostComment::create([
+            'post_id' => $post->id,
+            'user_id' => $request->user()->id,
+            'content' => $content,
+        ]);
+
+        $comment->load('user:id,name,role,profile_image,username,is_premium');
+        $this->maskAnonymousUser($comment->user);
+
+        return response()->json([
+            'message' => 'Komentar berhasil ditambahkan.',
+            'comment' => $comment,
+        ], 201);
+    }
+
+    private function maskAnonymousUser($user): void
+    {
+        if ($user && $user->role === 'anonim') {
+            $user->name = $user->is_premium ? "Anonim \u{2B50}" : 'Anonim';
+            $user->profile_image = null;
+            $user->username = 'anonim';
+        }
     }
 }

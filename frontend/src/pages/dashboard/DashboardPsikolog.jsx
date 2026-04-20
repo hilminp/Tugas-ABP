@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { api, STORAGE_BASE_URL } from '../../lib/api';
+import '../Home.css';
 
 const DashboardPsikolog = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [posts, setPosts] = useState([]);
+    const [commentInputs, setCommentInputs] = useState({});
     const [incomingRequests, setIncomingRequests] = useState([]);
+    const [likingPostId, setLikingPostId] = useState(null);
     const [requestActionLoadingId, setRequestActionLoadingId] = useState(null);
+    const [submittingCommentId, setSubmittingCommentId] = useState(null);
 
     const psychologistName = user?.name || user?.username || 'Psikolog';
     const psychologistSpecialty = user?.spesialisasi || 'Spesialis Klinis';
@@ -36,6 +40,38 @@ const DashboardPsikolog = () => {
             setIncomingRequests(res.data?.requests || []);
         } catch (error) {
             console.error('Error fetching incoming requests:', error);
+        }
+    };
+
+    const handleLike = async (postId) => {
+        if (likingPostId === postId) return;
+
+        setLikingPostId(postId);
+        try {
+            await api.post(`/posts/${postId}/like`);
+            await fetchPosts();
+        } catch (error) {
+            alert(error.response?.data?.message || 'Gagal menyukai post.');
+        } finally {
+            setLikingPostId(null);
+        }
+    };
+
+    const submitComment = async (e, postId) => {
+        e.preventDefault();
+
+        const content = commentInputs[postId]?.trim();
+        if (!content || submittingCommentId === postId) return;
+
+        setSubmittingCommentId(postId);
+        try {
+            await api.post(`/posts/${postId}/comment`, { content });
+            setCommentInputs((prev) => ({ ...prev, [postId]: '' }));
+            await fetchPosts();
+        } catch (error) {
+            alert(error.response?.data?.message || 'Gagal menambahkan komentar.');
+        } finally {
+            setSubmittingCommentId(null);
         }
     };
 
@@ -199,19 +235,46 @@ const DashboardPsikolog = () => {
                                     {post.image && (
                                         <img className="w-full h-64 object-cover rounded-lg mb-4" src={`${STORAGE_BASE_URL}/${post.image}`} alt="Post attachment" />
                                     )}
-                                    <div className="flex items-center gap-6 pt-4 border-t border-stone-100">
-                                        <button className="flex items-center gap-2 text-stone-500 hover:text-primary transition-colors group" type="button">
-                                            <span className="material-symbols-outlined group-hover:scale-110 transition-transform">favorite</span>
-                                            <span className="text-sm font-medium">0 Suka</span>
+                                    <div className="post-feedback-bar border-t border-stone-100">
+                                        <button
+                                            className={`post-like-icon ${Boolean(post.is_liked) ? 'liked' : ''}`}
+                                            type="button"
+                                            onClick={() => handleLike(post.id)}
+                                            disabled={likingPostId === post.id}
+                                            aria-label="Like post"
+                                        >
+                                            <span aria-hidden="true">&#9829;</span>
                                         </button>
-                                        <button className="flex items-center gap-2 text-stone-500 hover:text-tertiary transition-colors group" type="button">
-                                            <span className="material-symbols-outlined group-hover:scale-110 transition-transform">chat_bubble</span>
-                                            <span className="text-sm font-medium">0 Komentar</span>
-                                        </button>
-                                        <button className="flex items-center gap-2 text-stone-500 hover:text-on-surface transition-colors ml-auto" type="button">
-                                            <span className="material-symbols-outlined">share</span>
-                                        </button>
+                                        <p className="post-like-count">
+                                            {post.likes_count ?? post.likes?.length ?? 0} suka
+                                        </p>
+                                        {Array.isArray(post.comments) && post.comments.length > 0 && (
+                                            <div className="post-comment-list">
+                                                {post.comments.map((comment) => (
+                                                    <p key={comment.id} className="post-comment-row">
+                                                        <strong>{comment.user?.name || 'User'}</strong>
+                                                        : {comment.content}
+                                                    </p>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
+                                    <form className="post-comment-inline" onSubmit={(e) => submitComment(e, post.id)}>
+                                        <input
+                                            type="text"
+                                            value={commentInputs[post.id] || ''}
+                                            onChange={(e) =>
+                                                setCommentInputs((prev) => ({ ...prev, [post.id]: e.target.value }))
+                                            }
+                                            placeholder="Tulis komentar..."
+                                        />
+                                        <button
+                                            type="submit"
+                                            disabled={submittingCommentId === post.id}
+                                        >
+                                            {submittingCommentId === post.id ? 'Mengirim...' : 'Kirim'}
+                                        </button>
+                                    </form>
                                 </article>
                             ))}
 
