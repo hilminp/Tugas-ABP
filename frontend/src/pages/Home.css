@@ -403,6 +403,184 @@
     background: #f8f7f7;
 }
 
+.post-feedback-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #f1e4eb;
+}
+
+.post-like-icon {
+    border: none;
+    background: transparent;
+    padding: 0;
+    font-size: 24px;
+    line-height: 1;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: transform 0.18s ease, color 0.18s ease, opacity 0.18s ease;
+}
+
+.post-like-icon:hover {
+    transform: scale(1.08);
+}
+
+.post-like-icon:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+.post-like-icon.liked {
+    color: #ef4444;
+}
+
+.post-like-count {
+    margin-top: 2px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.post-feedback-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    background: transparent;
+    color: #955170;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.post-feedback-button:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.post-feedback-count {
+    font-size: 13px;
+    color: #8d7882;
+}
+
+.post-comment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.post-comment-row {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.45;
+    color: #4b5563;
+}
+
+.post-comment-row strong {
+    color: #1f2937;
+    font-weight: 700;
+}
+
+.post-comment-item {
+    background: #fbf6f8;
+    border: 1px solid #f0dde7;
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+
+.post-comment-item strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #624a57;
+    font-size: 13px;
+}
+
+.post-comment-item p {
+    margin: 0;
+    color: #5f4b56;
+    font-size: 14px;
+    white-space: pre-wrap;
+}
+
+.post-comment-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.post-comment-inline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    margin-top: 12px;
+}
+
+.post-comment-inline input {
+    flex: 1;
+    border: none;
+    border-bottom: 1px solid #e5e7eb;
+    border-radius: 0;
+    padding: 8px 0;
+    background: transparent;
+    outline: none;
+    font-family: inherit;
+    font-size: 14px;
+    color: #374151;
+}
+
+.post-comment-inline input:focus {
+    border-bottom-color: #955170;
+}
+
+.post-comment-inline button {
+    border: none;
+    background: transparent;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #955170;
+    cursor: pointer;
+    transition: color 0.18s ease, opacity 0.18s ease;
+}
+
+.post-comment-inline button:hover {
+    color: #7f3557;
+}
+
+.post-comment-inline button:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+.post-comment-form input {
+    flex: 1;
+    border: 1px solid #e7d3dd;
+    border-radius: 999px;
+    padding: 10px 14px;
+    outline: none;
+    font-family: inherit;
+}
+
+.post-comment-form button {
+    border: none;
+    border-radius: 999px;
+    padding: 10px 18px;
+    background: #955170;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.post-comment-form button:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
+
 .empty-posts {
     text-align: center;
     padding: 28px;
@@ -577,6 +755,14 @@
 
     .floating-action {
         right: 84px;
+    }
+
+    .post-comment-form {
+        flex-direction: column;
+    }
+
+    .post-comment-inline {
+        gap: 10px;
     }
 
     .home-chatbot-shell .chatbot-widget {
