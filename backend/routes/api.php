@@ -42,6 +42,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Posts
     Route::get('/posts', [PostController::class, 'index']);
     Route::post('/posts', [PostController::class, 'store']);
+    Route::post('/posts/{id}/like', [PostController::class, 'toggleLike']);
+    Route::post('/posts/{id}/comment', [PostController::class, 'comment']);
 
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'show']);
