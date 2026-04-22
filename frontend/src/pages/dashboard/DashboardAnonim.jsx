@@ -199,12 +199,19 @@ const DashboardAnonim = () => {
         if (image) formData.append('image', image);
 
         try {
-            await api.post('/posts', formData);
+            const response = await api.post('/posts', formData);
             setBody('');
             setImage(null);
-            fetchPosts();
+            
+            // Opsional: Prepend post baru agar langsung muncul tanpa nunggu fetch
+            if (response.data.post) {
+                setPosts(prev => [response.data.post, ...prev]);
+            }
+            
+            // Tetap fetch ulang untuk sinkronisasi data server (opsional tapi bagus untuk id/timestamps)
+            await fetchPosts();
         } catch (error) {
-            alert(error.response?.data?.message || 'Failed to create post');
+            alert(error.response?.data?.message || 'Gagal membuat postingan.');
         } finally {
             setLoading(false);
         }

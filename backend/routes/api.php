@@ -28,9 +28,6 @@ Route::post('/login', [SessionController::class, 'login']);
 Route::post('/reapply', [SessionController::class, 'reapply']);
 Route::post('/register/psikolog', [RegistrationController::class, 'storePsikolog']);
 Route::post('/register/anonim', [RegistrationController::class, 'storeAnonim']);
-Route::get('/chat/start', [ChatbotController::class, 'start']);
-Route::post('/chat/next', [ChatbotController::class, 'next']);
-Route::post('/chat/reset', [ChatbotController::class, 'reset']);
 
 // Protected Routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -68,6 +65,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Search
     Route::get('/search', [SearchController::class, 'index']);
     Route::get('/psychologists', [SearchController::class, 'psychologists']);
+
+    // Chatbot
+    Route::get('/chat/start', [ChatbotController::class, 'start']);
+    Route::post('/chat/next', [ChatbotController::class, 'sendMessage']);
+    Route::post('/chat/reset', [ChatbotController::class, 'reset']);
 
     // Admin Group
     Route::prefix('admin')->middleware(\App\Http\Middleware\EnsureAdmin::class)->group(function () {

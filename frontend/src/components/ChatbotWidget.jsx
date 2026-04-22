@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ChatbotWidget.css';
+import { api } from '../lib/api';
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/$/, '');
 const PAYMENT_OPTION = 'lanjut ke pembayaran';
 
 const CHAT_ROLES = {
@@ -23,27 +23,26 @@ const ChatbotWidget = ({ forceOpen = false, hideToggle = false }) => {
     const [options, setOptions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [inputValue, setInputValue] = useState('');
 
     const messagesEndRef = useRef(null);
 
     /**
-     * Mengirim request ke endpoint chatbot dan memastikan response sesuai format.
+     * Mengirim request ke endpoint chatbot menggunakan axios instance.
      */
     const requestChatbot = async (endpoint, method = 'GET', body) => {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            method,
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: body ? JSON.stringify(body) : undefined,
-        });
-
-        if (!response.ok) {
-            throw new Error(`Request failed with status ${response.status}`);
+        try {
+            const config = {
+                method,
+                url: endpoint,
+                data: body,
+            };
+            const response = await api(config);
+            return response.data;
+        } catch (err) {
+            console.error('Chatbot request error:', err);
+            throw err;
         }
-
-        return response.json();
     };
 
     /**
@@ -54,37 +53,48 @@ const ChatbotWidget = ({ forceOpen = false, hideToggle = false }) => {
     };
 
     /**
-     * Mengirim pilihan user ke backend lalu menampilkan balasan chatbot.
+     * Mengirim pesan (baik dari pilihan atau input teks) ke backend.
      */
-    const handleOptionClick = async (selectedOption) => {
-        if (loading) {
+    const sendMessageToBackend = async (messageText) => {
+        if (!messageText.trim() || loading) {
             return;
         }
 
-        appendMessage(CHAT_ROLES.USER, selectedOption);
+        appendMessage(CHAT_ROLES.USER, messageText);
         setLoading(true);
         setError('');
+        setInputValue('');
 
         try {
             const data = await requestChatbot('/chat/next', 'POST', {
-                option: selectedOption,
+                message: messageText,
             });
 
             appendMessage(CHAT_ROLES.BOT, data.text);
             setOptions(Array.isArray(data.options) ? data.options : []);
 
-            if (selectedOption.toLowerCase() === PAYMENT_OPTION) {
+            if (messageText.toLowerCase() === PAYMENT_OPTION) {
                 setTimeout(() => {
                     navigate('/profile');
                 }, 500);
             }
         } catch (requestError) {
-            appendMessage(CHAT_ROLES.BOT, 'Maaf, jawabannya belum bisa dimuat. Coba pilih lagi ya.');
+            const errorMsg = requestError.response?.data?.error || 'Maaf, aku sedang tidak bisa membalas. Coba lagi ya.';
+            appendMessage(CHAT_ROLES.BOT, errorMsg);
             setOptions([]);
             setError(requestError.message);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleOptionClick = (selectedOption) => {
+        sendMessageToBackend(selectedOption);
+    };
+
+    const handleSendMessage = (e) => {
+        e.preventDefault();
+        sendMessageToBackend(inputValue);
     };
 
     /**
@@ -158,14 +168,26 @@ const ChatbotWidget = ({ forceOpen = false, hideToggle = false }) => {
                             <h3>Curhatin 🤍</h3>
                             <p className="chatbot-eyebrow">Anonim & Aman</p>
                         </div>
-                        <button
-                            type="button"
-                            className="chatbot-close"
-                            onClick={() => setIsOpen(false)}
-                            aria-label="Tutup chatbot"
-                        >
-                            x
-                        </button>
+                        <div className="chatbot-header-actions">
+                            <button
+                                type="button"
+                                className="chatbot-header-btn"
+                                onClick={handleReset}
+                                aria-label="Mulai ulang chat"
+                                title="Mulai ulang"
+                                disabled={loading}
+                            >
+                                ↺
+                            </button>
+                            <button
+                                type="button"
+                                className="chatbot-header-btn"
+                                onClick={() => setIsOpen(false)}
+                                aria-label="Tutup chatbot"
+                            >
+                                ✕
+                            </button>
+                        </div>
                     </div>
 
                     <div className="chatbot-body">
@@ -192,7 +214,7 @@ const ChatbotWidget = ({ forceOpen = false, hideToggle = false }) => {
 
                         <div className="chatbot-footer">
                             <div className="chatbot-options" aria-label="Pilihan chatbot">
-                                {options.length > 0 ? (
+                                {options.length > 0 && (
                                     options.map((option) => (
                                         <button
                                             key={option}
@@ -204,17 +226,29 @@ const ChatbotWidget = ({ forceOpen = false, hideToggle = false }) => {
                                             {option}
                                         </button>
                                     ))
-                                ) : (
-                                    <button
-                                        type="button"
-                                        className="chatbot-reset-button"
-                                        onClick={handleReset}
-                                        disabled={loading}
-                                    >
-                                        Mulai Lagi
-                                    </button>
                                 )}
                             </div>
+
+                            <form className="chatbot-input-container" onSubmit={handleSendMessage}>
+                                <input
+                                    type="text"
+                                    className="chatbot-input"
+                                    placeholder="Ceritakan apa yang kamu rasakan..."
+                                    value={inputValue}
+                                    onChange={(e) => setInputValue(e.target.value)}
+                                    disabled={loading}
+                                />
+                                <button
+                                    type="submit"
+                                    className="chatbot-send-button"
+                                    disabled={loading || !inputValue.trim()}
+                                    aria-label="Kirim pesan"
+                                >
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                                    </svg>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </section>
