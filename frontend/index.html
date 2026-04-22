@@ -1,50 +1,64 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>The Sanctuary</title>
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link id="google-fonts" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" />
-    <link id="material-symbols" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Sanctuary</title>
 
-    <!-- Tailwind CDN: config MUST come before the CDN script -->
-    <script>
-      tailwind = {
-        config: {
-          darkMode: "class",
-          corePlugins: { preflight: false },
-          theme: {
-            extend: {
-              colors: {
-                "on-tertiary": "#f4faff", "on-primary-fixed": "#0e4745", "tertiary-fixed-dim": "#a6d2ed",
-                "surface-container-low": "#e0f8f7", "secondary": "#4a6462", "on-secondary-fixed-variant": "#47605f",
-                "background": "#ebfdfc", "outline-variant": "#95b9b8", "error-dim": "#67040d",
-                "tertiary-fixed": "#b4e0fc", "tertiary": "#38647c", "on-primary-fixed-variant": "#316462",
-                "on-background": "#143837", "on-secondary": "#e2fffc", "primary-fixed": "#b8ecea",
-                "inverse-surface": "#021111", "on-primary": "#e1fffd", "primary-dim": "#285b59",
-                "on-tertiary-fixed-variant": "#2e5b72", "on-tertiary-fixed": "#093e55", "on-tertiary-container": "#245168",
-                "on-primary-container": "#265a58", "tertiary-container": "#b4e0fc", "surface-bright": "#ebfdfc",
-                "surface-tint": "#356765", "surface-dim": "#bce1e0", "surface-container-high": "#cfeeed",
-                "surface-container": "#d7f4f2", "error": "#a83836", "inverse-on-surface": "#8fa0a0",
-                "surface-container-lowest": "#ffffff", "outline": "#5e8180", "secondary-fixed-dim": "#bedad8",
-                "primary": "#356765", "secondary-fixed": "#cce8e6", "inverse-primary": "#c9fefb",
-                "secondary-dim": "#3e5856", "on-error": "#fff7f6", "surface": "#ebfdfc",
-                "secondary-container": "#cce8e6", "on-secondary-container": "#3d5655", "tertiary-dim": "#2b586f",
-                "on-surface-variant": "#436565", "on-surface": "#143837", "error-container": "#fa746f",
-                "primary-fixed-dim": "#aadedb", "surface-container-highest": "#c5eae9", "primary-container": "#b8ecea",
-                "on-error-container": "#6e0a12", "surface-variant": "#c5eae9", "on-secondary-fixed": "#2b4443"
-              },
-              borderRadius: { DEFAULT: "1rem", lg: "2rem", xl: "3rem", full: "9999px" },
-              fontFamily: { headline: ["Plus Jakarta Sans"], body: ["Plus Jakarta Sans"], label: ["Plus Jakarta Sans"] }
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind = {
+      config: {
+        darkMode: "class",
+        corePlugins: { preflight: false },
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#8e4956",
+              "secondary": "#75565d",
+              "surface": "#fff8f8",
+              "background": "#fff8f8",
+            },
+            borderRadius: {
+              DEFAULT: "1rem",
+              lg: "2rem",
+              xl: "3rem",
+              full: "9999px"
+            },
+            fontFamily: {
+              body: ["Plus Jakarta Sans"]
             }
           }
         }
       }
+    }
+  </script>
+
+  <!-- MIDTRANS SNAP -->
+  <script
+    src="https://app.sandbox.midtrans.com/snap/snap.js"
+    data-client-key="Mid-client-SsTeZzwvy5iriSZV"
+    async
+    onload="console.log('✅ Midtrans Snap loaded!')"
+    onerror="console.error('❌ Midtrans Snap GAGAL load')">
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
+</html>
     </script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     

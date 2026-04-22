@@ -69,6 +69,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/search', [SearchController::class, 'index']);
     Route::get('/psychologists', [SearchController::class, 'psychologists']);
 
+    // Chatbot
+    Route::get('/chat/start', [ChatbotController::class, 'start']);
+    Route::post('/chat/next', [ChatbotController::class, 'sendMessage']);
+    Route::post('/chat/reset', [ChatbotController::class, 'reset']);
+
     // Admin Group
     Route::prefix('admin')->middleware(\App\Http\Middleware\EnsureAdmin::class)->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard']);

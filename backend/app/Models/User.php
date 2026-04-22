@@ -36,6 +36,7 @@ class User extends Authenticatable
         'ijazah_file',
         'profile_image',
         'spesialisasi',
+        'chatbot_usage',
     ];
 
     /**
@@ -85,6 +86,7 @@ class User extends Authenticatable
             'is_premium' => 'boolean',
             'is_verified' => 'boolean',
             'is_rejected' => 'boolean',
+            'chatbot_usage' => 'integer',
         ];
     }
 }

@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $posts = Post::with([
                 'user:id,name,role,profile_image,username,is_premium',
@@ -21,6 +21,11 @@ class PostController extends Controller
             ->withCount(['likes', 'comments'])
             ->latest()
             ->get()
+            ->map(function ($post) use ($request) {
+                $this->maskAnonymousUser($post->user);
+                
+                // Cek apakah user saat ini menyukai post ini
+                $post->is_liked = $post->likes()->where('user_id', $request->user()->id)->exists();
             ->map(function ($post) {
                 $this->maskAnonymousUser($post->user);
 
@@ -58,6 +63,11 @@ class PostController extends Controller
             'image' => $imagePath,
         ]);
 
+        // Muat relasi dan hitung count agar frontend punya data lengkap
+        $post->load(['user:id,name,role,profile_image,username,is_premium']);
+        $post->loadCount(['likes', 'comments']);
+        $post->is_liked = false; // Post baru tentu belum dilike siapapun
+        
         // Return the created post with user, and apply the anonim rule
         $post->load('user:id,name,role,profile_image,username,is_premium');
         $this->maskAnonymousUser($post->user);

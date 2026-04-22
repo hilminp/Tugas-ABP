@@ -190,6 +190,16 @@ const DashboardAnonim = () => {
         if (image) formData.append('image', image);
 
         try {
+            const response = await api.post('/posts', formData);
+            setBody('');
+            setImage(null);
+            
+            if (response.data.post) {
+                setPosts(prev => [response.data.post, ...prev]);
+            }
+            await fetchPosts();
+        } catch (error) {
+            alert(error.response?.data?.message || 'Gagal membuat postingan.');
             await api.post('/posts', formData);
             setBody('');
             setImage(null);

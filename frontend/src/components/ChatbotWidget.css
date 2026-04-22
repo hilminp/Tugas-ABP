@@ -54,6 +54,14 @@
     font-weight: 700;
 }
 
+.chatbot-header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.chatbot-header-btn {
+    width: 32px;
+    height: 32px;
 .chatbot-close {
     width: 34px;
     height: 34px;
@@ -61,6 +69,10 @@
     align-items: center;
     justify-content: center;
     border: 0;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+    font-size: 18px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.16);
     color: #fff;
@@ -70,11 +82,18 @@
     transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
+.chatbot-header-btn:hover:not(:disabled) {
 .chatbot-close:hover {
     background: rgba(255, 255, 255, 0.24);
     transform: translateY(-1px);
 }
 
+.chatbot-header-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.chatbot-header-btn:focus-visible {
 .chatbot-close:focus-visible {
     outline: 3px solid rgba(255, 255, 255, 0.34);
     outline-offset: 2px;
@@ -216,6 +235,58 @@
     justify-content: center;
     background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
     border-color: #bfdbfe;
+}
+
+.chatbot-input-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 4px 8px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chatbot-input-container:focus-within {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background: #ffffff;
+}
+
+.chatbot-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 8px 4px;
+    font-size: 14px;
+    color: #1e293b;
+    outline: none;
+}
+
+.chatbot-send-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: #3b82f6;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.chatbot-send-button:hover:not(:disabled) {
+    background: #2563eb;
+    transform: scale(1.05);
+}
+
+.chatbot-send-button:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
 }
 
 .chatbot-toggle {
