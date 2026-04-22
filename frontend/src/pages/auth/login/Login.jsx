@@ -11,6 +11,7 @@ const Login = () => {
     const [error, setError] = useState(null);
     const [showPassword, setShowPassword] = useState(false);
     const [activePopup, setActivePopup] = useState(null);
+    const [confirmModal, setConfirmModal] = useState({ show: false, onConfirm: null });
     const { login } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -36,15 +37,22 @@ const Login = () => {
     };
 
     const handleReapply = async () => {
-        if (!window.confirm("Yakin ingin mereset pendaftaran lama Anda agar bisa mendaftar ulang? (Data lama akan dibersihkan)")) return;
-        try {
-            const res = await api.post('/reapply', { email, password });
-            alert(res.data.message);
-            setError(null);
-            navigate('/register/psikolog');
-        } catch (err) {
-            alert(err.response?.data?.message || 'Gagal menghapus data lama');
-        }
+        setConfirmModal({
+            show: true,
+            title: 'Reset Pendaftaran',
+            message: 'Yakin ingin mereset pendaftaran lama Anda agar bisa mendaftar ulang? (Data lama akan dibersihkan)',
+            onConfirm: async () => {
+                try {
+                    const res = await api.post('/reapply', { email, password });
+                    alert(res.data.message);
+                    setError(null);
+                    setConfirmModal({ show: false, onConfirm: null });
+                    navigate('/register/psikolog');
+                } catch (err) {
+                    alert(err.response?.data?.message || 'Gagal menghapus data lama');
+                }
+            }
+        });
     };
 
     const popupContent = {
@@ -199,6 +207,34 @@ const Login = () => {
                             <button type="button" onClick={() => setActivePopup(null)}>✕</button>
                         </div>
                         <p>{popupContent[activePopup].body}</p>
+                    </div>
+                </div>
+            )}
+
+            {confirmModal.show && (
+                <div className="login-popup-overlay" onClick={() => setConfirmModal({ show: false, onConfirm: null })}>
+                    <div className="login-popup-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+                        <div className="login-popup-head">
+                            <h3>{confirmModal.title}</h3>
+                            <button type="button" onClick={() => setConfirmModal({ show: false, onConfirm: null })}>✕</button>
+                        </div>
+                        <p style={{ marginBottom: '25px', lineHeight: '1.6' }}>{confirmModal.message}</p>
+                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                            <button 
+                                type="button" 
+                                onClick={() => setConfirmModal({ show: false, onConfirm: null })}
+                                style={{ padding: '10px 20px', borderRadius: '12px', background: '#f5f5f5', color: '#666', fontWeight: 600 }}
+                            >
+                                Batal
+                            </button>
+                            <button 
+                                type="button" 
+                                onClick={confirmModal.onConfirm}
+                                style={{ padding: '10px 20px', borderRadius: '12px', background: '#884d60', color: '#fff', fontWeight: 700 }}
+                            >
+                                Ya, Lanjutkan
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

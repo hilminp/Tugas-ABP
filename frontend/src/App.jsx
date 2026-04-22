@@ -15,8 +15,7 @@ import HomeComponentSwitcher from './pages/dashboard/HomeComponentSwitcher';
 import Profile from './pages/Profile';
 import FriendRequests from './pages/FriendRequests';
 import SearchResults from './pages/SearchResults';
-import MessagesIndex from './pages/messages/MessagesIndex';
-import MessagesThread from './pages/messages/MessagesThread';
+import MessagesContainer from './pages/messages/MessagesContainer';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminVerifications from './pages/admin/AdminVerifications';
@@ -53,8 +52,8 @@ function AppRoutes() {
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/search" element={<ProtectedRoute><SearchResults /></ProtectedRoute>} />
             <Route path="/friend-requests" element={<ProtectedRoute><FriendRequests /></ProtectedRoute>} />
-            <Route path="/messages" element={<ProtectedRoute><MessagesIndex /></ProtectedRoute>} />
-            <Route path="/messages/:id" element={<ProtectedRoute><MessagesThread /></ProtectedRoute>} />
+            <Route path="/messages" element={<ProtectedRoute><MessagesContainer /></ProtectedRoute>} />
+            <Route path="/messages/:id" element={<ProtectedRoute><MessagesContainer /></ProtectedRoute>} />
 
             {/* Protected Admin Routes */}
             <Route path="/admin/dashboard" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />

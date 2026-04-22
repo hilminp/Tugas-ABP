@@ -10,38 +10,88 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 
-  <!-- Tailwind CDN -->
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Tailwind Configuration (Must be BEFORE script load or global) -->
   <script>
-    tailwind = {
+    window.tailwind = {
       config: {
         darkMode: "class",
-        corePlugins: { preflight: false },
         theme: {
           extend: {
-            colors: {
-              "primary": "#8e4956",
-              "secondary": "#75565d",
-              "surface": "#fff8f8",
-              "background": "#fff8f8",
+            "colors": {
+                    "tertiary-fixed-dim": "#e1bdea",
+                    "surface": "#fff8f8",
+                    "primary": "#884d60",
+                    "primary-fixed": "#fdb2c7",
+                    "surface-dim": "#ead5d9",
+                    "secondary-fixed": "#ffd9e2",
+                    "primary-container": "#fdb2c7",
+                    "on-error": "#fff7f7",
+                    "on-surface": "#3c2f32",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#fff0f2",
+                    "on-primary-fixed": "#4c1b2d",
+                    "tertiary-dim": "#65496e",
+                    "on-secondary": "#fff7f7",
+                    "inverse-primary": "#fdb2c7",
+                    "inverse-on-surface": "#a69a9c",
+                    "tertiary-container": "#f0cbf8",
+                    "on-secondary-fixed-variant": "#71545b",
+                    "secondary": "#75575f",
+                    "on-secondary-container": "#674a52",
+                    "on-primary-fixed-variant": "#6f384a",
+                    "tertiary": "#72557b",
+                    "outline-variant": "#c1adb1",
+                    "on-secondary-fixed": "#53383f",
+                    "on-background": "#3c2f32",
+                    "on-tertiary": "#fff7fb",
+                    "on-primary": "#fff7f7",
+                    "error": "#a8364b",
+                    "error-container": "#f97386",
+                    "tertiary-fixed": "#f0cbf8",
+                    "on-tertiary-fixed-variant": "#664a70",
+                    "surface-bright": "#fff8f8",
+                    "surface-container-high": "#f7e3e7",
+                    "on-error-container": "#6e0523",
+                    "surface-variant": "#f3dde1",
+                    "on-primary-container": "#642f41",
+                    "secondary-dim": "#684b53",
+                    "primary-fixed-dim": "#eda4b9",
+                    "on-surface-variant": "#6b5b5f",
+                    "on-tertiary-container": "#5c4166",
+                    "error-dim": "#6b0221",
+                    "on-tertiary-fixed": "#482e52",
+                    "outline": "#88767a",
+                    "inverse-surface": "#130d0e",
+                    "primary-dim": "#7a4254",
+                    "surface-container-highest": "#f3dde1",
+                    "background": "#fff8f8",
+                    "surface-container": "#fce9ec",
+                    "secondary-fixed-dim": "#f1cbd4",
+                    "secondary-container": "#ffd9e2",
+                    "surface-tint": "#884d60"
             },
-            borderRadius: {
-              DEFAULT: "1rem",
-              lg: "2rem",
-              xl: "3rem",
-              full: "9999px"
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
             },
-            fontFamily: {
-              body: ["Plus Jakarta Sans"]
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Manrope"],
+                    "label": ["Manrope"]
             }
-          }
-        }
+          },
+        },
       }
     }
+    // Also set legacy global variable for older scripts
+    var tailwind = window.tailwind;
   </script>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
   <!-- MIDTRANS SNAP -->
   <script
@@ -58,22 +108,4 @@
   <script type="module" src="/src/main.jsx"></script>
 </body>
 
-</html>
-    </script>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    
-    <!-- MIDTRANS SNAP -->
-    <script
-      src="https://app.sandbox.midtrans.com/snap/snap.js"
-      data-client-key="Mid-client-SsTeZzwvy5iriSZV"
-      async
-      onload="console.log('✅ Midtrans Snap loaded! window.snap =', typeof window.snap)"
-      onerror="console.error('❌ Midtrans Snap GAGAL load – pastikan client key valid, Sandbox URL benar, dan tidak diblokir ad-blocker')">
-    </script>
-
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
 </html>

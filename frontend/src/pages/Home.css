@@ -11,6 +11,14 @@
     font-family: 'Poppins', sans-serif;
 }
 
+/* Reset default focus ring */
+input:focus, 
+textarea:focus, 
+button:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
 .search {
     width: 100%;
     max-width: 420px;
@@ -347,6 +355,38 @@
     padding: 9px 20px;
     cursor: pointer;
     font-weight: 600;
+}
+
+.file-input-wrapper {
+    position: relative;
+}
+
+.file-input-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #fdf2f7;
+    color: #955170;
+    border: 1px solid #fbd8e1;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.file-input-label:hover {
+    background: #fbd8e1;
+    color: #7a3551;
+}
+
+.file-input-label span {
+    font-size: 20px;
+}
+
+.hidden-file-input {
+    display: none;
 }
 
 .post-list {
