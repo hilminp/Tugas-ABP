@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import './ChatbotWidget.css';
 import { api } from '../lib/api';
 
+
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/$/, '');
 const PAYMENT_OPTION = 'lanjut ke pembayaran';
 
 const CHAT_ROLES = {
@@ -43,6 +45,23 @@ const ChatbotWidget = ({ forceOpen = false, hideToggle = false }) => {
             console.error('Chatbot request error:', err);
             throw err;
         }
+     * Mengirim request ke endpoint chatbot dan memastikan response sesuai format.
+     */
+    const requestChatbot = async (endpoint, method = 'GET', body) => {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            method,
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: body ? JSON.stringify(body) : undefined,
+        });
+
+        if (!response.ok) {
+            throw new Error(`Request failed with status ${response.status}`);
+        }
+
+        return response.json();
     };
 
     /**
@@ -68,12 +87,27 @@ const ChatbotWidget = ({ forceOpen = false, hideToggle = false }) => {
         try {
             const data = await requestChatbot('/chat/next', 'POST', {
                 message: messageText,
+     * Mengirim pilihan user ke backend lalu menampilkan balasan chatbot.
+     */
+    const handleOptionClick = async (selectedOption) => {
+        if (loading) {
+            return;
+        }
+
+        appendMessage(CHAT_ROLES.USER, selectedOption);
+        setLoading(true);
+        setError('');
+
+        try {
+            const data = await requestChatbot('/chat/next', 'POST', {
+                option: selectedOption,
             });
 
             appendMessage(CHAT_ROLES.BOT, data.text);
             setOptions(Array.isArray(data.options) ? data.options : []);
 
             if (messageText.toLowerCase() === PAYMENT_OPTION) {
+            if (selectedOption.toLowerCase() === PAYMENT_OPTION) {
                 setTimeout(() => {
                     navigate('/profile');
                 }, 500);
@@ -81,6 +115,7 @@ const ChatbotWidget = ({ forceOpen = false, hideToggle = false }) => {
         } catch (requestError) {
             const errorMsg = requestError.response?.data?.error || 'Maaf, aku sedang tidak bisa membalas. Coba lagi ya.';
             appendMessage(CHAT_ROLES.BOT, errorMsg);
+            appendMessage(CHAT_ROLES.BOT, 'Maaf, jawabannya belum bisa dimuat. Coba pilih lagi ya.');
             setOptions([]);
             setError(requestError.message);
         } finally {
@@ -188,6 +223,14 @@ const ChatbotWidget = ({ forceOpen = false, hideToggle = false }) => {
                                 ✕
                             </button>
                         </div>
+                        <button
+                            type="button"
+                            className="chatbot-close"
+                            onClick={() => setIsOpen(false)}
+                            aria-label="Tutup chatbot"
+                        >
+                            x
+                        </button>
                     </div>
 
                     <div className="chatbot-body">
@@ -215,6 +258,7 @@ const ChatbotWidget = ({ forceOpen = false, hideToggle = false }) => {
                         <div className="chatbot-footer">
                             <div className="chatbot-options" aria-label="Pilihan chatbot">
                                 {options.length > 0 && (
+                                {options.length > 0 ? (
                                     options.map((option) => (
                                         <button
                                             key={option}
@@ -249,6 +293,17 @@ const ChatbotWidget = ({ forceOpen = false, hideToggle = false }) => {
                                     </svg>
                                 </button>
                             </form>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        className="chatbot-reset-button"
+                                        onClick={handleReset}
+                                        disabled={loading}
+                                    >
+                                        Mulai Lagi
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </section>

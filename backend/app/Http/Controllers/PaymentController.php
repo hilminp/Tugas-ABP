@@ -63,6 +63,7 @@ class PaymentController extends Controller
                 'is_premium' => true,
                 'chatbot_usage' => 0 // Reset usage saat jadi premium
             ]);
+            $user->update(['is_premium' => true]);
             return response()->json([
                 'status' => 'success',
                 'message' => 'Account upgraded to premium!',

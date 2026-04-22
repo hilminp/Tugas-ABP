@@ -26,6 +26,8 @@ class PostController extends Controller
                 
                 // Cek apakah user saat ini menyukai post ini
                 $post->is_liked = $post->likes()->where('user_id', $request->user()->id)->exists();
+            ->map(function ($post) {
+                $this->maskAnonymousUser($post->user);
 
                 if ($post->comments) {
                     $post->comments->each(function ($comment) {
@@ -66,6 +68,8 @@ class PostController extends Controller
         $post->loadCount(['likes', 'comments']);
         $post->is_liked = false; // Post baru tentu belum dilike siapapun
         
+        // Return the created post with user, and apply the anonim rule
+        $post->load('user:id,name,role,profile_image,username,is_premium');
         $this->maskAnonymousUser($post->user);
 
         return response()->json(['message' => 'Post created successfully', 'post' => $post], 201);

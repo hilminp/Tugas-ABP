@@ -200,6 +200,12 @@ const DashboardAnonim = () => {
             await fetchPosts();
         } catch (error) {
             alert(error.response?.data?.message || 'Gagal membuat postingan.');
+            await api.post('/posts', formData);
+            setBody('');
+            setImage(null);
+            fetchPosts();
+        } catch (error) {
+            alert(error.response?.data?.message || 'Failed to create post');
         } finally {
             setLoading(false);
         }
