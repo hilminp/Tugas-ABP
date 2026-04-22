@@ -148,7 +148,7 @@ const DashboardAnonim = () => {
     const [likingPostId, setLikingPostId] = useState(null);
     const [submittingCommentId, setSubmittingCommentId] = useState(null);
     const [isPaying, setIsPaying] = useState(false);
-    const [paymentStatusModal, setPaymentStatusModal] = useState({ isOpen: false, type: '', message: '' });
+    const [statusModal, setStatusModal] = useState({ isOpen: false, type: '', message: '' });
     const [selectedCategory, setSelectedCategory] = useState('');
     const [psychologists, setPsychologists] = useState([]);
     const [psychologistTotal, setPsychologistTotal] = useState(0);
@@ -190,22 +190,12 @@ const DashboardAnonim = () => {
         if (image) formData.append('image', image);
 
         try {
-            const response = await api.post('/posts', formData);
+            await api.post('/posts', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
             setBody('');
             setImage(null);
-            
-            if (response.data.post) {
-                setPosts(prev => [response.data.post, ...prev]);
-            }
             await fetchPosts();
         } catch (error) {
-            alert(error.response?.data?.message || 'Gagal membuat postingan.');
-            await api.post('/posts', formData);
-            setBody('');
-            setImage(null);
-            fetchPosts();
-        } catch (error) {
-            alert(error.response?.data?.message || 'Failed to create post');
+            setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal membuat postingan.' });
         } finally {
             setLoading(false);
         }
@@ -218,7 +208,7 @@ const DashboardAnonim = () => {
             await api.post(`/posts/${postId}/like`);
             await fetchPosts();
         } catch (error) {
-            alert(error.response?.data?.message || 'Gagal menyukai post.');
+            setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal menyukai post.' });
         } finally {
             setLikingPostId(null);
         }
@@ -234,7 +224,7 @@ const DashboardAnonim = () => {
             setCommentInputs((prev) => ({ ...prev, [postId]: '' }));
             await fetchPosts();
         } catch (error) {
-            alert(error.response?.data?.message || 'Gagal menambahkan komentar.');
+            setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal menambahkan komentar.' });
         } finally {
             setSubmittingCommentId(null);
         }
@@ -248,23 +238,23 @@ const DashboardAnonim = () => {
             if (window.snap) {
                 window.snap.pay(res.data.snap_token, {
                     onSuccess: async function (result) {
-                        setPaymentStatusModal({ isOpen: true, type: 'success', message: 'Pembayaran sukses! Akun Anda kini Premium.' });
+                        setStatusModal({ isOpen: true, type: 'success', message: 'Pembayaran sukses! Akun Anda kini Premium.' });
                         try {
                             const successRes = await api.post('/payment/success');
                             if (successRes.data.user) updateUser(successRes.data.user);
                         } catch (e) { console.error('Gagal update status premium', e); }
                         setIsPaying(false);
                     },
-                    onPending: function () { setPaymentStatusModal({ isOpen: true, type: 'warning', message: 'Menunggu konfirmasi pembayaran.' }); setIsPaying(false); },
-                    onError: function () { setPaymentStatusModal({ isOpen: true, type: 'error', message: 'Transaksi pembayaran Anda gagal diproses.' }); setIsPaying(false); },
-                    onClose: function () { setPaymentStatusModal({ isOpen: true, type: 'info', message: 'Anda menutup jendela pembayaran tanpa menyelesaikan transaksi.' }); setIsPaying(false); },
+                    onPending: function () { setStatusModal({ isOpen: true, type: 'warning', message: 'Menunggu konfirmasi pembayaran.' }); setIsPaying(false); },
+                    onError: function () { setStatusModal({ isOpen: true, type: 'error', message: 'Transaksi pembayaran Anda gagal diproses.' }); setIsPaying(false); },
+                    onClose: function () { setStatusModal({ isOpen: true, type: 'info', message: 'Anda menutup jendela pembayaran tanpa menyelesaikan transaksi.' }); setIsPaying(false); },
                 });
             } else {
-                setPaymentStatusModal({ isOpen: true, type: 'error', message: 'Sistem pembayaran belum termuat sempurna. Coba lagi.' });
+                setStatusModal({ isOpen: true, type: 'error', message: 'Sistem pembayaran belum termuat sempurna. Coba lagi.' });
                 setIsPaying(false);
             }
         } catch (err) {
-            setPaymentStatusModal({ isOpen: true, type: 'error', message: 'Gagal memanggil sistem pembayaran: ' + (err.response?.data?.message || err.message) });
+            setStatusModal({ isOpen: true, type: 'error', message: 'Gagal memanggil sistem pembayaran: ' + (err.response?.data?.message || err.message) });
             setIsPaying(false);
         }
     };
@@ -319,11 +309,11 @@ const DashboardAnonim = () => {
         setSendingRequestId(psychologistId);
         try {
             const res = await api.post(`/friend/${psychologistId}`);
-            alert(res.data?.message || 'Permintaan konsultasi terkirim.');
+            setStatusModal({ isOpen: true, type: 'success', message: res.data?.message || 'Permintaan konsultasi terkirim.' });
             setRequestedPsychologistIds((prev) => (prev.includes(psychologistId) ? prev : [...prev, psychologistId]));
             setPsychologistStatuses((prev) => ({ ...prev, [psychologistId]: 'pending' }));
         } catch (error) {
-            alert(error.response?.data?.message || 'Gagal mengirim permintaan ke psikolog.');
+            setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal mengirim permintaan ke psikolog.' });
         } finally {
             setSendingRequestId(null);
         }
@@ -441,7 +431,7 @@ const DashboardAnonim = () => {
                                                                     )}
                                                                     <div>
                                                                         <strong>{psychologist.name}</strong>
-                                                                        <p>(psikolog)</p>
+                                                                        <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#907b86' }}>Professional Counselor</p>
                                                                     </div>
                                                                 </div>
                                                                 <div className="psychologist-specialty">
@@ -455,9 +445,9 @@ const DashboardAnonim = () => {
                                                                 >
                                                                     {!user?.is_premium ? 'Premium Diperlukan'
                                                                         : sendingRequestId === psychologist.id ? 'Mengirim...'
-                                                                        : isAccepted ? 'Psikolog Tersedia'
+                                                                        : isAccepted ? 'Mulai Konsultasi'
                                                                         : isPending ? 'Permintaan Terkirim'
-                                                                        : 'Tambah Psikolog'}
+                                                                        : 'Konsultasi'}
                                                                 </button>
                                                             </article>
                                                         );
@@ -500,8 +490,20 @@ const DashboardAnonim = () => {
                                             required
                                         />
                                         <div className="post-actions">
-                                            <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files[0])} />
-                                            <button type="submit" disabled={loading}>
+                                            <div className="file-input-wrapper">
+                                                <label htmlFor="post-image-input" className="file-input-label">
+                                                    <span className="material-symbols-outlined">add_photo_alternate</span>
+                                                    <span>{image ? image.name : 'Tambahkan Foto'}</span>
+                                                </label>
+                                                <input 
+                                                    id="post-image-input" 
+                                                    type="file" 
+                                                    accept="image/*" 
+                                                    onChange={(e) => setImage(e.target.files[0])} 
+                                                    className="hidden-file-input"
+                                                />
+                                            </div>
+                                            <button type="submit" disabled={loading} className="submit-post-btn">
                                                 {loading ? 'Memposting...' : 'Kirim Post'}
                                             </button>
                                         </div>
@@ -667,49 +669,39 @@ const DashboardAnonim = () => {
                         </aside>
                     </div>
 
-                    {user?.is_premium && (
-                        <div className="floating-action">
-                            <button
-                                type="button"
-                                onClick={() => document.querySelector('.post-create textarea')?.focus()}
-                                aria-label="Buat postingan"
-                            >
-                                +
-                            </button>
-                        </div>
-                    )}
+
                 </div>
             </div>
 
-            {paymentStatusModal.isOpen && (
+            {statusModal.isOpen && (
                 <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity" onClick={() => setPaymentStatusModal({ isOpen: false, type: '', message: '' })} />
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity" onClick={() => setStatusModal({ isOpen: false, type: '', message: '' })} />
                     <div className="relative bg-white rounded-3xl w-full max-w-sm p-8 shadow-2xl animate-in fade-in zoom-in duration-300 flex flex-col items-center text-center">
                         <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-inner
-                            ${paymentStatusModal.type === 'success' ? 'bg-emerald-100 text-emerald-600'
-                            : paymentStatusModal.type === 'error' ? 'bg-red-100 text-red-600'
-                            : paymentStatusModal.type === 'warning' ? 'bg-amber-100 text-amber-600'
+                            ${statusModal.type === 'success' ? 'bg-emerald-100 text-emerald-600'
+                            : statusModal.type === 'error' ? 'bg-red-100 text-red-600'
+                            : statusModal.type === 'warning' ? 'bg-amber-100 text-amber-600'
                             : 'bg-blue-100 text-blue-600'}`}>
                             <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>
-                                {paymentStatusModal.type === 'success' ? 'check_circle'
-                                    : paymentStatusModal.type === 'error' ? 'cancel'
-                                    : paymentStatusModal.type === 'warning' ? 'pending_actions'
+                                {statusModal.type === 'success' ? 'check_circle'
+                                    : statusModal.type === 'error' ? 'cancel'
+                                    : statusModal.type === 'warning' ? 'pending_actions'
                                     : 'info'}
                             </span>
                         </div>
                         <h3 className="text-2xl font-black text-slate-800 mb-2 tracking-tight">
-                            {paymentStatusModal.type === 'success' ? 'Berhasil!'
-                                : paymentStatusModal.type === 'error' ? 'Gagal'
-                                : paymentStatusModal.type === 'warning' ? 'Menunggu'
+                            {statusModal.type === 'success' ? 'Berhasil!'
+                                : statusModal.type === 'error' ? 'Gagal'
+                                : statusModal.type === 'warning' ? 'Menunggu'
                                 : 'Informasi'}
                         </h3>
-                        <p className="text-slate-500 mb-8 font-medium leading-relaxed">{paymentStatusModal.message}</p>
+                        <p className="text-slate-500 mb-8 font-medium leading-relaxed">{statusModal.message}</p>
                         <button
-                            onClick={() => setPaymentStatusModal({ isOpen: false, type: '', message: '' })}
+                            onClick={() => setStatusModal({ isOpen: false, type: '', message: '' })}
                             className="w-full py-3.5 rounded-full font-bold text-white shadow-lg transition-all hover:-translate-y-1 active:scale-95"
                             style={{
-                                backgroundColor: paymentStatusModal.type === 'success' ? '#10b981' : paymentStatusModal.type === 'error' ? '#ef4444' : paymentStatusModal.type === 'warning' ? '#f59e0b' : '#3b82f6',
-                                boxShadow: `0 10px 15px -3px ${paymentStatusModal.type === 'success' ? 'rgba(16,185,129,0.3)' : paymentStatusModal.type === 'error' ? 'rgba(239,68,68,0.3)' : paymentStatusModal.type === 'warning' ? 'rgba(245,158,11,0.3)' : 'rgba(59,130,246,0.3)'}`,
+                                backgroundColor: statusModal.type === 'success' ? '#10b981' : statusModal.type === 'error' ? '#ef4444' : statusModal.type === 'warning' ? '#f59e0b' : '#3b82f6',
+                                boxShadow: `0 10px 15px -3px ${statusModal.type === 'success' ? 'rgba(16,185,129,0.3)' : statusModal.type === 'error' ? 'rgba(239,68,68,0.3)' : statusModal.type === 'warning' ? 'rgba(245,158,11,0.3)' : 'rgba(59,130,246,0.3)'}`,
                             }}
                         >
                             Mengerti

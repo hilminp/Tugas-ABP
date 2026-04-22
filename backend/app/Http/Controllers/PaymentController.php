@@ -38,6 +38,9 @@ class PaymentController extends Controller
                 'first_name' => $request->user()->name ?? 'Pengguna',
                 'email' => $request->user()->email ?? 'user@example.com',
             ],
+            'callbacks' => [
+                'finish' => $request->header('origin') . '/dashboard',
+            ],
         ];
 
         try {
@@ -63,7 +66,6 @@ class PaymentController extends Controller
                 'is_premium' => true,
                 'chatbot_usage' => 0 // Reset usage saat jadi premium
             ]);
-            $user->update(['is_premium' => true]);
             return response()->json([
                 'status' => 'success',
                 'message' => 'Account upgraded to premium!',

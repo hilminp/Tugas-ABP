@@ -26,8 +26,6 @@ class PostController extends Controller
                 
                 // Cek apakah user saat ini menyukai post ini
                 $post->is_liked = $post->likes()->where('user_id', $request->user()->id)->exists();
-            ->map(function ($post) {
-                $this->maskAnonymousUser($post->user);
 
                 if ($post->comments) {
                     $post->comments->each(function ($comment) {

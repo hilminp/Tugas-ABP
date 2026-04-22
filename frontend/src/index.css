@@ -14,3 +14,21 @@ body,
   margin: 0;
   min-height: 100%;
 }
+
+.aurora-bg {
+    background: radial-gradient(circle at 20% 30%, #fce9ec 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, #fdb2c7 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, #fff8f8 0%, transparent 60%);
+    background-color: #fff8f8;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #ead5d9;
+    border-radius: 10px;
+}

@@ -13,6 +13,7 @@ const DashboardPsikolog = () => {
     const [likingPostId, setLikingPostId] = useState(null);
     const [requestActionLoadingId, setRequestActionLoadingId] = useState(null);
     const [submittingCommentId, setSubmittingCommentId] = useState(null);
+    const [statusModal, setStatusModal] = useState({ isOpen: false, type: '', message: '' });
 
     const psychologistName = user?.name || user?.username || 'Psikolog';
     const psychologistSpecialty = user?.spesialisasi || 'Spesialis Klinis';
@@ -51,7 +52,7 @@ const DashboardPsikolog = () => {
             await api.post(`/posts/${postId}/like`);
             await fetchPosts();
         } catch (error) {
-            alert(error.response?.data?.message || 'Gagal menyukai post.');
+            setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal menyukai post.' });
         } finally {
             setLikingPostId(null);
         }
@@ -69,7 +70,7 @@ const DashboardPsikolog = () => {
             setCommentInputs((prev) => ({ ...prev, [postId]: '' }));
             await fetchPosts();
         } catch (error) {
-            alert(error.response?.data?.message || 'Gagal menambahkan komentar.');
+            setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal menambahkan komentar.' });
         } finally {
             setSubmittingCommentId(null);
         }
@@ -78,10 +79,11 @@ const DashboardPsikolog = () => {
     const handleAcceptRequest = async (requesterId) => {
         setRequestActionLoadingId(requesterId);
         try {
-            await api.post(`/friend/${requesterId}/accept`);
+            const res = await api.post(`/friend/${requesterId}/accept`);
+            setStatusModal({ isOpen: true, type: 'success', message: res.data?.message || 'Pasien berhasil diterima.' });
             fetchIncomingRequests();
         } catch (error) {
-            alert(error.response?.data?.message || 'Gagal menerima pasien.');
+            setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal menerima pasien.' });
         } finally {
             setRequestActionLoadingId(null);
         }
@@ -90,10 +92,11 @@ const DashboardPsikolog = () => {
     const handleRejectRequest = async (requesterId) => {
         setRequestActionLoadingId(requesterId);
         try {
-            await api.post(`/friend/${requesterId}/reject`);
+            const res = await api.post(`/friend/${requesterId}/reject`);
+            setStatusModal({ isOpen: true, type: 'info', message: res.data?.message || 'Permintaan pasien ditolak.' });
             fetchIncomingRequests();
         } catch (error) {
-            alert(error.response?.data?.message || 'Gagal menolak pasien.');
+            setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal menolak pasien.' });
         } finally {
             setRequestActionLoadingId(null);
         }
@@ -418,6 +421,43 @@ const DashboardPsikolog = () => {
                     </div>
                 </main>
             </div>
+
+            {statusModal.isOpen && (
+                <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity" onClick={() => setStatusModal({ isOpen: false, type: '', message: '' })} />
+                    <div className="relative bg-white rounded-3xl w-full max-w-sm p-8 shadow-2xl animate-in fade-in zoom-in duration-300 flex flex-col items-center text-center">
+                        <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-inner
+                            ${statusModal.type === 'success' ? 'bg-emerald-100 text-emerald-600'
+                            : statusModal.type === 'error' ? 'bg-red-100 text-red-600'
+                            : statusModal.type === 'warning' ? 'bg-amber-100 text-amber-600'
+                            : 'bg-blue-100 text-blue-600'}`}>
+                            <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                                {statusModal.type === 'success' ? 'check_circle'
+                                    : statusModal.type === 'error' ? 'cancel'
+                                    : statusModal.type === 'warning' ? 'pending_actions'
+                                    : 'info'}
+                            </span>
+                        </div>
+                        <h3 className="text-2xl font-black text-slate-800 mb-2 tracking-tight">
+                            {statusModal.type === 'success' ? 'Berhasil!'
+                                : statusModal.type === 'error' ? 'Gagal'
+                                : statusModal.type === 'warning' ? 'Menunggu'
+                                : 'Informasi'}
+                        </h3>
+                        <p className="text-slate-500 mb-8 font-medium leading-relaxed">{statusModal.message}</p>
+                        <button
+                            onClick={() => setStatusModal({ isOpen: false, type: '', message: '' })}
+                            className="w-full py-3.5 rounded-full font-bold text-white shadow-lg transition-all hover:-translate-y-1 active:scale-95"
+                            style={{
+                                backgroundColor: statusModal.type === 'success' ? '#10b981' : statusModal.type === 'error' ? '#ef4444' : statusModal.type === 'warning' ? '#f59e0b' : '#3b82f6',
+                                boxShadow: `0 10px 15px -3px ${statusModal.type === 'success' ? 'rgba(16,185,129,0.3)' : statusModal.type === 'error' ? 'rgba(239,68,68,0.3)' : statusModal.type === 'warning' ? 'rgba(245,158,11,0.3)' : 'rgba(59,130,246,0.3)'}`,
+                            }}
+                        >
+                            Mengerti
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

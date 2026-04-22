@@ -15,7 +15,7 @@ const HomeComponentSwitcher = () => {
 
             {isChatbotOpen && (
                 <div className="home-chatbot-shell">
-                    <ChatbotWidget forceOpen hideToggle />
+                    <ChatbotWidget forceOpen hideToggle onClose={() => setIsChatbotOpen(false)} />
                 </div>
             )}
 
