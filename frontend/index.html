@@ -7,15 +7,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Sanctuary</title>
 
-  <!-- Google Fonts (Plus Jakarta Sans + Material Symbols) -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link id="google-fonts" rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" />
-  <link id="material-symbols" rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 
-  <!-- Tailwind Config (MUST be before CDN script) -->
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script>
     tailwind = {
       config: {
@@ -24,57 +23,10 @@
         theme: {
           extend: {
             colors: {
-              "on-tertiary-fixed": "#492e52",
-              "surface-container": "#fce9ec",
-              "background": "#fff8f8",
-              "on-background": "#201a1b",
-              "on-tertiary-fixed-variant": "#492e52",
-              "on-primary-fixed": "#311019",
-              "tertiary-fixed-dim": "#f5b7cc",
-              "surface-container-low": "#fff0f1",
-              "secondary": "#75565d",
-              "on-secondary-fixed-variant": "#5b3f46",
-              "outline-variant": "#d6c2c5",
-              "error-dim": "#ffb4ab",
-              "tertiary-fixed": "#ffd9e4",
-              "tertiary": "#894d5f",
-              "on-primary-fixed-variant": "#713340",
-              "on-secondary": "#ffffff",
-              "primary-fixed": "#ffd9de",
-              "inverse-surface": "#362f30",
-              "on-primary": "#ffffff",
-              "primary-dim": "#ffb2bc",
-              "on-tertiary": "#ffffff",
-              "on-tertiary-container": "#3a071c",
-              "on-primary-container": "#3f0012",
-              "tertiary-container": "#ffd9e4",
-              "surface-bright": "#fff8f8",
-              "surface-tint": "#8e4956",
-              "surface-dim": "#e6d7d7",
-              "surface-container-high": "#f0e3e5",
-              "error": "#ba1a1a",
-              "inverse-on-surface": "#fbeeea",
-              "surface-container-lowest": "#ffffff",
-              "outline": "#847375",
-              "secondary-fixed-dim": "#e4bdc4",
               "primary": "#8e4956",
-              "secondary-fixed": "#ffd9de",
-              "inverse-primary": "#ffb2bc",
-              "secondary-dim": "#e4bdc4",
-              "on-error": "#ffffff",
+              "secondary": "#75565d",
               "surface": "#fff8f8",
-              "secondary-container": "#ffd9de",
-              "on-secondary-container": "#2b151b",
-              "tertiary-dim": "#f5b7cc",
-              "on-surface-variant": "#524345",
-              "on-surface": "#201a1b",
-              "error-container": "#ffdad6",
-              "primary-fixed-dim": "#ffb2bc",
-              "surface-container-highest": "#fbeeea",
-              "primary-container": "#ffd9de",
-              "on-error-container": "#410002",
-              "surface-variant": "#f3dade",
-              "on-secondary-fixed": "#2b151b"
+              "background": "#fff8f8",
             },
             borderRadius: {
               DEFAULT: "1rem",
@@ -91,37 +43,14 @@
     }
   </script>
 
-  <!-- Tailwind CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!--
-    💳 MIDTRANS SNAP
-    - Letakkan di <head> agar PASTI selesai load sebelum React render
-    - Gunakan async agar tidak blokir parsing HTML
-    - HANYA 1 tag ini, jangan load lagi di main.jsx / komponen lain!
-  -->
-  <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="Mid-client-SsTeZzwvy5iriSZV" async
-    onload="console.log('✅ Midtrans Snap loaded! window.snap =', typeof window.snap)"
-    onerror="console.error('❌ Midtrans Snap GAGAL load – cek koneksi / ad-blocker')">
-    </script>
-
-</head>
-
-<body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.jsx"></script>
-</body>
-
-</html>
-</script>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-
-<!-- MIDTRANS SNAP -->
-<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="Mid-client-SsTeZzwvy5iriSZV" async
-  onload="console.log('✅ Midtrans Snap loaded! window.snap =', typeof window.snap)"
-  onerror="console.error('❌ Midtrans Snap GAGAL load – pastikan client key valid, Sandbox URL benar, dan tidak diblokir ad-blocker')">
+  <!-- MIDTRANS SNAP -->
+  <script
+    src="https://app.sandbox.midtrans.com/snap/snap.js"
+    data-client-key="Mid-client-SsTeZzwvy5iriSZV"
+    async
+    onload="console.log('✅ Midtrans Snap loaded!')"
+    onerror="console.error('❌ Midtrans Snap GAGAL load')">
   </script>
-
 </head>
 
 <body>

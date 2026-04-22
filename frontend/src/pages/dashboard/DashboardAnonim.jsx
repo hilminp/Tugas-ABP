@@ -1,19 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-<<<<<<< HEAD:frontend/src/pages/Home.jsx
-import Sidebar from '../components/Sidebar';
-import PaymentButton from '../components/PaymentButton';
-import { useAuth } from '../hooks/useAuth';
-import { api } from '../lib/api';
-import { PSYCHOLOGIST_CATEGORIES } from '../constants/psychologistCategories';
-import './Home.css';
-=======
 import Sidebar from '../../components/Sidebar';
 import { useAuth } from '../../hooks/useAuth';
 import { api, STORAGE_BASE_URL } from '../../lib/api';
 import { PSYCHOLOGIST_CATEGORIES } from '../../constants/psychologistCategories';
 import '../Home.css';
->>>>>>> fd50238 (mempisahkan folder anoni/register):frontend/src/pages/dashboard/DashboardAnonim.jsx
 
 const CATEGORY_ICONS = {
     kesehatan_mental: 'psychology',
@@ -203,12 +194,9 @@ const DashboardAnonim = () => {
             setBody('');
             setImage(null);
             
-            // Opsional: Prepend post baru agar langsung muncul tanpa nunggu fetch
             if (response.data.post) {
                 setPosts(prev => [response.data.post, ...prev]);
             }
-            
-            // Tetap fetch ulang untuk sinkronisasi data server (opsional tapi bagus untuk id/timestamps)
             await fetchPosts();
         } catch (error) {
             alert(error.response?.data?.message || 'Gagal membuat postingan.');
@@ -670,41 +658,7 @@ const DashboardAnonim = () => {
                                 <p>Lanjutkan progresmu dengan konselor yang sama.</p>
                                 <Link to="/messages" className="quick-return-button">Pesan Sekarang</Link>
                             </div>
-<<<<<<< HEAD
-                            <Link to="/friend-requests" className="side-link">
-                                Lihat Semua Riwayat
-                            </Link>
-                        </div>
-
-                        <div className="quick-return-card">
-                            <h3>Pesan Kembali Cepat</h3>
-                            <p>Lanjutkan progresmu dengan konselor yang sama.</p>
-                            <Link to="/messages" className="quick-return-button">Pesan Sekarang</Link>
-                        </div>
-
-                        {/* Midtrans Payment Test */}
-                        <div className="side-card" style={{ marginTop: '20px' }}>
-                            <div className="side-card-title">Top Up Saldo (Test)</div>
-                            <p style={{ fontSize: '14px', color: '#666', marginBottom: '16px' }}>
-                                Coba integrasi Midtrans Snap dengan isi saldo simulasi.
-                            </p>
-                            <PaymentButton amount={50000} />
-                        </div>
-                    </aside>
-                </div>
-
-                {user?.is_premium && (
-                    <div className="floating-action">
-                        <button
-                            type="button"
-                            onClick={() => document.querySelector('.post-create textarea')?.focus()}
-                            aria-label="Buat postingan"
-                        >
-                            +
-                        </button>
-=======
                         </aside>
->>>>>>> c4cdbe6 (fitur like dan comment)
                     </div>
 
                     {user?.is_premium && (

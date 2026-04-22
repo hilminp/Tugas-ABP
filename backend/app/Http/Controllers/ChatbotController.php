@@ -25,7 +25,7 @@ class ChatbotController extends Controller
     {
         Session::forget('chatbot_messages');
         
-        $initialMessage = 'Halo! 👋 Aku Sahabat Mental, aku di sini untuk mendengarkanmu.\n\nApa yang sedang kamu rasakan saat ini? Kamu boleh cerita apa saja, aku siap menemani dan membantu.';
+        $initialMessage = 'Halo! 👋 Aku Sahabat Mental, aku di sini untuk mendengarkanmu.' . "\n\n" . 'Apa yang sedang kamu rasakan saat ini? Kamu boleh cerita apa saja, aku siap menemani dan membantu.';
         
         Session::put('chatbot_messages', json_encode([
             ['role' => 'assistant', 'content' => $initialMessage]
@@ -99,18 +99,7 @@ class ChatbotController extends Controller
 
         $systemPrompt = [
             'role' => 'system',
-            'content' => 'Kamu adalah asisten psikologis yang hangat, empatik, dan suportif.
-Namamu adalah "Sahabat Mental".
-
-Panduan pribadimu:
-- Selalu tunjukkan empati dan pengertian
-- Gunakan bahasa yang lembut dan menenangkan
-- Jangan menghakimi, selalu diterima apa adanya
-- Berikan saran yang positif dan konstruktif
-- Jika pengguna menunjukkan tanda-tanda berbahaya, sarankan untuk mencari bantuan profesional
-- Gunakan emoji secukupnya untuk suasana yang lebih ramah
-- Jangan terlalu formal, tapi tetap profesional
-- Selalu jawab dalam Bahasa Indonesia'
+            'content' => 'Kamu adalah asisten psikologis yang hangat, empatik, dan suportif. Namamu adalah "Sahabat Mental". Selalu gunakan Bahasa Indonesia.'
         ];
 
         $fullMessages = array_merge([$systemPrompt], $messages);
