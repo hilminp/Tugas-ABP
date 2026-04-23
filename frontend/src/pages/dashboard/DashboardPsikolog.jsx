@@ -18,6 +18,8 @@ const DashboardPsikolog = () => {
     const [isActivityLoading, setIsActivityLoading] = useState(false);
     const [statusModal, setStatusModal] = useState({ isOpen: false, type: '', message: '', title: '', onConfirm: null });
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: '', message: '', action: null, targetId: null });
+    const [reviewsData, setReviewsData] = useState({ reviews: [], average_rating: 0, total_reviews: 0 });
+    const [reviewsLoading, setReviewsLoading] = useState(true);
 
     const psychologistName = user?.name || user?.username || 'Psikolog';
     const psychologistSpecialty = user?.spesialisasi || 'Spesialis Klinis';
@@ -28,8 +30,21 @@ const DashboardPsikolog = () => {
     useEffect(() => {
         fetchPosts();
         fetchIncomingRequests();
+        fetchReviews();
         fetchPaidAnonymousActivity();
     }, []);
+
+    const fetchReviews = async () => {
+        setReviewsLoading(true);
+        try {
+            const res = await api.get('/reviews');
+            setReviewsData(res.data);
+        } catch (error) {
+            console.error('Error fetching reviews:', error);
+        } finally {
+            setReviewsLoading(false);
+        }
+    };
 
     const fetchPosts = async () => {
         try {
@@ -248,10 +263,7 @@ const DashboardPsikolog = () => {
                     </Link>
                 </nav>
                 <div className="mt-auto">
-                    <button className="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2">
-                        <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>add_circle</span>
-                        Mulai Sesi Baru
-                    </button>
+
                     <button
                         type="button"
                         onClick={handleLogout}
@@ -388,7 +400,7 @@ const DashboardPsikolog = () => {
                                     <p className="text-sm text-stone-500">Belum ada permintaan pasien baru.</p>
                                 ) : (
                                     <div className="space-y-4">
-                                        {incomingRequests.slice(0, 5).map((request) => (
+                                        {incomingRequests.slice(0, 3).map((request) => (
                                             <div key={request.id} className="relative overflow-hidden bg-gradient-to-r from-white to-[#fffcfd] border border-[#f0dde7] rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
                                                 <div className="flex items-start justify-between mb-3">
                                                     <div className="flex items-center gap-3">
@@ -443,10 +455,12 @@ const DashboardPsikolog = () => {
                                                 )}
                                             </div>
                                         ))}
-                                        <Link to="/friend-requests" className="flex items-center justify-center gap-2 py-3 w-full text-sm font-bold text-[#A46477] bg-[#A46477]/5 rounded-xl hover:bg-[#A46477]/10 transition-colors">
-                                            <span>Lihat semua permintaan</span>
-                                            <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                                        </Link>
+                                        {incomingRequests.length > 3 && (
+                                            <Link to="/friend-requests" className="flex items-center justify-center gap-2 py-3 w-full text-sm font-bold text-[#A46477] bg-[#A46477]/5 rounded-xl hover:bg-[#A46477]/10 transition-colors">
+                                                <span>Lihat semua permintaan</span>
+                                                <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                                            </Link>
+                                        )}
                                     </div>
                                 )}
                             </section>
@@ -487,20 +501,78 @@ const DashboardPsikolog = () => {
                                     Buka Panel Konsultasi
                                 </button>
                             </section>
-
-                            <section className="bg-[#e9f5f1] border border-[#c4e4d9] rounded-2xl p-6 shadow-sm">
-                                <h3 className="text-sm font-bold text-[#4a7c6b] uppercase tracking-widest mb-4">Statistik Hari Ini</h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-4 bg-white/60 rounded-xl border border-white/40">
-                                        <p className="text-xs text-[#5a8d7c] mb-1">Selesai</p>
-                                        <p className="text-xl font-bold text-[#204a3c]">18</p>
-                                    </div>
-                                    <div className="p-4 bg-white/60 rounded-xl border border-white/40">
-                                        <p className="text-xs text-[#5a8d7c] mb-1">Rating</p>
-                                        <div className="flex items-center gap-1">
-                                            <p className="text-xl font-bold text-[#204a3c]">4.9</p>
-                                            <span className="material-symbols-outlined text-yellow-500 text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                             <section className="bg-white border border-[#edd8e3] rounded-3xl p-6 shadow-sm overflow-hidden relative">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl" />
+                                <div className="relative z-10">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h3 className="text-sm font-black text-[#A46477] uppercase tracking-widest">Rating & Review</h3>
+                                        <div className="flex items-center gap-1 bg-amber-50 px-3 py-1 rounded-full border border-amber-100">
+                                            <span className="text-sm font-black text-amber-700">{reviewsData.average_rating}</span>
+                                            <span className="material-symbols-outlined text-amber-500 text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                                         </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-6 mb-8">
+                                        <div className="flex flex-col items-center justify-center p-4 bg-gradient-to-br from-[#A46477] to-[#8a5263] rounded-2xl text-white shadow-lg shadow-primary/20 w-24">
+                                            <span className="text-3xl font-black">{reviewsData.average_rating}</span>
+                                            <span className="text-[10px] font-bold uppercase opacity-80">Rata-rata</span>
+                                        </div>
+                                        <div>
+                                            <p className="text-2xl font-black text-slate-800">{reviewsData.total_reviews}</p>
+                                            <p className="text-xs font-medium text-stone-500 uppercase tracking-tighter">Total Feedback Anonim</p>
+                                            <div className="flex gap-0.5 mt-1">
+                                                {[1, 2, 3, 4, 5].map((s) => (
+                                                    <span key={s} className="material-symbols-outlined text-[14px] text-amber-400" style={{ fontVariationSettings: s <= Math.round(reviewsData.average_rating) ? "'FILL' 1" : "''" }}>star</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
+                                        {reviewsLoading ? (
+                                            [1, 2].map(i => (
+                                                <div key={i} className="animate-pulse flex gap-3">
+                                                    <div className="w-8 h-8 bg-stone-100 rounded-full" />
+                                                    <div className="flex-1 space-y-2">
+                                                        <div className="h-2 bg-stone-100 rounded w-1/4" />
+                                                        <div className="h-2 bg-stone-100 rounded w-full" />
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : reviewsData.reviews.length === 0 ? (
+                                            <div className="py-8 text-center">
+                                                <div className="w-12 h-12 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                    <span className="material-symbols-outlined text-stone-300">rate_review</span>
+                                                </div>
+                                                <p className="text-xs font-medium text-stone-400">Belum ada review dari pasien.</p>
+                                            </div>
+                                        ) : (
+                                            reviewsData.reviews.map((review) => (
+                                                <div key={review.id} className="group bg-[#fff9fb] border border-[#f5ebf0] rounded-2xl p-4 transition-all hover:border-primary/20 hover:shadow-sm">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                                                                {review.is_anonymous ? 'A' : (review.patient?.name?.charAt(0) || 'U')}
+                                                            </div>
+                                                            <p className="text-xs font-bold text-slate-700">
+                                                                {review.is_anonymous ? 'Anonim' : (review.patient?.name || 'User')}
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex gap-0.5">
+                                                            {[1, 2, 3, 4, 5].map((s) => (
+                                                                <span key={s} className="material-symbols-outlined text-[10px] text-amber-400" style={{ fontVariationSettings: s <= review.rating ? "'FILL' 1" : "''" }}>star</span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                    <p className="text-[11px] text-stone-600 leading-relaxed italic italic-quote">
+                                                        "{review.comment || 'Tidak ada komentar.'}"
+                                                    </p>
+                                                    <p className="text-[9px] text-stone-400 mt-2 text-right">
+                                                        {new Date(review.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                                                    </p>
+                                                </div>
+                                            ))
+                                        )}
                                     </div>
                                 </div>
                             </section>

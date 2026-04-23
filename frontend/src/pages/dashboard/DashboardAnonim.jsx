@@ -160,6 +160,10 @@ const DashboardAnonim = () => {
     const [sendingRequestId, setSendingRequestId] = useState(null);
     const [requestedPsychologistIds, setRequestedPsychologistIds] = useState([]);
     const [psychologistStatuses, setPsychologistStatuses] = useState({});
+    const [feedbackModal, setFeedbackModal] = useState({ isOpen: false, psychologistId: null, psychologistName: '' });
+    const [feedbackRating, setFeedbackRating] = useState(5);
+    const [feedbackComment, setFeedbackComment] = useState('');
+    const [submittingFeedback, setSubmittingFeedback] = useState(false);
     const [chatActivity, setChatActivity] = useState([]);
     const [activityStats, setActivityStats] = useState({ posts: 0, likes: 0, comments: 0 });
 
@@ -336,6 +340,7 @@ const DashboardAnonim = () => {
 
         try {
             const res = await api.get('/psychologists', { params: { category: category || undefined, limit, offset: nextOffset } });
+            console.log('Psychologists fetched:', res.data.data); // Debug
             const newData = Array.isArray(res.data?.data) ? res.data.data : [];
             setPsychologists((prev) => (loadMore ? [...prev, ...newData] : newData));
             setPsychologistTotal(Number(res.data?.total || 0));
@@ -385,6 +390,35 @@ const DashboardAnonim = () => {
             setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal mengirim permintaan ke psikolog.' });
         } finally {
             setSendingRequestId(null);
+        }
+    };
+
+    const handleOpenFeedback = (psychologist) => {
+        setFeedbackModal({
+            isOpen: true,
+            psychologistId: psychologist.id,
+            psychologistName: psychologist.name
+        });
+        setFeedbackRating(5);
+        setFeedbackComment('');
+    };
+
+    const handleSubmitFeedback = async (e) => {
+        e.preventDefault();
+        setSubmittingFeedback(true);
+        try {
+            await api.post(`/psychologists/${feedbackModal.psychologistId}/reviews`, {
+                rating: feedbackRating,
+                comment: feedbackComment,
+                is_anonymous: true
+            });
+            setFeedbackModal({ isOpen: false, psychologistId: null, psychologistName: '' });
+            setStatusModal({ isOpen: true, type: 'success', message: 'Terima kasih atas feedback Anda!' });
+            fetchPsychologists(selectedCategory, false);
+        } catch (error) {
+            setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal mengirim feedback.' });
+        } finally {
+            setSubmittingFeedback(false);
         }
     };
 
@@ -503,23 +537,43 @@ const DashboardAnonim = () => {
                                                                     <div>
                                                                         <strong>{psychologist.name}</strong>
                                                                         <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#907b86' }}>Professional Counselor</p>
+                                                                        <div className="flex items-center gap-1 mt-1">
+                                                                            <div className="flex gap-0.5">
+                                                                                {[1, 2, 3, 4, 5].map((s) => (
+                                                                                    <span key={s} className="material-symbols-outlined text-[12px] text-amber-400" style={{ fontVariationSettings: s <= Math.round(psychologist.reviews_avg_rating || 0) ? "'FILL' 1" : "''" }}>star</span>
+                                                                                ))}
+                                                                            </div>
+                                                                            <span className="text-[10px] font-bold text-stone-400">({psychologist.reviews_count || 0})</span>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                                 <div className="psychologist-specialty">
                                                                     {PSYCHOLOGIST_CATEGORIES.find((c) => c.value === psychologist.spesialisasi)?.label || 'Umum'}
                                                                 </div>
-                                                                <button
-                                                                    type="button"
-                                                                    className="psychologist-contact-btn"
-                                                                    onClick={() => handleAddPsychologist(psychologist.id)}
-                                                                    disabled={isRequestDisabled}
-                                                                >
-                                                                    {!user?.is_premium ? 'Premium Diperlukan'
-                                                                        : sendingRequestId === psychologist.id ? 'Mengirim...'
-                                                                        : isAccepted ? 'Mulai Konsultasi'
-                                                                        : isPending ? 'Permintaan Terkirim'
-                                                                        : 'Konsultasi'}
-                                                                </button>
+                                                                <div className="flex gap-2">
+                                                                    <button
+                                                                        type="button"
+                                                                        className="psychologist-contact-btn flex-1"
+                                                                        onClick={() => handleAddPsychologist(psychologist.id)}
+                                                                        disabled={isRequestDisabled}
+                                                                    >
+                                                                        {!user?.is_premium ? 'Premium Diperlukan'
+                                                                            : sendingRequestId === psychologist.id ? 'Mengirim...'
+                                                                            : isAccepted ? 'Mulai Konsultasi'
+                                                                            : isPending ? 'Permintaan Terkirim'
+                                                                            : 'Konsultasi'}
+                                                                    </button>
+                                                                    {isAccepted && (
+                                                                        <button
+                                                                            type="button"
+                                                                            className="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 border border-amber-100 flex items-center justify-center hover:bg-amber-100 transition-colors"
+                                                                            onClick={() => handleOpenFeedback(psychologist)}
+                                                                            title="Beri Rating"
+                                                                        >
+                                                                            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                                                                        </button>
+                                                                    )}
+                                                                </div>
                                                             </article>
                                                         );
                                                     })}
@@ -844,6 +898,69 @@ const DashboardAnonim = () => {
                         >
                             Mengerti
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {feedbackModal.isOpen && (
+                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity" onClick={() => setFeedbackModal({ ...feedbackModal, isOpen: false })} />
+                    <div className="relative bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl animate-in fade-in zoom-in duration-300">
+                        <div className="text-center mb-8">
+                            <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-lg">
+                                <span className="material-symbols-outlined text-4xl text-amber-500" style={{ fontVariationSettings: "'FILL' 1" }}>grade</span>
+                            </div>
+                            <h3 className="text-2xl font-black text-slate-800 tracking-tight">Beri Rating</h3>
+                            <p className="text-stone-500 mt-2 font-medium">Bagaimana pengalaman konsultasi Anda bersama <span className="text-[#A46477] font-bold">{feedbackModal.psychologistName}</span>?</p>
+                        </div>
+
+                        <form onSubmit={handleSubmitFeedback}>
+                            <div className="flex justify-center gap-2 mb-8">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <button
+                                        key={star}
+                                        type="button"
+                                        onClick={() => setFeedbackRating(star)}
+                                        className="focus:outline-none transition-transform hover:scale-110 active:scale-95"
+                                    >
+                                        <span 
+                                            className={`material-symbols-outlined text-4xl transition-colors ${star <= feedbackRating ? 'text-amber-400' : 'text-stone-200'}`}
+                                            style={{ fontVariationSettings: star <= feedbackRating ? "'FILL' 1" : "''" }}
+                                        >
+                                            star
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="mb-8">
+                                <label className="block text-xs font-black text-stone-400 uppercase tracking-widest mb-3 px-1">Pesan Feedback (Anonim)</label>
+                                <textarea
+                                    className="w-full bg-stone-50 border-2 border-stone-100 rounded-2xl p-4 text-slate-700 font-medium placeholder:text-stone-300 focus:border-[#A46477]/30 focus:bg-white outline-none transition-all resize-none h-32"
+                                    placeholder="Tuliskan kesan atau pesan Anda..."
+                                    value={feedbackComment}
+                                    onChange={(e) => setFeedbackComment(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setFeedbackModal({ ...feedbackModal, isOpen: false })}
+                                    className="flex-1 py-4 rounded-2xl font-bold text-stone-500 bg-stone-100 hover:bg-stone-200 transition-all active:scale-95"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={submittingFeedback}
+                                    className="flex-1 py-4 rounded-2xl font-bold text-white bg-[#A46477] shadow-lg shadow-[#A46477]/20 hover:bg-[#8a5263] transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:translate-y-0"
+                                >
+                                    {submittingFeedback ? 'Mengirim...' : 'Kirim Review'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

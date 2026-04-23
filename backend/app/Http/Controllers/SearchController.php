@@ -20,7 +20,9 @@ class SearchController extends Controller
                       ->orWhere('username', 'like', "%{$q}%")
                       ->orWhere('email', 'like', "%{$q}%");
             })
-            ->select('id', 'name', 'username', 'role', 'is_suspended', 'suspended_reason')
+            ->select('id', 'name', 'username', 'role', 'is_suspended', 'suspended_reason', 'profile_image', 'spesialisasi')
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
             ->get();
 
         return response()->json(['results' => $results, 'query' => $q]);
@@ -49,6 +51,8 @@ class SearchController extends Controller
         $total = (clone $query)->count();
         $psychologists = $query
             ->select('id', 'name', 'username', 'profile_image', 'spesialisasi')
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
             ->latest()
             ->skip($offset)
             ->take($limit)
