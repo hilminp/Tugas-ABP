@@ -14,6 +14,8 @@ const DashboardPsikolog = () => {
     const [likingPostId, setLikingPostId] = useState(null);
     const [requestActionLoadingId, setRequestActionLoadingId] = useState(null);
     const [submittingCommentId, setSubmittingCommentId] = useState(null);
+    const [paidAnonymousActivityData, setPaidAnonymousActivityData] = useState([]);
+    const [isActivityLoading, setIsActivityLoading] = useState(false);
     const [statusModal, setStatusModal] = useState({ isOpen: false, type: '', message: '', title: '', onConfirm: null });
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: '', message: '', action: null, targetId: null });
 
@@ -26,6 +28,7 @@ const DashboardPsikolog = () => {
     useEffect(() => {
         fetchPosts();
         fetchIncomingRequests();
+        fetchPaidAnonymousActivity();
     }, []);
 
     const fetchPosts = async () => {
@@ -43,6 +46,56 @@ const DashboardPsikolog = () => {
             setIncomingRequests(res.data?.requests || []);
         } catch (error) {
             console.error('Error fetching incoming requests:', error);
+        }
+    };
+
+    const fetchPaidAnonymousActivity = async () => {
+        setIsActivityLoading(true);
+        try {
+            const friendsRes = await api.get('/messages');
+            const allFriends = friendsRes.data?.friends || [];
+            const paidAnonymousFriends = allFriends.filter(
+                (friend) => friend?.role === 'anonim' && Boolean(friend?.is_premium)
+            );
+
+            const now = new Date();
+            const sevenDaysAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
+
+            const activityRows = await Promise.all(
+                paidAnonymousFriends.map(async (friend, index) => {
+                    try {
+                        const threadRes = await api.get(`/messages/${friend.id}`);
+                        const messages = Array.isArray(threadRes.data?.messages) ? threadRes.data.messages : [];
+                        const weeklyMessages = messages.filter((message) => {
+                            const createdAt = new Date(message.created_at);
+                            if (Number.isNaN(createdAt.getTime())) return false;
+                            return createdAt >= sevenDaysAgo;
+                        });
+
+                        return {
+                            id: friend.id || `anon-paid-${index}`,
+                            label: friend.name || `Anonim #${String(index + 1).padStart(2, '0')}`,
+                            plan: 'Berbayar',
+                            value: weeklyMessages.length,
+                        };
+                    } catch (threadError) {
+                        console.error(`Error fetching thread for user ${friend.id}:`, threadError);
+                        return null;
+                    }
+                })
+            );
+
+            const cleanedRows = activityRows
+                .filter(Boolean)
+                .sort((a, b) => b.value - a.value)
+                .slice(0, 6);
+
+            setPaidAnonymousActivityData(cleanedRows);
+        } catch (error) {
+            console.error('Error fetching paid anonymous activity:', error);
+            setPaidAnonymousActivityData([]);
+        } finally {
+            setIsActivityLoading(false);
         }
     };
 
@@ -161,6 +214,8 @@ const DashboardPsikolog = () => {
             navigate('/login');
         }
     };
+
+    const highestActivityValue = Math.max(...paidAnonymousActivityData.map((item) => item.value), 1);
 
     return (
         <div className="bg-gradient-to-br from-[#fff9fc] via-[#ffeaf3] to-[#ffd6e8] text-on-background min-h-screen flex">
@@ -448,6 +503,36 @@ const DashboardPsikolog = () => {
                                         </div>
                                     </div>
                                 </div>
+                            </section>
+
+                            <section className="bg-white border border-[#e8d6ff] rounded-2xl p-6 shadow-sm">
+                                <div className="flex items-center justify-between mb-5">
+                                    <h3 className="text-sm font-bold text-[#5a3c7d] uppercase tracking-widest">Akun Anonim Berbayar</h3>
+                                    <span className="text-xs px-2 py-1 rounded-full bg-[#f5edff] text-[#7b57ad] font-semibold">7 Hari Terakhir</span>
+                                </div>
+                                {isActivityLoading ? (
+                                    <p className="text-sm text-[#7c629f]">Memuat data aktivitas chat...</p>
+                                ) : paidAnonymousActivityData.length === 0 ? (
+                                    <p className="text-sm text-[#7c629f]">Belum ada akun anonim berbayar dengan aktivitas chat.</p>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {paidAnonymousActivityData.map((item) => (
+                                            <div key={item.id}>
+                                                <div className="flex items-center justify-between mb-1.5">
+                                                    <p className="text-sm font-semibold text-[#3f2a59]">{item.label}</p>
+                                                    <p className="text-[11px] font-medium text-[#8b6bb5]">{item.plan}</p>
+                                                </div>
+                                                <div className="w-full h-2.5 rounded-full bg-[#f0e6ff] overflow-hidden">
+                                                    <div
+                                                        className="h-full rounded-full bg-gradient-to-r from-[#9d7ad5] to-[#7a4fb6]"
+                                                        style={{ width: `${Math.max(8, Math.round((item.value / highestActivityValue) * 100))}%` }}
+                                                    />
+                                                </div>
+                                                <p className="text-[11px] text-[#7c629f] mt-1">{item.value} pesan</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </section>
 
                             <section className="bg-[#f2f0f9] border border-[#dad6eb] rounded-2xl p-6 shadow-sm">
