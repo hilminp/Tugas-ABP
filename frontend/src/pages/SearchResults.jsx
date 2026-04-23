@@ -102,6 +102,16 @@ const SearchResults = () => {
                             <div>
                                 <div style={{fontWeight: 600}}>{u.name}</div>
                                 <div style={{fontSize: '13px', color: '#777'}}>({u.role === 'psikolog' ? 'psikolog' : 'anonim'})</div>
+                                {u.role === 'psikolog' && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                                        <div style={{ display: 'flex' }}>
+                                            {[1, 2, 3, 4, 5].map((s) => (
+                                                <span key={s} className="material-symbols-outlined" style={{ fontSize: '14px', color: '#fbbf24', fontVariationSettings: s <= Math.round(u.reviews_avg_rating || 0) ? "'FILL' 1" : "''" }}>star</span>
+                                            ))}
+                                        </div>
+                                        <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>({u.reviews_count || 0})</span>
+                                    </div>
+                                )}
                             </div>
                             <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
                                 {!adminViewing && (

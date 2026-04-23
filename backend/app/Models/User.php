@@ -49,6 +49,11 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'psychologist_id');
+    }
+
     /**
      * Check if there's already a friendship/ request between two users
      */
