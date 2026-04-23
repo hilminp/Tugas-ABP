@@ -45,6 +45,7 @@ const Sidebar = () => {
                 <Link to="/home"><span>📈</span>Linimasa</Link>
                 <Link to="/messages"><span>💬</span>Pesan</Link>
                 <Link to="/friend-requests"><span>🕒</span>Riwayat</Link>
+                <Link to="/sessions"><span>📅</span>Jadwal</Link>
                 {user?.is_admin && <Link to="/admin/dashboard"><span>⚙️</span>Admin Dashboard</Link>}
             </nav>
 

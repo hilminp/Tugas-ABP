@@ -32,14 +32,58 @@ class MessageController extends Controller
         })->orWhere(function($q) use ($meId, $id) {
             $q->where('user_id', $id)->where('friend_id', $meId)->where('status', 'accepted');
         })->exists();
+
         if (!$isFriend) return response()->json(['message' => 'Anda bukan teman dengan user ini'], 403);
+
         $messages = Message::where(function($q) use ($meId, $id) {
             $q->where('sender_id', $meId)->where('recipient_id', $id);
         })->orWhere(function($q) use ($meId, $id) {
             $q->where('sender_id', $id)->where('recipient_id', $meId);
         })->orderBy('created_at')->get();
+        
         $friend = User::find($id);
-        return response()->json(['messages' => $messages, 'friend' => $friend]);
+        
+        // Active Session Check
+        $isLocked = false;
+        $lockMessage = '';
+        if ($request->user()->role === 'psikolog' || $friend->role === 'psikolog') {
+            $psychologistId = $request->user()->role === 'psikolog' ? $request->user()->id : $friend->id;
+            $userId = $request->user()->role === 'psikolog' ? $friend->id : $request->user()->id;
+
+            $now = now();
+            $currentTime = $now->toTimeString();
+            $oneHourAgoTime = $now->copy()->subHour()->toTimeString();
+            $oneHourAgoTimestamp = $now->copy()->subHour();
+
+            $activeSession = \App\Models\ConsultationSession::where('psychologist_id', $psychologistId)
+                ->where('user_id', $userId)
+                ->where('status', 'booked')
+                ->whereNull('ended_at')
+                ->where(function($query) use ($now, $currentTime, $oneHourAgoTime, $oneHourAgoTimestamp) {
+                    $query->where(function($q) use ($now, $currentTime, $oneHourAgoTime) {
+                        $q->where('session_date', $now->toDateString())
+                          ->where('session_time', '<=', $currentTime)
+                          ->where('session_time', '>', $oneHourAgoTime);
+                    })
+                    ->orWhere(function($q) use ($oneHourAgoTimestamp) {
+                        $q->whereNotNull('started_at')
+                          ->where('started_at', '>=', $oneHourAgoTimestamp);
+                    });
+                })
+                ->exists();
+
+            if (!$activeSession) {
+                $isLocked = true;
+                $lockMessage = 'Chat dikunci. Sesi konsultasi belum dimulai atau sudah berakhir.';
+            }
+        }
+
+        return response()->json([
+            'messages' => $messages, 
+            'friend' => $friend,
+            'is_locked' => $isLocked,
+            'lock_message' => $lockMessage
+        ]);
     }
 
     public function send(Request $request, $id)
@@ -51,7 +95,43 @@ class MessageController extends Controller
         })->orWhere(function($q) use ($meId, $id) {
             $q->where('user_id', $id)->where('friend_id', $meId)->where('status', 'accepted');
         })->exists();
+
         if (!$isFriend) return response()->json(['message' => 'Anda bukan teman dengan user ini'], 403);
+
+        // Chat Lock Logic: Only allow chat if there is an active session
+        $sender = $request->user();
+        $recipient = User::findOrFail($id);
+
+        if ($sender->role === 'psikolog' || $recipient->role === 'psikolog') {
+            $psychologistId = $sender->role === 'psikolog' ? $sender->id : $recipient->id;
+            $userId = $sender->role === 'psikolog' ? $recipient->id : $sender->id;
+
+            $now = now();
+            $currentTime = $now->toTimeString();
+            $oneHourAgoTime = $now->copy()->subHour()->toTimeString();
+            $oneHourAgoTimestamp = $now->copy()->subHour();
+
+            $activeSession = \App\Models\ConsultationSession::where('psychologist_id', $psychologistId)
+                ->where('user_id', $userId)
+                ->where('status', 'booked')
+                ->whereNull('ended_at')
+                ->where(function($query) use ($now, $currentTime, $oneHourAgoTime, $oneHourAgoTimestamp) {
+                    $query->where(function($q) use ($now, $currentTime, $oneHourAgoTime) {
+                        $q->where('session_date', $now->toDateString())
+                          ->where('session_time', '<=', $currentTime)
+                          ->where('session_time', '>', $oneHourAgoTime);
+                    })
+                    ->orWhere(function($q) use ($oneHourAgoTimestamp) {
+                        $q->whereNotNull('started_at')
+                          ->where('started_at', '>=', $oneHourAgoTimestamp);
+                    });
+                })
+                ->exists();
+
+            if (!$activeSession) {
+                return response()->json(['message' => 'Chat dikunci. Anda hanya dapat mengirim pesan saat sesi konsultasi berlangsung.'], 403);
+            }
+        }
 
         // Sanitize: trim spaces and trailing newlines to avoid tall bubbles
         $clean = trim((string) $request->body);

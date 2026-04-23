@@ -17,6 +17,8 @@ class RegistrationController extends Controller
             'str_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
             'ijazah_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
             'spesialisasi' => 'required|string',
+            'no_rekening' => 'required|string',
+            'nama_bank' => 'required|string',
         ]);
 
         $strPath = $request->file('str_file')->store('str_files', 'public');
@@ -32,6 +34,8 @@ class RegistrationController extends Controller
             'str_file' => $strPath,
             'ijazah_file' => $ijazahPath,
             'spesialisasi' => $request->spesialisasi,
+            'no_rekening' => $request->no_rekening,
+            'nama_bank' => $request->nama_bank,
         ]);
 
         return response()->json(['message' => 'Registrasi berhasil! Akun Anda menunggu verifikasi admin. Silakan login setelah diverifikasi.', 'user' => $user]);

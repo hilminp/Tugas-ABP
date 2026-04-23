@@ -20,6 +20,8 @@ const DashboardPsikolog = () => {
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: '', message: '', action: null, targetId: null });
     const [reviewsData, setReviewsData] = useState({ reviews: [], average_rating: 0, total_reviews: 0 });
     const [reviewsLoading, setReviewsLoading] = useState(true);
+    const [sessions, setSessions] = useState([]);
+    const [sessionsLoading, setSessionsLoading] = useState(true);
 
     const psychologistName = user?.name || user?.username || 'Psikolog';
     const psychologistSpecialty = user?.spesialisasi || 'Spesialis Klinis';
@@ -32,7 +34,20 @@ const DashboardPsikolog = () => {
         fetchIncomingRequests();
         fetchReviews();
         fetchPaidAnonymousActivity();
+        fetchSessions();
     }, []);
+
+    const fetchSessions = async () => {
+        setSessionsLoading(true);
+        try {
+            const res = await api.get('/consultation-sessions');
+            setSessions(res.data.sessions || []);
+        } catch (error) {
+            console.error('Error fetching sessions:', error);
+        } finally {
+            setSessionsLoading(false);
+        }
+    };
 
     const fetchReviews = async () => {
         setReviewsLoading(true);
@@ -256,6 +271,10 @@ const DashboardPsikolog = () => {
                     <Link className="flex items-center gap-3 px-4 py-3 rounded-lg text-stone-500 hover:bg-stone-100 transition-colors active:scale-95 duration-150" to="/friend-requests">
                         <span className="material-symbols-outlined">history</span>
                         <span className="font-['Plus_Jakarta_Sans'] font-medium">Riwayat</span>
+                    </Link>
+                    <Link className="flex items-center gap-3 px-4 py-3 rounded-lg text-stone-500 hover:bg-stone-100 transition-colors active:scale-95 duration-150" to="/sessions">
+                        <span className="material-symbols-outlined">calendar_today</span>
+                        <span className="font-['Plus_Jakarta_Sans'] font-medium">Jadwal Sesi</span>
                     </Link>
                     <Link className="flex items-center gap-3 px-4 py-3 rounded-lg text-stone-500 hover:bg-stone-100 transition-colors active:scale-95 duration-150" to="/profile">
                         <span className="material-symbols-outlined">person</span>
@@ -610,31 +629,30 @@ const DashboardPsikolog = () => {
                             <section className="bg-[#f2f0f9] border border-[#dad6eb] rounded-2xl p-6 shadow-sm">
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="font-bold text-[#4a457c]">Janji Terjadwal</h3>
-                                    <button type="button" className="text-[#6359c1] text-xs font-bold">Lihat Semua</button>
+                                    <Link to="/sessions" className="text-[#6359c1] text-xs font-bold">Lihat Semua</Link>
                                 </div>
                                 <div className="space-y-4">
-                                    <div className="flex gap-4 items-start">
-                                        <div className="flex flex-col items-center justify-center bg-[#6359c1]/10 text-[#6359c1] w-12 h-12 rounded-lg border border-[#6359c1]/20">
-                                            <span className="text-xs font-bold">14</span>
-                                            <span className="text-[10px] uppercase">Okt</span>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-[#2a2651] leading-none">Konsultasi Depresi</p>
-                                            <p className="text-xs text-[#6b6699] mt-1">15:00 - 16:00 • Video Call</p>
-                                            <p className="text-xs font-medium text-[#4a457c] mt-0.5">Andi Wijaya</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-4 items-start">
-                                        <div className="flex flex-col items-center justify-center bg-white/60 text-[#6b6699] w-12 h-12 rounded-lg border border-stone-200">
-                                            <span className="text-xs font-bold">15</span>
-                                            <span className="text-[10px] uppercase">Okt</span>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-[#2a2651] leading-none">Terapi Kecemasan</p>
-                                            <p className="text-xs text-[#6b6699] mt-1">10:00 - 11:00 • Chat</p>
-                                            <p className="text-xs font-medium text-[#4a457c] mt-0.5">Siska Putri</p>
-                                        </div>
-                                    </div>
+                                    {sessionsLoading ? (
+                                        <p className="text-xs text-stone-400">Memuat jadwal...</p>
+                                    ) : sessions.filter(s => s.status === 'booked' || s.status === 'pending_approval').length === 0 ? (
+                                        <p className="text-xs text-stone-400">Tidak ada janji terjadwal.</p>
+                                    ) : (
+                                        sessions.filter(s => s.status === 'booked' || s.status === 'pending_approval').slice(0, 3).map(session => (
+                                            <div key={session.id} className="flex gap-4 items-start">
+                                                <div className={`flex flex-col items-center justify-center w-12 h-12 rounded-lg border ${session.status === 'pending_approval' ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-[#6359c1]/10 text-[#6359c1] border-[#6359c1]/20'}`}>
+                                                    <span className="text-xs font-bold">{new Date(session.session_date).getDate()}</span>
+                                                    <span className="text-[10px] uppercase">{new Date(session.session_date).toLocaleString('id-ID', { month: 'short' })}</span>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-bold text-[#2a2651] leading-none">Konsultasi {session.user?.name || 'Pasien'}</p>
+                                                    <p className="text-xs text-[#6b6699] mt-1">{session.session_time.substring(0, 5)} • {session.status === 'pending_approval' ? 'MENUNGGU' : 'TERJADWAL'}</p>
+                                                    {session.status === 'pending_approval' && (
+                                                        <Link to="/sessions" className="text-[10px] font-black text-amber-600 underline mt-1 block">KONFIRMASI SEKARANG</Link>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
                             </section>
                         </aside>

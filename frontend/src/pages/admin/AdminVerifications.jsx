@@ -364,6 +364,16 @@ const AdminVerifications = () => {
                                                 </div>
                                             </div>
 
+                                            <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 mb-6 flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                                                    <span className="material-symbols-outlined">payments</span>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-[10px] font-bold text-amber-800 uppercase">Informasi Pembayaran</span>
+                                                    <p className="text-sm font-black text-amber-900">{u.nama_bank || 'BANK'} - {u.no_rekening || 'Belum diisi'}</p>
+                                                </div>
+                                            </div>
+
                                             {u.statusType === 'pending' ? (
                                                 <div className="flex gap-3">
                                                     <button onClick={() => openVerifyModal(u.id, u.name)} className="group/approve flex-1 py-3 bg-white border border-outline-variant/30 text-on-surface-variant rounded-full text-sm font-bold hover:bg-green-600 hover:text-white hover:border-green-600 hover:shadow-lg hover:-translate-y-1 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2">

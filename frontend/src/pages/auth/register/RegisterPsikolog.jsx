@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../../lib/api';
 import { PSYCHOLOGIST_CATEGORIES } from '../../../constants/psychologistCategories';
+import { POPULAR_BANKS } from '../../../constants/bankList';
 
 const RegisterPsikolog = () => {
     const [formData, setFormData] = useState({
@@ -10,6 +11,8 @@ const RegisterPsikolog = () => {
         password: '',
         password_confirmation: '',
         spesialisasi: '',
+        no_rekening: '',
+        nama_bank: '',
     });
     const [strFile, setStrFile] = useState(null);
     const [ijazahFile, setIjazahFile] = useState(null);
@@ -55,6 +58,8 @@ const RegisterPsikolog = () => {
             data.append('password', formData.password);
             data.append('password_confirmation', formData.password_confirmation);
             data.append('spesialisasi', formData.spesialisasi);
+            data.append('no_rekening', formData.no_rekening);
+            data.append('nama_bank', formData.nama_bank);
             if (strFile) data.append('str_file', strFile);
             if (ijazahFile) data.append('ijazah_file', ijazahFile);
 
@@ -172,24 +177,58 @@ const RegisterPsikolog = () => {
 
                             {/* Email (sudah di grid atas) */}
 
-                            {/* Spesialisasi */}
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-bold uppercase tracking-wider text-[#534346] px-1">Spesialisasi</label>
-                                <div className="relative">
-                                    <select
-                                        name="spesialisasi"
-                                        value={formData.spesialisasi}
+                            {/* Spesialisasi + No Rekening — 2 kolom */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold uppercase tracking-wider text-[#534346] px-1">Spesialisasi</label>
+                                    <div className="relative">
+                                        <select
+                                            name="spesialisasi"
+                                            value={formData.spesialisasi}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2.5 rounded-full bg-white border border-[#d8c2c5]/30 focus:border-[#A46477] focus:ring-2 focus:ring-[#A46477]/20 outline-none transition-all text-[#1A1416] appearance-none cursor-pointer text-sm"
+                                        >
+                                            <option value="" disabled>Pilih Spesialisasi Anda</option>
+                                            {PSYCHOLOGIST_CATEGORIES.map((category) => (
+                                                <option key={category.value} value={category.value}>
+                                                    {category.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-[#857376] pointer-events-none text-sm">expand_more</span>
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold uppercase tracking-wider text-[#534346] px-1">Nama Bank</label>
+                                    <div className="relative">
+                                        <select
+                                            name="nama_bank"
+                                            value={formData.nama_bank}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2.5 rounded-full bg-white border border-[#d8c2c5]/30 focus:border-[#A46477] focus:ring-2 focus:ring-[#A46477]/20 outline-none transition-all text-[#1A1416] appearance-none cursor-pointer text-sm"
+                                            required
+                                        >
+                                            <option value="" disabled>Pilih Bank</option>
+                                            {POPULAR_BANKS.map((bank) => (
+                                                <option key={bank.value} value={bank.value}>
+                                                    {bank.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-[#857376] pointer-events-none text-sm">account_balance</span>
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold uppercase tracking-wider text-[#534346] px-1">Nomor Rekening</label>
+                                    <input
+                                        name="no_rekening"
+                                        value={formData.no_rekening}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-2.5 rounded-full bg-white border border-[#d8c2c5]/30 focus:border-[#A46477] focus:ring-2 focus:ring-[#A46477]/20 outline-none transition-all text-[#1A1416] appearance-none cursor-pointer text-sm"
-                                    >
-                                        <option value="" disabled>Pilih Spesialisasi Anda</option>
-                                        {PSYCHOLOGIST_CATEGORIES.map((category) => (
-                                            <option key={category.value} value={category.value}>
-                                                {category.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-[#857376] pointer-events-none text-sm">expand_more</span>
+                                        className="w-full px-4 py-2.5 rounded-full bg-white border border-[#d8c2c5]/30 focus:border-[#A46477] focus:ring-2 focus:ring-[#A46477]/20 outline-none transition-all placeholder:text-[#857376]/50 text-[#1A1416] text-sm"
+                                        placeholder="Nomor Rekening Anda"
+                                        type="text"
+                                        required
+                                    />
                                 </div>
                             </div>
 

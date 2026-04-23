@@ -19,6 +19,7 @@ import MessagesContainer from './pages/messages/MessagesContainer';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminVerifications from './pages/admin/AdminVerifications';
+import ConsultationSessions from './pages/ConsultationSessions';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -54,6 +55,7 @@ function AppRoutes() {
             <Route path="/friend-requests" element={<ProtectedRoute><FriendRequests /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><MessagesContainer /></ProtectedRoute>} />
             <Route path="/messages/:id" element={<ProtectedRoute><MessagesContainer /></ProtectedRoute>} />
+            <Route path="/sessions" element={<ProtectedRoute><ConsultationSessions /></ProtectedRoute>} />
 
             {/* Protected Admin Routes */}
             <Route path="/admin/dashboard" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
