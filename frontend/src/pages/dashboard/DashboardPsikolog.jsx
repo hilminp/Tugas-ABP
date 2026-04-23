@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { api, STORAGE_BASE_URL } from '../../lib/api';
+import { PSYCHOLOGIST_CATEGORIES } from '../../constants/psychologistCategories';
 import '../Home.css';
 
 const DashboardPsikolog = () => {
@@ -13,7 +14,8 @@ const DashboardPsikolog = () => {
     const [likingPostId, setLikingPostId] = useState(null);
     const [requestActionLoadingId, setRequestActionLoadingId] = useState(null);
     const [submittingCommentId, setSubmittingCommentId] = useState(null);
-    const [statusModal, setStatusModal] = useState({ isOpen: false, type: '', message: '' });
+    const [statusModal, setStatusModal] = useState({ isOpen: false, type: '', message: '', title: '', onConfirm: null });
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: '', message: '', action: null, targetId: null });
 
     const psychologistName = user?.name || user?.username || 'Psikolog';
     const psychologistSpecialty = user?.spesialisasi || 'Spesialis Klinis';
@@ -77,29 +79,62 @@ const DashboardPsikolog = () => {
     };
 
     const handleAcceptRequest = async (requesterId) => {
-        setRequestActionLoadingId(requesterId);
-        try {
-            const res = await api.post(`/friend/${requesterId}/accept`);
-            setStatusModal({ isOpen: true, type: 'success', message: res.data?.message || 'Pasien berhasil diterima.' });
-            fetchIncomingRequests();
-        } catch (error) {
-            setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal menerima pasien.' });
-        } finally {
-            setRequestActionLoadingId(null);
-        }
+        setConfirmModal({
+            isOpen: true,
+            type: 'success',
+            message: 'Apakah Anda yakin ingin menerima pasien ini?',
+            action: async () => {
+                setRequestActionLoadingId(requesterId);
+                try {
+                    const res = await api.post(`/friend/${requesterId}/accept`);
+                    setStatusModal({ isOpen: true, type: 'success', title: 'Berhasil!', message: res.data?.message || 'Pasien berhasil diterima.' });
+                    fetchIncomingRequests();
+                } catch (error) {
+                    setStatusModal({ isOpen: true, type: 'error', title: 'Gagal', message: error.response?.data?.message || 'Gagal menerima pasien.' });
+                } finally {
+                    setRequestActionLoadingId(null);
+                }
+            }
+        });
     };
 
     const handleRejectRequest = async (requesterId) => {
-        setRequestActionLoadingId(requesterId);
-        try {
-            const res = await api.post(`/friend/${requesterId}/reject`);
-            setStatusModal({ isOpen: true, type: 'info', message: res.data?.message || 'Permintaan pasien ditolak.' });
-            fetchIncomingRequests();
-        } catch (error) {
-            setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal menolak pasien.' });
-        } finally {
-            setRequestActionLoadingId(null);
-        }
+        setConfirmModal({
+            isOpen: true,
+            type: 'warning',
+            message: 'Apakah Anda yakin ingin menolak permintaan pasien ini?',
+            action: async () => {
+                setRequestActionLoadingId(requesterId);
+                try {
+                    const res = await api.post(`/friend/${requesterId}/reject`);
+                    setStatusModal({ isOpen: true, type: 'info', title: 'Informasi', message: res.data?.message || 'Permintaan pasien ditolak.' });
+                    fetchIncomingRequests();
+                } catch (error) {
+                    setStatusModal({ isOpen: true, type: 'error', title: 'Gagal', message: error.response?.data?.message || 'Gagal menolak pasien.' });
+                } finally {
+                    setRequestActionLoadingId(null);
+                }
+            }
+        });
+    };
+
+    const getCategoryLabel = (cat) => {
+        return PSYCHOLOGIST_CATEGORIES.find(c => c.value === cat)?.label || cat || 'Umum';
+    };
+
+    const formatRequestTime = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / (1000 * 60));
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+        if (diffMins < 60) return `${diffMins}m lalu`;
+        if (diffHours < 24) return `${diffHours}j lalu`;
+        if (diffDays < 7) return `${diffDays}h lalu`;
+        return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
     };
 
     const formatPostMeta = (post) => {
@@ -297,37 +332,65 @@ const DashboardPsikolog = () => {
                                 {incomingRequests.length === 0 ? (
                                     <p className="text-sm text-stone-500">Belum ada permintaan pasien baru.</p>
                                 ) : (
-                                    <div className="space-y-3">
-                                        {incomingRequests.slice(0, 4).map((request) => (
-                                            <div key={request.id} className="border border-[#f0dde7] rounded-xl p-3">
-                                                <p className="text-sm font-semibold text-[#3f2f38]">
-                                                    {request.requester?.name || 'Pasien Anonim'}
-                                                </p>
-                                                <p className="text-xs text-stone-500 mb-3">
-                                                    (anonim)
-                                                </p>
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleAcceptRequest(request.user_id)}
-                                                        disabled={requestActionLoadingId === request.user_id}
-                                                        className="flex-1 py-2 rounded-lg text-xs font-bold bg-[#22c55e] text-white hover:opacity-90 disabled:opacity-70"
-                                                    >
-                                                        Terima
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleRejectRequest(request.user_id)}
-                                                        disabled={requestActionLoadingId === request.user_id}
-                                                        className="flex-1 py-2 rounded-lg text-xs font-bold bg-stone-200 text-stone-700 hover:bg-stone-300 disabled:opacity-70"
-                                                    >
-                                                        Tolak
-                                                    </button>
+                                    <div className="space-y-4">
+                                        {incomingRequests.slice(0, 5).map((request) => (
+                                            <div key={request.id} className="relative overflow-hidden bg-gradient-to-r from-white to-[#fffcfd] border border-[#f0dde7] rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+                                                <div className="flex items-start justify-between mb-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full bg-[#A46477]/10 flex items-center justify-center text-[#A46477] font-bold border border-[#A46477]/20">
+                                                            {request.requester?.name?.charAt(0).toUpperCase() || 'P'}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-bold text-[#3f2f38]">
+                                                                {request.requester?.name || 'Pasien Anonim'}
+                                                                <span className="ml-2 text-[10px] px-1.5 py-0.5 bg-stone-100 text-stone-500 rounded uppercase tracking-tighter">Anonim</span>
+                                                            </p>
+                                                            <div className="flex items-center gap-2 mt-0.5">
+                                                                <span className="material-symbols-outlined text-[14px] text-[#A46477]">label</span>
+                                                                <p className="text-[11px] font-medium text-[#7a4d62]">
+                                                                    {getCategoryLabel(request.category)}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="text-[10px] font-bold text-stone-400 uppercase">{formatRequestTime(request.created_at)}</p>
+                                                        <div className={`mt-1 inline-flex px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider
+                                                            ${request.status === 'pending' ? 'bg-amber-100 text-amber-600'
+                                                            : request.status === 'accepted' ? 'bg-emerald-100 text-emerald-600'
+                                                            : 'bg-red-100 text-red-600'}`}>
+                                                            {request.status === 'pending' ? 'waiting' : request.status}
+                                                        </div>
+                                                    </div>
                                                 </div>
+
+                                                {request.status === 'pending' && (
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleAcceptRequest(request.user_id)}
+                                                            disabled={requestActionLoadingId === request.user_id}
+                                                            className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-[#22c55e] text-white hover:bg-[#16a34a] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-[#22c55e]/20"
+                                                        >
+                                                            <span className="material-symbols-outlined text-sm">check_circle</span>
+                                                            Terima
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRejectRequest(request.user_id)}
+                                                            disabled={requestActionLoadingId === request.user_id}
+                                                            className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                                                        >
+                                                            <span className="material-symbols-outlined text-sm">cancel</span>
+                                                            Tolak
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
-                                        <Link to="/friend-requests" className="inline-flex text-sm font-semibold text-[#7a4d62] hover:underline">
-                                            Lihat semua permintaan
+                                        <Link to="/friend-requests" className="flex items-center justify-center gap-2 py-3 w-full text-sm font-bold text-[#A46477] bg-[#A46477]/5 rounded-xl hover:bg-[#A46477]/10 transition-colors">
+                                            <span>Lihat semua permintaan</span>
+                                            <span className="material-symbols-outlined text-sm">arrow_forward</span>
                                         </Link>
                                     </div>
                                 )}
@@ -424,7 +487,7 @@ const DashboardPsikolog = () => {
 
             {statusModal.isOpen && (
                 <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity" onClick={() => setStatusModal({ isOpen: false, type: '', message: '' })} />
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity" onClick={() => setStatusModal({ ...statusModal, isOpen: false })} />
                     <div className="relative bg-white rounded-3xl w-full max-w-sm p-8 shadow-2xl animate-in fade-in zoom-in duration-300 flex flex-col items-center text-center">
                         <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-inner
                             ${statusModal.type === 'success' ? 'bg-emerald-100 text-emerald-600'
@@ -439,14 +502,14 @@ const DashboardPsikolog = () => {
                             </span>
                         </div>
                         <h3 className="text-2xl font-black text-slate-800 mb-2 tracking-tight">
-                            {statusModal.type === 'success' ? 'Berhasil!'
+                            {statusModal.title || (statusModal.type === 'success' ? 'Berhasil!'
                                 : statusModal.type === 'error' ? 'Gagal'
                                 : statusModal.type === 'warning' ? 'Menunggu'
-                                : 'Informasi'}
+                                : 'Informasi')}
                         </h3>
                         <p className="text-slate-500 mb-8 font-medium leading-relaxed">{statusModal.message}</p>
                         <button
-                            onClick={() => setStatusModal({ isOpen: false, type: '', message: '' })}
+                            onClick={() => setStatusModal({ ...statusModal, isOpen: false })}
                             className="w-full py-3.5 rounded-full font-bold text-white shadow-lg transition-all hover:-translate-y-1 active:scale-95"
                             style={{
                                 backgroundColor: statusModal.type === 'success' ? '#10b981' : statusModal.type === 'error' ? '#ef4444' : statusModal.type === 'warning' ? '#f59e0b' : '#3b82f6',
@@ -455,6 +518,47 @@ const DashboardPsikolog = () => {
                         >
                             Mengerti
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {confirmModal.isOpen && (
+                <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity" onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })} />
+                    <div className="relative bg-white rounded-3xl w-full max-w-sm p-8 shadow-2xl animate-in fade-in zoom-in duration-300 flex flex-col items-center text-center">
+                        <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-inner
+                            ${confirmModal.type === 'success' ? 'bg-emerald-100 text-emerald-600'
+                            : confirmModal.type === 'warning' ? 'bg-amber-100 text-amber-600'
+                            : 'bg-blue-100 text-blue-600'}`}>
+                            <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                                {confirmModal.type === 'success' ? 'verified_user'
+                                : confirmModal.type === 'warning' ? 'help_outline'
+                                : 'info'}
+                            </span>
+                        </div>
+                        <h3 className="text-2xl font-black text-slate-800 mb-2 tracking-tight">Konfirmasi</h3>
+                        <p className="text-slate-500 mb-8 font-medium leading-relaxed">{confirmModal.message}</p>
+                        <div className="flex gap-3 w-full">
+                            <button
+                                onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                                className="flex-1 py-3.5 rounded-full font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all active:scale-95"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={() => {
+                                    confirmModal.action();
+                                    setConfirmModal({ ...confirmModal, isOpen: false });
+                                }}
+                                className="flex-1 py-3.5 rounded-full font-bold text-white shadow-lg transition-all hover:-translate-y-1 active:scale-95"
+                                style={{
+                                    backgroundColor: confirmModal.type === 'success' ? '#10b981' : confirmModal.type === 'warning' ? '#f59e0b' : '#3b82f6',
+                                    boxShadow: `0 10px 15px -3px ${confirmModal.type === 'success' ? 'rgba(16,185,129,0.3)' : confirmModal.type === 'warning' ? 'rgba(245,158,11,0.3)' : 'rgba(59,130,246,0.3)'}`,
+                                }}
+                            >
+                                Ya, Lanjutkan
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
