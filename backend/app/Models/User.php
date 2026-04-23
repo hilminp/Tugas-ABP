@@ -37,6 +37,8 @@ class User extends Authenticatable
         'profile_image',
         'spesialisasi',
         'chatbot_usage',
+        'no_rekening',
+        'nama_bank',
     ];
 
     /**

@@ -18,6 +18,8 @@ const MessagesContainer = () => {
     const [activeFriend, setActiveFriend] = useState(null);
     const [threadLoading, setThreadLoading] = useState(false);
     const [messageBody, setMessageBody] = useState('');
+    const [isLocked, setIsLocked] = useState(false);
+    const [lockMessage, setLockMessage] = useState('');
     const messagesEndRef = useRef(null);
 
     // Fetch friend list
@@ -49,6 +51,8 @@ const MessagesContainer = () => {
                 const res = await api.get(`/messages/${friendId}`);
                 setActiveFriend(res.data.friend);
                 setMessages(res.data.messages);
+                setIsLocked(res.data.is_locked);
+                setLockMessage(res.data.lock_message);
             } catch (err) {
                 console.error("Failed to load thread", err);
             } finally {
@@ -82,6 +86,7 @@ const MessagesContainer = () => {
             setMessages(res.data.messages);
         } catch (err) {
             console.error("Failed to send message", err);
+            alert(err.response?.data?.message || "Gagal mengirim pesan. Pastikan sesi sudah dimulai.");
         }
     };
 
@@ -285,33 +290,40 @@ const MessagesContainer = () => {
 
                         {/* Message Input Area (Floating) */}
                         <footer className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[85%] max-w-4xl z-50 animate-in slide-in-from-bottom duration-700">
-                            <form onSubmit={handleSend} className="bg-white/80 backdrop-blur-3xl rounded-[2rem] p-2 pr-3 flex items-center gap-4 shadow-[0_20px_50px_rgba(136,77,96,0.15)] border border-white/60">
-                                <button type="button" className="ml-4 text-primary/40 hover:text-primary transition-all active:scale-90">
-                                    <span className="material-symbols-outlined font-black">add_circle</span>
-                                </button>
-                                <div className="flex-1">
-                                    <textarea 
-                                        value={messageBody}
-                                        onChange={(e) => setMessageBody(e.target.value)}
-                                        onInput={handleAutoResize}
-                                        className="w-full bg-transparent border-none focus:ring-0 text-on-surface py-4 resize-none max-h-32 font-body text-[15px] font-medium placeholder:text-on-surface-variant/30 placeholder:italic" 
-                                        placeholder="Tulis pesan dengan sepenuh hati..." 
-                                        rows="1"
-                                    ></textarea>
+                            {isLocked ? (
+                                <div className="bg-amber-50/90 backdrop-blur-3xl rounded-[2rem] p-6 flex items-center justify-center gap-4 shadow-xl border border-amber-200/50">
+                                    <span className="material-symbols-outlined text-amber-600 animate-pulse">lock</span>
+                                    <p className="text-amber-800 font-bold text-sm">{lockMessage}</p>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <button type="button" className="text-primary/40 hover:text-primary transition-all active:scale-90">
-                                        <span className="material-symbols-outlined font-black">sentiment_very_satisfied</span>
+                            ) : (
+                                <form onSubmit={handleSend} className="bg-white/80 backdrop-blur-3xl rounded-[2rem] p-2 pr-3 flex items-center gap-4 shadow-[0_20px_50px_rgba(136,77,96,0.15)] border border-white/60">
+                                    <button type="button" className="ml-4 text-primary/40 hover:text-primary transition-all active:scale-90">
+                                        <span className="material-symbols-outlined font-black">add_circle</span>
                                     </button>
-                                    <button 
-                                        type="submit" 
-                                        disabled={!messageBody.trim()}
-                                        className="w-12 h-12 bg-gradient-to-br from-[#fdb2c7] to-[#955170] text-white rounded-2xl flex items-center justify-center shadow-[0_10px_20px_rgba(149,81,112,0.3)] active:scale-95 disabled:opacity-30 disabled:shadow-none transition-all group"
-                                    >
-                                        <span className="material-symbols-outlined transition-transform relative z-10 text-xl group-hover:translate-x-0.5 group-hover:-translate-y-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>send</span>
-                                    </button>
-                                </div>
-                            </form>
+                                    <div className="flex-1">
+                                        <textarea 
+                                            value={messageBody}
+                                            onChange={(e) => setMessageBody(e.target.value)}
+                                            onInput={handleAutoResize}
+                                            className="w-full bg-transparent border-none focus:ring-0 text-on-surface py-4 resize-none max-h-32 font-body text-[15px] font-medium placeholder:text-on-surface-variant/30 placeholder:italic" 
+                                            placeholder="Tulis pesan dengan sepenuh hati..." 
+                                            rows="1"
+                                        ></textarea>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button type="button" className="text-primary/40 hover:text-primary transition-all active:scale-90">
+                                            <span className="material-symbols-outlined font-black">sentiment_very_satisfied</span>
+                                        </button>
+                                        <button 
+                                            type="submit" 
+                                            disabled={!messageBody.trim()}
+                                            className="w-12 h-12 bg-gradient-to-br from-[#fdb2c7] to-[#955170] text-white rounded-2xl flex items-center justify-center shadow-[0_10px_20px_rgba(149,81,112,0.3)] active:scale-95 disabled:opacity-30 disabled:shadow-none transition-all group"
+                                        >
+                                            <span className="material-symbols-outlined transition-transform relative z-10 text-xl group-hover:translate-x-0.5 group-hover:-translate-y-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>send</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
                         </footer>
                     </>
                 )}

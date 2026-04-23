@@ -1,0 +1,442 @@
+.sessions-page {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background-color: #fffafb;
+}
+
+.sessions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.sessions-header h1 {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #A46477;
+    margin-bottom: 0.5rem;
+}
+
+.sessions-header p {
+    color: #888;
+}
+
+.back-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: #666;
+    font-weight: 700;
+    padding: 0.8rem 1.5rem;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+
+.back-link:hover {
+    background: #fdfdfd;
+    transform: translateX(-5px);
+}
+
+.sessions-container {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 2rem;
+}
+
+@media (max-width: 900px) {
+    .sessions-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.create-session-card, .find-sessions-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 2rem;
+    border: 1px solid #f0dde7;
+    box-shadow: 0 10px 30px rgba(164, 100, 119, 0.05);
+}
+
+.create-session-card h3, .find-sessions-section h3, .my-sessions-section h3 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #444;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 1rem;
+    border: 1.5px solid #eee;
+    border-radius: 1rem;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+    border-color: #A46477;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(164, 100, 119, 0.1);
+}
+
+.create-session-card button {
+    width: 100%;
+    padding: 1rem;
+    background: #A46477;
+    color: white;
+    border: none;
+    border-radius: 1rem;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+}
+
+.create-session-card button:hover {
+    background: #8e5566;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(164, 100, 119, 0.3);
+}
+
+.psychologist-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.psychologist-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #fff;
+    border: 1.5px solid #f5f5f5;
+    border-radius: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.psychologist-item:hover {
+    border-color: #A46477;
+    background: #fffafa;
+    transform: translateX(5px);
+}
+
+.p-avatar {
+    width: 45px;
+    height: 45px;
+    background: #A46477;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 1.2rem;
+}
+
+.p-info {
+    flex: 1;
+}
+
+.p-info h4 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.p-info span {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.my-sessions-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 2rem;
+    border: 1px solid #f0dde7;
+    box-shadow: 0 10px 30px rgba(164, 100, 119, 0.05);
+}
+
+.sessions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.session-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+    border: 1px solid #eee;
+    transition: all 0.3s ease;
+}
+
+.session-card.booked {
+    background: #f0f7ff;
+    border-color: #d0e7ff;
+}
+
+.booked-status {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.booked-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.chat-now-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 1rem;
+    background: #A46477;
+    color: white;
+    border: none;
+    border-radius: 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(164, 100, 119, 0.2);
+}
+
+.end-session-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 1rem;
+    background: #ffffff;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    border-radius: 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.end-session-btn:hover {
+    background: #fef2f2;
+    border-color: #ef4444;
+}
+
+.chat-now-btn:hover {
+    background: #8e5566;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(164, 100, 119, 0.3);
+}
+
+.chat-now-btn span {
+    font-size: 1.1rem;
+}
+
+.session-card.pending_approval {
+    background: #fff9eb;
+    border-color: #ffe08a;
+}
+
+.pending-status {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #b58105;
+    font-weight: 600;
+}
+
+.approve-btn {
+    padding: 0.4rem 0.8rem;
+    background: #2e7d32;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.approve-btn:hover {
+    background: #1b5e20;
+    transform: scale(1.05);
+}
+
+.session-card.available {
+    background: #f8fff9;
+    border-color: #e0f5e4;
+}
+
+.session-main {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+}
+
+.session-icon {
+    width: 50px;
+    height: 50px;
+    background: white;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #A46477;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.session-time {
+    font-weight: 800;
+    color: #333;
+    margin-bottom: 0.2rem;
+}
+
+.session-status {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.available-tag {
+    color: #2e7d32;
+    font-weight: 700;
+}
+
+.cancel-btn {
+    background: none;
+    border: none;
+    color: #ff4444;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.8rem;
+    transition: all 0.2s ease;
+}
+
+.cancel-btn:hover {
+    background: rgba(255, 68, 68, 0.1);
+    transform: scale(1.1);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #ccc;
+}
+
+.empty-state span {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 2rem;
+    overflow: hidden;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-weight: 800;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.slots-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.slot-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #f9f9f9;
+    border-radius: 1rem;
+}
+
+.slot-item button {
+    padding: 0.6rem 1.2rem;
+    background: #A46477;
+    color: white;
+    border: none;
+    border-radius: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.slot-item button:hover {
+    background: #8e5566;
+}
+
+.empty-msg {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+}

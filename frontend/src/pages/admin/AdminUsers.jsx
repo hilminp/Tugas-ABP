@@ -405,6 +405,12 @@ const AdminUsers = () => {
                               <span className="text-[9px] font-bold text-[#A46477] uppercase px-1">
                                 {getSpesialisasiLabel(u.spesialisasi)}
                               </span>
+                              {u.no_rekening && (
+                                <span className="text-[9px] font-bold text-amber-600 uppercase px-1 flex items-center gap-1">
+                                  <span className="material-symbols-outlined text-[10px]">payments</span>
+                                  {u.nama_bank} - {u.no_rekening}
+                                </span>
+                              )}
                             </div>
                           ) : u.is_premium ? (
                             <div className="flex flex-col gap-1 items-start">

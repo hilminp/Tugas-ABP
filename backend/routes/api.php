@@ -13,6 +13,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ChatbotController;
+use App\Http\Controllers\ConsultationSessionController;
 use Illuminate\Http\Request;
 
 Route::get('/status', function () {
@@ -75,6 +76,17 @@ Route::middleware('auth:sanctum')->group(function () {
     // Reviews
     Route::get('/reviews', [\App\Http\Controllers\ReviewController::class, 'index']);
     Route::post('/psychologists/{id}/reviews', [\App\Http\Controllers\ReviewController::class, 'store']);
+
+    // Consultation Sessions
+    Route::get('/consultation-sessions', [ConsultationSessionController::class, 'index']);
+    Route::post('/consultation-sessions', [ConsultationSessionController::class, 'store']);
+    Route::get('/consultation-sessions/psychologist/{id}', [ConsultationSessionController::class, 'availableSessions']);
+    Route::post('/consultation-sessions/{id}/book', [ConsultationSessionController::class, 'book']);
+    Route::post('/consultation-sessions/{id}/approve', [ConsultationSessionController::class, 'approve']);
+    Route::post('/consultation-sessions/{id}/start', [ConsultationSessionController::class, 'start']);
+    Route::post('/consultation-sessions/{id}/end', [ConsultationSessionController::class, 'end']);
+    Route::delete('/consultation-sessions/{id}', [ConsultationSessionController::class, 'cancel']);
+    Route::get('/my-booked-sessions', [ConsultationSessionController::class, 'myBookedSessions']);
 
     // Admin Group
     Route::prefix('admin')->middleware(\App\Http\Middleware\EnsureAdmin::class)->group(function () {
