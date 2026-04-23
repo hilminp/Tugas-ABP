@@ -164,16 +164,85 @@ const DashboardAnonim = () => {
     const [feedbackRating, setFeedbackRating] = useState(5);
     const [feedbackComment, setFeedbackComment] = useState('');
     const [submittingFeedback, setSubmittingFeedback] = useState(false);
+    const [chatActivity, setChatActivity] = useState([]);
+    const [activityStats, setActivityStats] = useState({ posts: 0, likes: 0, comments: 0 });
+
+    /* ─── Hitung statistik milik user sendiri dari data posts ─── */
+    const computeMyStats = (allPosts) => {
+        if (!user) return;
+        let myPosts = 0;
+        let myLikes = 0;
+        let myComments = 0;
+        allPosts.forEach((post) => {
+            const isMyPost = post.user?.id === user.id;
+            if (isMyPost) {
+                myPosts += 1;
+                myLikes += post.likes_count ?? post.likes?.length ?? 0;
+                myComments += Array.isArray(post.comments) ? post.comments.length : 0;
+            }
+        });
+        setActivityStats({ posts: myPosts, likes: myLikes, comments: myComments });
+    };
+
+    /* ─── Helper: tanggal lokal sebagai string YYYY-MM-DD ─── */
+    const localDateKey = (d) =>
+        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+    /* ─── Hitung aktivitas harian dari data posts ─── */
+    const computeDailyActivity = (allPosts) => {
+        const now = new Date();
+        const dayLabels = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+
+        /* Buat 7 bucket hari terakhir menggunakan tanggal LOKAL */
+        const dayBuckets = Array.from({ length: 7 }, (_, offset) => {
+            const date = new Date(now);
+            date.setHours(0, 0, 0, 0);
+            date.setDate(now.getDate() - (6 - offset));
+            return { key: localDateKey(date), label: dayLabels[date.getDay()], value: 0 };
+        });
+
+        const countsByDate = dayBuckets.reduce((acc, day) => { acc[day.key] = 0; return acc; }, {});
+
+        allPosts.forEach((post) => {
+            if (!post.created_at) return;
+            /* created_at dari Laravel biasanya "2026-04-23T09:00:00.000000Z" */
+            const d = new Date(post.created_at);
+            const dayKey = localDateKey(d); /* pakai waktu LOKAL agar sesuai timezone user */
+            if (!Object.prototype.hasOwnProperty.call(countsByDate, dayKey)) return;
+            countsByDate[dayKey] += 1;
+            countsByDate[dayKey] += (post.likes_count ?? post.likes?.length ?? 0);
+            countsByDate[dayKey] += (Array.isArray(post.comments) ? post.comments.length : 0);
+        });
+
+        setChatActivity(dayBuckets.map((day) => ({ ...day, value: countsByDate[day.key] || 0 })));
+    };
+
+    /* ─── Jalankan ulang setiap posts berubah (ini memastikan grafik selalu sync) ─── */
+    useEffect(() => {
+        if (posts.length >= 0) {
+            computeDailyActivity(posts);
+            computeMyStats(posts);
+        }
+    }, [posts]); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         fetchPosts();
         fetchPsychologistStatuses();
+        /* ─── Auto-refresh setiap 10 detik ─── */
+        const interval = setInterval(() => {
+            fetchPosts();
+        }, 10000);
+        return () => clearInterval(interval);
     }, []);
+
 
     const fetchPosts = async () => {
         try {
             const res = await api.get('/posts');
-            setPosts(res.data);
+            const data = res.data;
+            setPosts(data);
+            computeMyStats(data);
+            computeDailyActivity(data);
         } catch (error) {
             console.error('Error fetching posts:', error);
         }
@@ -352,6 +421,8 @@ const DashboardAnonim = () => {
             setSubmittingFeedback(false);
         }
     };
+
+    const highestChatActivity = Math.max(...chatActivity.map((item) => item.value), 1);
 
     return (
         <div className="home-layout">
@@ -715,6 +786,73 @@ const DashboardAnonim = () => {
                                 </div>
                                 <Link to="/friend-requests" className="side-link">Lihat Semua Riwayat</Link>
                             </div>
+
+                            {/* ─── Grafik Batang Aktivitas (khusus anonim berbayar) ─── */}
+                            {user?.is_premium && user?.role !== 'psikolog' && (
+                                <div className="side-card activity-bar-card">
+                                    <div className="activity-bar-header">
+                                        <div className="activity-bar-title">
+                                            <span className="activity-bar-crown">⭐</span>
+                                            Aktivitas Saya
+                                        </div>
+                                        <span className="activity-bar-live-badge">
+                                            <span className="activity-bar-live-dot" />
+                                            Live
+                                        </span>
+                                    </div>
+                                    <div className="activity-bar-chart">
+                                        {[
+                                            { key: 'posts',    label: 'Posting',   value: activityStats.posts,    color: 'linear-gradient(180deg, #c97db5 0%, #7a3d6b 100%)', icon: '📝' },
+                                            { key: 'likes',    label: 'Like',      value: activityStats.likes,    color: 'linear-gradient(180deg, #f59fc5 0%, #d94f82 100%)', icon: '❤️' },
+                                            { key: 'comments', label: 'Komentar',  value: activityStats.comments, color: 'linear-gradient(180deg, #90c7f5 0%, #3b82c4 100%)', icon: '💬' },
+                                        ].map((bar) => {
+                                            const maxVal = Math.max(activityStats.posts, activityStats.likes, activityStats.comments, 1);
+                                            const heightPct = Math.max(bar.value > 0 ? 8 : 0, Math.round((bar.value / maxVal) * 100));
+                                            return (
+                                                <div key={bar.key} className="activity-bar-col">
+                                                    <div className="activity-bar-value">{bar.value}</div>
+                                                    <div className="activity-bar-track">
+                                                        <div
+                                                            className="activity-bar-fill"
+                                                            style={{
+                                                                height: `${heightPct}%`,
+                                                                background: bar.color,
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="activity-bar-icon">{bar.icon}</div>
+                                                    <div className="activity-bar-label">{bar.label}</div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                    <p className="activity-bar-note">Update otomatis setiap aktivitas</p>
+                                </div>
+                            )}
+
+                            <div className="side-card">
+                                <div className="side-card-title">Grafik Aktivitas Harian</div>
+                                <div className="activity-chart">
+                                    {(() => {
+                                        const highestVal = Math.max(...chatActivity.map((i) => i.value), 1);
+                                        return chatActivity.map((item) => (
+                                            <div key={item.key} className="activity-row">
+                                                <div className="activity-row-head">
+                                                    <span>{item.label}</span>
+                                                    <strong>{item.value}</strong>
+                                                </div>
+                                                <div className="activity-track">
+                                                    <div
+                                                        className="activity-fill"
+                                                        style={{ width: `${Math.max(item.value > 0 ? 10 : 0, Math.round((item.value / highestVal) * 100))}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ));
+                                    })()}
+                                </div>
+                            </div>
+
                             <div className="quick-return-card">
                                 <h3>Pesan Kembali Cepat</h3>
                                 <p>Lanjutkan progresmu dengan konselor yang sama.</p>
