@@ -67,6 +67,7 @@ class FriendshipController extends Controller
             'user_id' => $meId,
             'friend_id' => $id,
             'status' => 'pending',
+            'category' => $request->category,
         ]);
         return response()->json(['message' => 'Permintaan pertemanan terkirim.']);
     }
@@ -75,8 +76,9 @@ class FriendshipController extends Controller
     {
         $meId = $request->user()->id;
         $requests = Friendship::where('friend_id', $meId)
-            ->where('status', 'pending')
+            // ->where('status', 'pending') // Removing this to allow seeing other statuses if needed, or I'll handle it in frontend
             ->with('requester')
+            ->orderBy('created_at', 'desc')
             ->get();
         return response()->json(['requests' => $requests]);
     }
@@ -105,7 +107,7 @@ class FriendshipController extends Controller
         $meId = $request->user()->id;
         $f = Friendship::where('user_id', $id)->where('friend_id', $meId)->first();
         if (!$f) return response()->json(['message' => 'Permintaan tidak ditemukan'], 404);
-        $f->delete();
+        $f->update(['status' => 'rejected']);
         return response()->json(['message' => 'Permintaan pertemanan ditolak.']);
     }
 }

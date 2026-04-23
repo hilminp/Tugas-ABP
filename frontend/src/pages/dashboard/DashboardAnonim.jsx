@@ -308,7 +308,7 @@ const DashboardAnonim = () => {
         if (sendingRequestId) return;
         setSendingRequestId(psychologistId);
         try {
-            const res = await api.post(`/friend/${psychologistId}`);
+            const res = await api.post(`/friend/${psychologistId}`, { category: selectedCategory });
             setStatusModal({ isOpen: true, type: 'success', message: res.data?.message || 'Permintaan konsultasi terkirim.' });
             setRequestedPsychologistIds((prev) => (prev.includes(psychologistId) ? prev : [...prev, psychologistId]));
             setPsychologistStatuses((prev) => ({ ...prev, [psychologistId]: 'pending' }));
