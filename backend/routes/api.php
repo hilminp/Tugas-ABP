@@ -98,5 +98,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/user/{id}/toggle-admin', [AdminController::class, 'toggleAdmin']);
         Route::post('/user/{id}/suspend', [AdminController::class, 'suspend']);
         Route::post('/user/{id}/message', [AdminController::class, 'message']);
+        Route::delete('/post/{id}', [AdminController::class, 'deletePost']);
+        Route::delete('/comment/{id}', [AdminController::class, 'deleteComment']);
+        Route::get('/analytics', [AdminController::class, 'analytics']);
     });
 });

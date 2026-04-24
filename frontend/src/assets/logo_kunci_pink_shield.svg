@@ -1,0 +1,39 @@
+<svg width="100%" viewBox="190 50 300 320" role="img" xmlns="http://www.w3.org/2000/svg" style="">
+  <title style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Logo kunci dengan perisai pink</title>
+  <desc style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Logo berbentuk perisai warna pink dengan ikon gembok di tengah</desc>
+
+  <defs>
+    <radialGradient id="shieldGrad" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#f9d0d8"/>
+      <stop offset="100%" stop-color="#e8a0b0"/>
+    </radialGradient>
+    <radialGradient id="shieldInner" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#fce8ed"/>
+      <stop offset="100%" stop-color="#f4b8c8"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Outer shield shadow/base -->
+  <path d="M340 60&#10;           L440 90&#10;           Q470 92 472 120&#10;           L472 240&#10;           Q472 310 340 355&#10;           Q208 310 208 240&#10;           L208 120&#10;           Q210 92 240 90&#10;           Z" fill="#d4798f" opacity="0.3" transform="translate(4,6)" style="fill:rgb(212, 121, 143);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.3;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Main shield -->
+  <path d="M340 60&#10;           L440 90&#10;           Q470 92 472 120&#10;           L472 240&#10;           Q472 310 340 355&#10;           Q208 310 208 240&#10;           L208 120&#10;           Q210 92 240 90&#10;           Z" fill="url(#shieldGrad)" stroke="#d4839a" stroke-width="2" style="stroke:rgb(212, 131, 154);color:rgb(255, 255, 255);stroke-width:2px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Inner shield highlight -->
+  <path d="M340 80&#10;           L428 106&#10;           Q452 108 454 132&#10;           L454 240&#10;           Q454 298 340 336&#10;           Q226 298 226 240&#10;           L226 132&#10;           Q228 108 252 106&#10;           Z" fill="url(#shieldInner)" stroke="#f0b0c0" stroke-width="1.5" style="stroke:rgb(240, 176, 192);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Lock body (rounded rectangle) -->
+  <rect x="305" y="210" width="70" height="58" rx="10" ry="10" fill="#c96a85" stroke="#b05070" stroke-width="1.5" style="fill:rgb(201, 106, 133);stroke:rgb(176, 80, 112);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Lock shackle (arc) -->
+  <path d="M318 210 L318 188 Q318 170 340 170 Q362 170 362 188 L362 210" fill="none" stroke="#c96a85" stroke-width="12" stroke-linecap="round" style="fill:none;stroke:rgb(201, 106, 133);color:rgb(255, 255, 255);stroke-width:12px;stroke-linecap:round;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <path d="M318 210 L318 188 Q318 170 340 170 Q362 170 362 188 L362 210" fill="none" stroke="#b05070" stroke-width="1.5" stroke-linecap="round" style="fill:none;stroke:rgb(176, 80, 112);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Keyhole circle -->
+  <circle cx="340" cy="233" r="10" fill="#f4b8c8" style="fill:rgb(244, 184, 200);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <!-- Keyhole slot -->
+  <rect x="336" y="240" width="8" height="14" rx="2" fill="#f4b8c8" style="fill:rgb(244, 184, 200);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Shine on shield top-left -->
+  <ellipse cx="268" cy="130" rx="18" ry="10" fill="white" opacity="0.25" transform="rotate(-20,268,130)" style="fill:rgb(255, 255, 255);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.25;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+</svg>

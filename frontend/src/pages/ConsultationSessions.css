@@ -1,9 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap');
+
 .sessions-page {
+    min-height: 100vh;
+    background: radial-gradient(circle at 10% 20%, #faece9 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, #cca2a7 0%, transparent 60%),
+                radial-gradient(circle at 50% 50%, #eed4d4 0%, #dcaab2 100%);
+    background-size: 200% 200%;
+    animation: bgPan 15s ease infinite alternate;
+    position: relative;
+    overflow-x: hidden;
+    font-family: 'Manrope', sans-serif;
+    color: #3c2f32;
+}
+
+.sessions-page h1,
+.sessions-page h2,
+.sessions-page h3,
+.sessions-page h4 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+@keyframes bgPan {
+    0% { background-position: 0% 0%; }
+    50% { background-position: 100% 100%; }
+    100% { background-position: 0% 0%; }
+}
+
+.sessions-page::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: repeating-radial-gradient(
+        circle at 100% 50%,
+        transparent 0,
+        transparent 40px,
+        rgba(255, 255, 255, 0.1) 40px,
+        rgba(255, 255, 255, 0.1) 41px
+    ), repeating-radial-gradient(
+        circle at 100% 50%,
+        transparent 0,
+        transparent 80px,
+        rgba(255, 255, 255, 0.05) 80px,
+        rgba(255, 255, 255, 0.05) 81px
+    );
+    pointer-events: none;
+    z-index: 0;
+}
+
+.sessions-page-inner {
     padding: 2rem;
     max-width: 1200px;
     margin: 0 auto;
-    min-height: 100vh;
-    background-color: #fffafb;
+    position: relative;
+    z-index: 1;
 }
 
 .sessions-header {
@@ -21,7 +70,9 @@
 }
 
 .sessions-header p {
-    color: #888;
+    color: rgba(60, 47, 50, 0.85);
+    font-size: 1.1rem;
+    font-weight: 500;
 }
 
 .back-link {
@@ -35,13 +86,28 @@
     background: white;
     border: 1px solid #eee;
     border-radius: 1rem;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+
+.back-link span {
+    transition: transform 0.3s ease;
 }
 
 .back-link:hover {
     background: #fdfdfd;
-    transform: translateX(-5px);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(164, 100, 119, 0.1);
+    color: #A46477;
+    border-color: rgba(164, 100, 119, 0.2);
+}
+
+.back-link:hover span {
+    transform: translateX(-4px);
+}
+
+.back-link:active {
+    transform: translateY(0) scale(0.95);
 }
 
 .sessions-container {
@@ -56,12 +122,19 @@
     }
 }
 
-.create-session-card, .find-sessions-section {
-    background: white;
+@keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.create-session-card, .find-sessions-section, .my-sessions-section {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 240, 243, 0.85) 100%);
+    backdrop-filter: blur(20px);
     padding: 2rem;
     border-radius: 2rem;
-    border: 1px solid #f0dde7;
-    box-shadow: 0 10px 30px rgba(164, 100, 119, 0.05);
+    border: 1px solid rgba(255, 182, 193, 0.6);
+    box-shadow: 0 24px 48px rgba(136, 77, 96, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+    animation: fadeInUp 0.8s ease-out forwards;
 }
 
 .create-session-card h3, .find-sessions-section h3, .my-sessions-section h3 {
@@ -83,26 +156,54 @@
     margin-bottom: 0.5rem;
 }
 
-.form-group input {
+.form-group input,
+.modern-date-picker,
+.modern-time-picker {
     width: 100%;
     padding: 1rem;
-    border: 1.5px solid #eee;
+    border: 1.5px solid #f0dde7;
+    background: rgba(255, 255, 255, 0.8);
     border-radius: 1rem;
     font-family: inherit;
     font-size: 1rem;
     transition: all 0.3s ease;
+    cursor: pointer;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.modern-date-picker:focus,
+.modern-time-picker:focus {
     border-color: #A46477;
     outline: none;
+    background: #fff;
     box-shadow: 0 0 0 4px rgba(164, 100, 119, 0.1);
+}
+
+/* Custom Flatpickr Theme */
+.flatpickr-calendar {
+    font-family: 'Manrope', sans-serif !important;
+    border: none !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 1.5rem !important;
+    overflow: hidden;
+    padding: 10px;
+}
+.flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange, .flatpickr-day.selected:focus, .flatpickr-day.startRange:focus, .flatpickr-day.endRange:focus, .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover, .flatpickr-day.selected.prevMonthDay, .flatpickr-day.startRange.prevMonthDay, .flatpickr-day.endRange.prevMonthDay, .flatpickr-day.selected.nextMonthDay, .flatpickr-day.startRange.nextMonthDay, .flatpickr-day.endRange.nextMonthDay {
+    background: #A46477 !important;
+    border-color: #A46477 !important;
+}
+.flatpickr-months .flatpickr-month {
+    color: #3c2f32 !important;
+    fill: #3c2f32 !important;
+}
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+    font-weight: 700 !important;
 }
 
 .create-session-card button {
     width: 100%;
     padding: 1rem;
-    background: #A46477;
+    background: linear-gradient(90deg, #5e3343 0%, #a66a7f 100%);
     color: white;
     border: none;
     border-radius: 1rem;
@@ -114,9 +215,9 @@
 }
 
 .create-session-card button:hover {
-    background: #8e5566;
+    background: linear-gradient(90deg, #4f2835 0%, #90596c 100%);
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(164, 100, 119, 0.3);
+    box-shadow: 0 10px 20px rgba(170, 109, 130, 0.3);
 }
 
 .psychologist-list {
@@ -170,14 +271,6 @@
     color: #888;
 }
 
-.my-sessions-section {
-    background: white;
-    padding: 2rem;
-    border-radius: 2rem;
-    border: 1px solid #f0dde7;
-    box-shadow: 0 10px 30px rgba(164, 100, 119, 0.05);
-}
-
 .sessions-list {
     display: flex;
     flex-direction: column;
@@ -192,7 +285,15 @@
     border-radius: 1.5rem;
     border: 1px solid #eee;
     transition: all 0.3s ease;
+    animation: fadeInUp 0.5s ease-out forwards;
+    opacity: 0;
 }
+
+.session-card:nth-child(1) { animation-delay: 0.1s; }
+.session-card:nth-child(2) { animation-delay: 0.2s; }
+.session-card:nth-child(3) { animation-delay: 0.3s; }
+.session-card:nth-child(4) { animation-delay: 0.4s; }
+.session-card:nth-child(5) { animation-delay: 0.5s; }
 
 .session-card.booked {
     background: #f0f7ff;
