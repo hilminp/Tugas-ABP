@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { api, STORAGE_BASE_URL } from '../../lib/api';
 import { PSYCHOLOGIST_CATEGORIES } from '../../constants/psychologistCategories';
+import '../../components/Sidebar.css';
 import '../Home.css';
 
 const DashboardPsikolog = () => {
@@ -10,6 +11,7 @@ const DashboardPsikolog = () => {
     const navigate = useNavigate();
     const [posts, setPosts] = useState([]);
     const [commentInputs, setCommentInputs] = useState({});
+    const [expandedComments, setExpandedComments] = useState({});
     const [incomingRequests, setIncomingRequests] = useState([]);
     const [likingPostId, setLikingPostId] = useState(null);
     const [requestActionLoadingId, setRequestActionLoadingId] = useState(null);
@@ -131,15 +133,37 @@ const DashboardPsikolog = () => {
 
     const handleLike = async (postId) => {
         if (likingPostId === postId) return;
+        const targetPost = posts.find((post) => post.id === postId);
+        if (!targetPost) return;
+
+        const wasLiked = Boolean(targetPost.is_liked);
+        const prevLikeCount = targetPost.likes_count ?? targetPost.likes?.length ?? 0;
+        const nextLikeCount = Math.max(0, prevLikeCount + (wasLiked ? -1 : 1));
+
+        // Optimistic UI agar klik like terasa instan.
+        setPosts((prev) =>
+            prev.map((post) =>
+                post.id === postId
+                    ? { ...post, is_liked: !wasLiked, likes_count: nextLikeCount }
+                    : post
+            )
+        );
 
         setLikingPostId(postId);
         try {
             await api.post(`/posts/${postId}/like`);
-            await fetchPosts();
         } catch (error) {
+            setPosts((prev) =>
+                prev.map((post) =>
+                    post.id === postId
+                        ? { ...post, is_liked: wasLiked, likes_count: prevLikeCount }
+                        : post
+                )
+            );
             setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal menyukai post.' });
         } finally {
             setLikingPostId(null);
+            fetchPosts();
         }
     };
 
@@ -159,6 +183,13 @@ const DashboardPsikolog = () => {
         } finally {
             setSubmittingCommentId(null);
         }
+    };
+
+    const toggleComments = (postId) => {
+        setExpandedComments((prev) => ({
+            ...prev,
+            [postId]: !prev[postId]
+        }));
     };
 
     const handleAcceptRequest = async (requesterId) => {
@@ -250,13 +281,13 @@ const DashboardPsikolog = () => {
     return (
         <div className="bg-gradient-to-br from-[#fff9fc] via-[#ffeaf3] to-[#ffd6e8] text-on-background min-h-screen flex">
             <aside className="hidden md:flex flex-col h-screen w-64 border-r border-stone-200 bg-stone-50 py-6 px-4 sticky top-0">
-                <div className="mb-10 px-2 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white">
+                <div className="sidebar-brand" onClick={() => navigate('/home')}>
+                    <div className="sidebar-brand-icon">
                         <span className="material-symbols-outlined">psychology</span>
                     </div>
-                    <div>
-                        <h1 className="text-2xl font-black text-[#A46477]">Curhatin</h1>
-                        <p className="text-[10px] uppercase tracking-wider font-bold text-stone-500">Panel Psikolog</p>
+                    <div className="sidebar-brand-text">
+                        <strong>Curhatin</strong>
+                        <span>Safe Space</span>
                     </div>
                 </div>
                 <nav className="flex-1 space-y-2">
@@ -291,17 +322,6 @@ const DashboardPsikolog = () => {
                         <span className="material-symbols-outlined">logout</span>
                         Keluar
                     </button>
-                    <div className="mt-6 flex items-center gap-3 px-2">
-                        <img
-                            alt="Psychologist Profile Avatar"
-                            className="w-10 h-10 rounded-full object-cover border-2 border-primary-container"
-                            src={profileImageUrl}
-                        />
-                        <div className="overflow-hidden">
-                            <p className="text-sm font-bold truncate">{psychologistName}</p>
-                            <p className="text-xs text-stone-500">{psychologistSpecialty}</p>
-                        </div>
-                    </div>
                 </div>
             </aside>
 
@@ -333,10 +353,6 @@ const DashboardPsikolog = () => {
                         <div className="lg:col-span-8 space-y-6">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-lg font-bold text-on-surface">Linimasa</h3>
-                                <div className="flex gap-2">
-                                    <button className="px-4 py-1.5 text-xs font-bold bg-primary text-white rounded-full" type="button">Terbaru</button>
-                                    <button className="px-4 py-1.5 text-xs font-medium text-stone-500 hover:bg-stone-100 rounded-full transition-colors" type="button">Populer</button>
-                                </div>
                             </div>
 
                             {posts.map((post) => (
@@ -360,19 +376,32 @@ const DashboardPsikolog = () => {
                                         <img className="w-full h-64 object-cover rounded-lg mb-4" src={`${STORAGE_BASE_URL}/${post.image}`} alt="Post attachment" />
                                     )}
                                     <div className="post-feedback-bar border-t border-stone-100">
-                                        <button
-                                            className={`post-like-icon ${Boolean(post.is_liked) ? 'liked' : ''}`}
-                                            type="button"
-                                            onClick={() => handleLike(post.id)}
-                                            disabled={likingPostId === post.id}
-                                            aria-label="Like post"
-                                        >
-                                            <span aria-hidden="true">&#9829;</span>
-                                        </button>
-                                        <p className="post-like-count">
-                                            {post.likes_count ?? post.likes?.length ?? 0} suka
-                                        </p>
-                                        {Array.isArray(post.comments) && post.comments.length > 0 && (
+                                        <div className="flex items-center gap-4">
+                                            <button
+                                                className={`post-like-icon ${Boolean(post.is_liked) ? 'liked' : ''}`}
+                                                type="button"
+                                                onClick={() => handleLike(post.id)}
+                                                disabled={likingPostId === post.id}
+                                                aria-label="Like post"
+                                            >
+                                                <span aria-hidden="true">&#9829;</span>
+                                            </button>
+                                            <p className="post-like-count">
+                                                {post.likes_count ?? post.likes?.length ?? 0} suka
+                                            </p>
+                                            <button
+                                                type="button"
+                                                className="post-feedback-button"
+                                                onClick={() => toggleComments(post.id)}
+                                                aria-expanded={Boolean(expandedComments[post.id])}
+                                                aria-label={expandedComments[post.id] ? 'Sembunyikan komentar' : 'Tampilkan komentar'}
+                                            >
+                                                <span className="material-symbols-outlined text-[24px]">chat_bubble</span>
+                                                Komentar
+                                                <span className="post-feedback-count">{Array.isArray(post.comments) ? post.comments.length : 0}</span>
+                                            </button>
+                                        </div>
+                                        {expandedComments[post.id] && Array.isArray(post.comments) && post.comments.length > 0 && (
                                             <div className="post-comment-list">
                                                 {post.comments.map((comment) => (
                                                     <p key={comment.id} className="post-comment-row">
@@ -383,22 +412,24 @@ const DashboardPsikolog = () => {
                                             </div>
                                         )}
                                     </div>
-                                    <form className="post-comment-inline" onSubmit={(e) => submitComment(e, post.id)}>
-                                        <input
-                                            type="text"
-                                            value={commentInputs[post.id] || ''}
-                                            onChange={(e) =>
-                                                setCommentInputs((prev) => ({ ...prev, [post.id]: e.target.value }))
-                                            }
-                                            placeholder="Tulis komentar..."
-                                        />
-                                        <button
-                                            type="submit"
-                                            disabled={submittingCommentId === post.id}
-                                        >
-                                            {submittingCommentId === post.id ? 'Mengirim...' : 'Kirim'}
-                                        </button>
-                                    </form>
+                                    {expandedComments[post.id] && (
+                                        <form className="post-comment-inline" onSubmit={(e) => submitComment(e, post.id)}>
+                                            <input
+                                                type="text"
+                                                value={commentInputs[post.id] || ''}
+                                                onChange={(e) =>
+                                                    setCommentInputs((prev) => ({ ...prev, [post.id]: e.target.value }))
+                                                }
+                                                placeholder="Tulis komentar..."
+                                            />
+                                            <button
+                                                type="submit"
+                                                disabled={submittingCommentId === post.id}
+                                            >
+                                                {submittingCommentId === post.id ? 'Mengirim...' : 'Kirim'}
+                                            </button>
+                                        </form>
+                                    )}
                                 </article>
                             ))}
 

@@ -63,10 +63,6 @@ const Sidebar = () => {
                     <Home size={20} />
                     <span>Beranda</span>
                 </Link>
-                <Link to="/home" className="nav-item">
-                    <Compass size={20} />
-                    <span>Linimasa</span>
-                </Link>
                 <Link to="/messages" className="nav-item">
                     <MessageSquare size={20} />
                     <span>Pesan</span>

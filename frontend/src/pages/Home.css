@@ -114,10 +114,13 @@ button:focus {
     margin-top: 18px;
     margin-bottom: 18px;
     padding: 16px;
-    border: 1px solid #efdeea;
+    border: 1px solid rgba(212, 170, 178, 0.6);
     border-radius: 16px;
-    background: #fff;
-    box-shadow: 0 10px 24px rgba(148, 82, 112, 0.08);
+    background:
+        radial-gradient(circle at 10% 20%, rgba(250, 236, 233, 0.95) 0%, transparent 42%),
+        radial-gradient(circle at 90% 85%, rgba(204, 162, 167, 0.28) 0%, transparent 58%),
+        radial-gradient(circle at 50% 50%, #f5e3e6 0%, #ecd1d7 100%);
+    box-shadow: 0 14px 30px rgba(148, 82, 112, 0.12);
 }
 
 .psychologist-category-box .popular-header {
@@ -197,10 +200,10 @@ button:focus {
 
 .psychologist-result-box {
     margin-top: 16px;
-    border: 1px solid #f0dde7;
+    border: 1px solid #ead2dd;
     border-radius: 14px;
-    background: #fffafc;
-    padding: 14px;
+    background: rgba(255, 250, 252, 0.9);
+    padding: 12px;
 }
 
 .psychologist-result-header {
@@ -222,17 +225,19 @@ button:focus {
     color: #8d7783;
 }
 
-.psychologist-list {
+.psychologist-grid-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    gap: 8px;
+    align-items: start;
+    width: 100%;
 }
 
 .psychologist-card {
     border: 1px solid #edd8e3;
     border-radius: 12px;
-    background: #fff;
-    padding: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 10px;
 }
 
 .psychologist-card-top {
@@ -269,13 +274,13 @@ button:focus {
 }
 
 .psychologist-specialty {
-    margin: 10px 0;
-    font-size: 12px;
+    margin: 8px 0;
+    font-size: 11px;
     color: #6a5761;
     background: #f9edf3;
     border-radius: 999px;
     display: inline-block;
-    padding: 5px 10px;
+    padding: 4px 9px;
 }
 
 .psychologist-contact-btn {
@@ -284,11 +289,11 @@ button:focus {
     justify-content: center;
     width: 100%;
     text-decoration: none;
-    border-radius: 10px;
-    padding: 9px 12px;
+    border-radius: 9px;
+    padding: 8px 10px;
     border: 1px solid #dcb8c9;
     color: #7a4d62;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
 }
 
@@ -830,8 +835,8 @@ button:focus {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .psychologist-list {
-        grid-template-columns: 1fr;
+    .psychologist-grid-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .floating-action {
@@ -854,6 +859,12 @@ button:focus {
     .home-chatbot-toggle {
         right: 12px;
         bottom: 16px;
+    }
+}
+
+@media (max-width: 640px) {
+    .psychologist-grid-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 

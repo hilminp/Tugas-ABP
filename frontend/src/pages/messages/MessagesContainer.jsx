@@ -230,18 +230,7 @@ const MessagesContainer = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <button className="p-3.5 text-primary bg-white/50 hover:bg-white hover:shadow-md rounded-2xl transition-all active:scale-90 group">
-                                    <span className="material-symbols-outlined text-xl group-hover:rotate-12 transition-transform" style={{ fontVariationSettings: "'FILL' 1" }}>videocam</span>
-                                </button>
-                                <button className="p-3.5 text-primary bg-white/50 hover:bg-white hover:shadow-md rounded-2xl transition-all active:scale-90 group">
-                                    <span className="material-symbols-outlined text-xl group-hover:shake transition-transform" style={{ fontVariationSettings: "'FILL' 1" }}>call</span>
-                                </button>
-                                <div className="w-px h-10 bg-white/60 mx-4 shadow-sm"></div>
-                                <button className="p-3.5 text-primary bg-white/50 hover:bg-white hover:shadow-md rounded-2xl transition-all active:scale-90">
-                                    <span className="material-symbols-outlined text-xl">more_vert</span>
-                                </button>
-                            </div>
+                            {/* Action buttons removed */}
                         </header>
 
                         {/* Chat Feed */}

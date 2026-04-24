@@ -22,6 +22,14 @@ const ConsultationSessions = () => {
     const [connectedPsychologists, setConnectedPsychologists] = useState([]);
     const [selectedPsychologist, setSelectedPsychologist] = useState(null);
     const [availableSlots, setAvailableSlots] = useState([]);
+    const [popup, setPopup] = useState({ 
+        show: false, 
+        title: '', 
+        message: '', 
+        type: 'alert', 
+        onConfirm: null 
+    });
+
 
     useEffect(() => {
         fetchSessions();
@@ -64,19 +72,27 @@ const ConsultationSessions = () => {
             setNewSession({ session_date: '', session_time: '' });
             fetchSessions();
         } catch (err) {
-            alert(err.response?.data?.message || "Gagal membuat sesi");
+            showAlert("Gagal", err.response?.data?.message || "Gagal membuat sesi");
         } finally {
             setSubmitting(false);
         }
     };
 
+    const showAlert = (title, message) => {
+        setPopup({ show: true, title, message, type: 'alert' });
+    };
+
+    const showConfirm = (title, message, onConfirm) => {
+        setPopup({ show: true, title, message, type: 'confirm', onConfirm });
+    };
+
     const handleApproveSession = async (id) => {
         try {
             await api.post(`/consultation-sessions/${id}/approve`);
-            alert("Sesi berhasil disetujui!");
+            showAlert("Berhasil", "Sesi berhasil disetujui!");
             fetchSessions();
         } catch (err) {
-            alert(err.response?.data?.message || "Gagal menyetujui sesi");
+            showAlert("Gagal", err.response?.data?.message || "Gagal menyetujui sesi");
         }
     };
 
@@ -85,29 +101,39 @@ const ConsultationSessions = () => {
             await api.post(`/consultation-sessions/${session.id}/start`);
             navigate(`/messages/${session.user_id}`);
         } catch (err) {
-            alert(err.response?.data?.message || "Gagal memulai sesi");
+            showAlert("Gagal", err.response?.data?.message || "Gagal memulai sesi");
         }
     };
 
-    const handleEndSession = async (id) => {
-        if (!window.confirm("Apakah Anda yakin ingin mengakhiri sesi ini? Chat akan langsung dikunci.")) return;
-        try {
-            await api.post(`/consultation-sessions/${id}/end`);
-            alert("Sesi telah diakhiri.");
-            fetchSessions();
-        } catch (err) {
-            alert(err.response?.data?.message || "Gagal mengakhiri sesi");
-        }
+    const handleEndSession = (id) => {
+        showConfirm(
+            "Akhiri Sesi?", 
+            "Apakah Anda yakin ingin mengakhiri sesi ini? Chat akan langsung dikunci.",
+            async () => {
+                try {
+                    await api.post(`/consultation-sessions/${id}/end`);
+                    showAlert("Selesai", "Sesi telah diakhiri.");
+                    fetchSessions();
+                } catch (err) {
+                    showAlert("Gagal", err.response?.data?.message || "Gagal mengakhiri sesi");
+                }
+            }
+        );
     };
 
-    const handleDeleteSession = async (id) => {
-        if (!window.confirm("Apakah Anda yakin ingin menghapus/membatalkan sesi ini?")) return;
-        try {
-            await api.delete(`/consultation-sessions/${id}`);
-            fetchSessions();
-        } catch (err) {
-            alert("Gagal menghapus sesi");
-        }
+    const handleDeleteSession = (id) => {
+        showConfirm(
+            "Hapus Sesi?",
+            "Apakah Anda yakin ingin menghapus/membatalkan sesi ini?",
+            async () => {
+                try {
+                    await api.delete(`/consultation-sessions/${id}`);
+                    fetchSessions();
+                } catch (err) {
+                    showAlert("Gagal", "Gagal menghapus sesi");
+                }
+            }
+        );
     };
 
     const handleViewSlots = async (psychologist) => {
@@ -116,18 +142,18 @@ const ConsultationSessions = () => {
             const res = await api.get(`/consultation-sessions/psychologist/${psychologist.id}`);
             setAvailableSlots(res.data.sessions || []);
         } catch (err) {
-            alert("Gagal mengambil jadwal");
+            showAlert("Gagal", "Gagal mengambil jadwal");
         }
     };
 
     const handleBookSlot = async (id) => {
         try {
             await api.post(`/consultation-sessions/${id}/book`);
-            alert("Berhasil memesan sesi!");
+            showAlert("Berhasil", "Berhasil memesan sesi!");
             setSelectedPsychologist(null);
             fetchSessions();
         } catch (err) {
-            alert(err.response?.data?.message || "Gagal memesan sesi");
+            showAlert("Gagal", err.response?.data?.message || "Gagal memesan sesi");
         }
     };
 
@@ -317,6 +343,34 @@ const ConsultationSessions = () => {
                                         </div>
                                     ))}
                                 </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Custom Modern Popup */}
+            {popup.show && (
+                <div className="popup-overlay" onClick={() => setPopup({ ...popup, show: false })}>
+                    <div className="popup-card" onClick={e => e.stopPropagation()}>
+                        <div className="popup-icon-wrapper">
+                            <span className="material-symbols-outlined">
+                                {popup.type === 'confirm' ? 'help_outline' : (popup.title === 'Gagal' ? 'error_outline' : 'check_circle_outline')}
+                            </span>
+                        </div>
+                        <h3>{popup.title}</h3>
+                        <p>{popup.message}</p>
+                        <div className="popup-actions">
+                            {popup.type === 'confirm' ? (
+                                <>
+                                    <button className="popup-btn secondary" onClick={() => setPopup({ ...popup, show: false })}>Batal</button>
+                                    <button className="popup-btn primary" onClick={() => {
+                                        popup.onConfirm();
+                                        setPopup({ ...popup, show: false });
+                                    }}>Ya, Lanjutkan</button>
+                                </>
+                            ) : (
+                                <button className="popup-btn primary" onClick={() => setPopup({ ...popup, show: false })}>Oke</button>
                             )}
                         </div>
                     </div>

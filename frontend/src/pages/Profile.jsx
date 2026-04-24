@@ -4,6 +4,39 @@ import Sidebar from '../components/Sidebar';
 import { useAuth } from '../hooks/useAuth';
 import { api, STORAGE_BASE_URL } from '../lib/api';
 
+const welcomeBackgroundStyle = {
+    minHeight: '100vh',
+    display: 'flex',
+    position: 'relative',
+    backgroundImage: `
+        radial-gradient(circle at 10% 20%, #faece9 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, #cca2a7 0%, transparent 60%),
+        radial-gradient(circle at 50% 50%, #eed4d4 0%, #dcaab2 100%)
+    `
+};
+
+const welcomePatternOverlayStyle = {
+    position: 'absolute',
+    inset: 0,
+    pointerEvents: 'none',
+    backgroundImage: `
+        repeating-radial-gradient(
+            circle at 100% 50%,
+            transparent 0,
+            transparent 40px,
+            rgba(255, 255, 255, 0.1) 40px,
+            rgba(255, 255, 255, 0.1) 41px
+        ),
+        repeating-radial-gradient(
+            circle at 100% 50%,
+            transparent 0,
+            transparent 80px,
+            rgba(255, 255, 255, 0.05) 80px,
+            rgba(255, 255, 255, 0.05) 81px
+        )
+    `
+};
+
 const Profile = () => {
     const { user, updateUser } = useAuth();
     const navigate = useNavigate();
@@ -14,6 +47,8 @@ const Profile = () => {
     
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ text: '', type: '' });
+    const [isCardPressed, setIsCardPressed] = useState(false);
+    const [isAvatarPressed, setIsAvatarPressed] = useState(false);
     
     const fileInputRef = useRef(null);
 
@@ -65,11 +100,28 @@ const Profile = () => {
     };
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', background: '#FFF8EE' }}>
+        <div style={welcomeBackgroundStyle}>
+            <div aria-hidden="true" style={welcomePatternOverlayStyle} />
             <Sidebar />
             
-            <div className="main-container" style={{ flex: 1, padding: '40px', fontFamily: "'Poppins', sans-serif" }}>
-                <div style={{ maxWidth: '600px', margin: '0 auto', background: '#fff', borderRadius: '16px', padding: '40px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+            <div className="main-container" style={{ flex: 1, padding: '40px', fontFamily: "'Poppins', sans-serif", background: 'transparent', position: 'relative', zIndex: 1 }}>
+                <div
+                    style={{
+                        maxWidth: '600px',
+                        margin: '0 auto',
+                        background: '#fff',
+                        borderRadius: '16px',
+                        padding: '40px',
+                        boxShadow: isCardPressed ? '0 8px 24px rgba(136, 77, 96, 0.18)' : '0 4px 20px rgba(0,0,0,0.05)',
+                        transform: isCardPressed ? 'scale(0.995)' : 'scale(1)',
+                        transition: 'transform 160ms ease, box-shadow 200ms ease'
+                    }}
+                    onMouseDown={() => setIsCardPressed(true)}
+                    onMouseUp={() => setIsCardPressed(false)}
+                    onMouseLeave={() => setIsCardPressed(false)}
+                    onTouchStart={() => setIsCardPressed(true)}
+                    onTouchEnd={() => setIsCardPressed(false)}
+                >
                     
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '30px' }}>
                         <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', marginRight: '15px' }}>
@@ -103,9 +155,16 @@ const Profile = () => {
                                     position: 'relative',
                                     cursor: 'pointer',
                                     border: '4px solid #FFF',
-                                    boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+                                    boxShadow: isAvatarPressed ? '0 10px 26px rgba(136, 77, 96, 0.28)' : '0 4px 10px rgba(0,0,0,0.1)',
+                                    transform: isAvatarPressed ? 'scale(0.96)' : 'scale(1)',
+                                    transition: 'transform 140ms ease, box-shadow 200ms ease'
                                 }}
                                 onClick={() => fileInputRef.current.click()}
+                                onMouseDown={() => setIsAvatarPressed(true)}
+                                onMouseUp={() => setIsAvatarPressed(false)}
+                                onMouseLeave={() => setIsAvatarPressed(false)}
+                                onTouchStart={() => setIsAvatarPressed(true)}
+                                onTouchEnd={() => setIsAvatarPressed(false)}
                             >
                                 <img 
                                     src={previewImage || (user?.profile_image ? `${STORAGE_BASE_URL}/${user.profile_image}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png')} 
@@ -152,14 +211,72 @@ const Profile = () => {
                             <button 
                                 type="button" 
                                 onClick={() => navigate('/home')}
-                                style={{ flex: 1, padding: '12px', borderRadius: '8px', background: '#F1F1F1', color: '#333', border: 'none', fontWeight: 600, cursor: 'pointer' }}
+                                style={{
+                                    flex: 1,
+                                    padding: '12px',
+                                    borderRadius: '14px',
+                                    background: '#F1F1F1',
+                                    color: '#333',
+                                    border: 'none',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    transition: 'transform 160ms ease, box-shadow 200ms ease, background-color 200ms ease',
+                                    boxShadow: '0 6px 16px rgba(0,0,0,0.06)'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(-1px)';
+                                    e.currentTarget.style.background = '#ececec';
+                                    e.currentTarget.style.boxShadow = '0 10px 22px rgba(0,0,0,0.1)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.background = '#F1F1F1';
+                                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.06)';
+                                }}
+                                onMouseDown={(e) => {
+                                    e.currentTarget.style.transform = 'scale(0.97)';
+                                }}
+                                onMouseUp={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(-1px)';
+                                }}
                             >
                                 Batal
                             </button>
                             <button 
                                 type="submit" 
                                 disabled={loading}
-                                style={{ flex: 2, padding: '12px', borderRadius: '8px', background: '#FF6FA3', color: '#FFF', border: 'none', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer' }}
+                                style={{
+                                    flex: 2,
+                                    padding: '12px',
+                                    borderRadius: '14px',
+                                    background: loading ? '#f2a2bf' : '#FF6FA3',
+                                    color: '#FFF',
+                                    border: 'none',
+                                    fontWeight: 600,
+                                    cursor: loading ? 'not-allowed' : 'pointer',
+                                    transition: 'transform 160ms ease, box-shadow 220ms ease, background-color 200ms ease',
+                                    boxShadow: loading ? 'none' : '0 10px 24px rgba(255, 111, 163, 0.35)'
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (loading) return;
+                                    e.currentTarget.style.transform = 'translateY(-1px)';
+                                    e.currentTarget.style.background = '#f95f98';
+                                    e.currentTarget.style.boxShadow = '0 14px 28px rgba(255, 111, 163, 0.42)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (loading) return;
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.background = '#FF6FA3';
+                                    e.currentTarget.style.boxShadow = '0 10px 24px rgba(255, 111, 163, 0.35)';
+                                }}
+                                onMouseDown={(e) => {
+                                    if (loading) return;
+                                    e.currentTarget.style.transform = 'scale(0.97)';
+                                }}
+                                onMouseUp={(e) => {
+                                    if (loading) return;
+                                    e.currentTarget.style.transform = 'translateY(-1px)';
+                                }}
                             >
                                 {loading ? 'Menyimpan...' : 'Simpan Perubahan'}
                             </button>

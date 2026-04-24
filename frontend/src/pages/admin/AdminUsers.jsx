@@ -11,6 +11,8 @@ const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const USERS_PER_PAGE = 6;
   const [suspendModal, setSuspendModal] = useState({
     isOpen: false,
     user: null,
@@ -138,6 +140,22 @@ const AdminUsers = () => {
     const params = new URLSearchParams(location.search);
     return searchMatch;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / USERS_PER_PAGE));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * USERS_PER_PAGE;
+  const endIndex = startIndex + USERS_PER_PAGE;
+  const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   // Derived statistics
   const totalActive = users.filter(
@@ -347,7 +365,7 @@ const AdminUsers = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-outline-variant/5">
-                    {filteredUsers.map((u) => (
+                    {paginatedUsers.map((u) => (
                       <tr
                         key={u.id}
                         className={`group transition-colors ${u.is_suspended ? "bg-error-container/5 hover:bg-error-container/10" : "hover:bg-white/40"}`}
@@ -411,17 +429,6 @@ const AdminUsers = () => {
                                   {u.nama_bank} - {u.no_rekening}
                                 </span>
                               )}
-                            </div>
-                          ) : u.is_premium ? (
-                            <div className="flex flex-col gap-1 items-start">
-                              <span
-                                className={`bg-[#ffd700] text-[#8b6508] px-3 py-1 rounded-full text-xs font-bold border border-[#daa520] shadow-sm ${u.is_suspended ? "opacity-50" : ""}`}
-                              >
-                                Premium
-                              </span>
-                              <span className="text-[9px] font-bold text-[#8b6508]/70 uppercase px-1">
-                                Anonim
-                              </span>
                             </div>
                           ) : (
                             <span
@@ -517,6 +524,18 @@ const AdminUsers = () => {
                                 </span>
                               </div>
                             )
+                          ) : u.is_premium ? (
+                            <div className="flex items-center gap-1.5 text-[#8b6508]">
+                              <span
+                                className="material-symbols-outlined text-sm"
+                                style={{ fontVariationSettings: "'FILL' 1" }}
+                              >
+                                workspace_premium
+                              </span>
+                              <span className="text-xs font-bold uppercase tracking-wider">
+                                Premium
+                              </span>
+                            </div>
                           ) : (
                             <div className="flex items-center gap-1.5 text-on-surface-variant/40">
                               <span
@@ -584,7 +603,7 @@ const AdminUsers = () => {
                         </td>
                       </tr>
                     ))}
-                    {filteredUsers.length === 0 && (
+                    {paginatedUsers.length === 0 && (
                       <tr>
                         <td
                           colSpan="7"
@@ -600,11 +619,15 @@ const AdminUsers = () => {
               {/* Pagination/Footer */}
               <div className="mt-8 pt-6 border-t border-outline-variant/10 flex items-center justify-between">
                 <p className="text-sm text-on-surface-variant font-medium">
-                  Menampilkan {filteredUsers.length} dari {users.length}{" "}
-                  pengguna
+                  Menampilkan {filteredUsers.length === 0 ? 0 : startIndex + 1}-
+                  {Math.min(endIndex, filteredUsers.length)} dari {filteredUsers.length} pengguna
                 </p>
                 <div className="flex gap-2">
-                  <button className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface">
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                    disabled={safeCurrentPage === 1}
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
                     <span
                       className="material-symbols-outlined text-sm"
                       data-icon="chevron_left"
@@ -612,10 +635,14 @@ const AdminUsers = () => {
                       chevron_left
                     </span>
                   </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-full bg-primary text-on-primary font-bold">
-                    1
+                  <button className="min-w-10 h-10 px-3 flex items-center justify-center rounded-full bg-primary text-on-primary font-bold">
+                    {safeCurrentPage}
                   </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface">
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                    disabled={safeCurrentPage === totalPages || filteredUsers.length === 0}
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
                     <span
                       className="material-symbols-outlined text-sm"
                       data-icon="chevron_right"
