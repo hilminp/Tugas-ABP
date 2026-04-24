@@ -7,6 +7,7 @@ import {
     AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
     Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
+import { Bell, UserPlus, CreditCard, CheckCircle, Clock, ChevronRight, X } from 'lucide-react';
 
 const AdminDashboard = () => {
     const { user, logout } = useAuth();
@@ -17,6 +18,23 @@ const AdminDashboard = () => {
     const [showNotif, setShowNotif] = useState(false);
     const [txPage, setTxPage] = useState(0);
     const notifRef = useRef(null);
+    const [readNotifIds, setReadNotifIds] = useState(() => {
+        try {
+            const saved = localStorage.getItem('admin_read_notifs');
+            return saved ? JSON.parse(saved) : [];
+        } catch { return []; }
+    });
+
+    // Handle scroll from notification
+    useEffect(() => {
+        if (location.state?.scrollTo) {
+            setTimeout(() => {
+                document.getElementById(location.state.scrollTo)?.scrollIntoView({ behavior: 'smooth' });
+                // Clear state to avoid scrolling again on refresh
+                window.history.replaceState({}, document.title);
+            }, 500);
+        }
+    }, [location.state]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -143,45 +161,120 @@ const AdminDashboard = () => {
                         <div className="relative" ref={notifRef}>
                             <button 
                                 onClick={() => setShowNotif(!showNotif)}
-                                className="relative p-2 rounded-full hover:bg-teal-100/50 text-teal-700 dark:text-teal-300 transition-colors"
+                                className={`relative p-2.5 rounded-full transition-all duration-300 ${showNotif ? 'bg-teal-100 text-teal-700 shadow-inner' : 'hover:bg-teal-100/50 text-teal-700/70 dark:text-teal-300/70'}`}
                             >
-                                <span className="material-symbols-outlined">notifications</span>
-                                {data?.pendingCount > 0 && (
-                                    <span className="absolute top-1 right-1 flex h-3 w-3">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-teal-50 dark:border-slate-900"></span>
-                                    </span>
-                                )}
+                                <Bell size={20} strokeWidth={2.5} />
+                                {(() => {
+                                    const unreadCount = [
+                                        ...(data?.pendingPsikolog || []).map(p => `psikolog_${p.id}`),
+                                        ...(data?.latestPremiumUsers || []).map(u => `premium_${u.id}`)
+                                    ].filter(id => !readNotifIds.includes(id)).length;
+                                    
+                                    return unreadCount > 0 && (
+                                        <span className="absolute top-1.5 right-1.5 flex h-3.5 w-3.5">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-500 border-2 border-white dark:border-slate-900 shadow-sm"></span>
+                                        </span>
+                                    );
+                                })()}
                             </button>
 
                             {/* Notification Dropdown */}
                             {showNotif && (
-                                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-teal-100 dark:border-slate-700 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                                    <div className="px-4 py-3 border-b border-teal-50 dark:border-slate-700 bg-teal-50/50 dark:bg-slate-800/50 flex justify-between items-center">
-                                        <h3 className="font-bold text-sm text-teal-900 dark:text-teal-100">Notifikasi</h3>
-                                        {data?.pendingCount > 0 && (
-                                            <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-full">{data.pendingCount} Baru</span>
-                                        )}
-                                    </div>
-                                    <div className="max-h-[300px] overflow-y-auto">
-                                        {!data || data.pendingCount === 0 || !data.pendingPsikolog ? (
-                                            <div className="px-4 py-6 text-center text-sm text-slate-500">
-                                                Tidak ada notifikasi baru
-                                            </div>
-                                        ) : (
-                                            data.pendingPsikolog.slice(0, 5).map(p => (
-                                                <div key={p.id} onClick={() => {navigate('/admin/verifications'); setShowNotif(false)}} className="px-4 py-3 border-b last:border-0 border-teal-50 dark:border-slate-700 hover:bg-teal-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors">
-                                                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 line-clamp-1">{p.name} <span className="font-normal text-slate-500">mendaftar sebagai Psikolog.</span></p>
-                                                    <p className="text-[10px] text-teal-600 dark:text-teal-400 font-bold mt-1 uppercase">Menunggu Verifikasi</p>
-                                                </div>
-                                            ))
-                                        )}
-                                    </div>
-                                    {data?.pendingCount > 0 && (
-                                        <div onClick={() => {navigate('/admin/verifications'); setShowNotif(false)}} className="px-4 py-2 bg-teal-50 dark:bg-slate-800 text-center text-xs font-bold text-teal-700 dark:text-teal-400 cursor-pointer hover:bg-teal-100 dark:hover:bg-slate-700 transition-colors">
-                                            Lihat Semua Verifikasi
+                                <div className="absolute right-0 mt-3 w-[360px] bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-teal-100 dark:border-slate-700 overflow-hidden z-50 animate-in fade-in slide-in-from-top-4 duration-300">
+                                    <div className="px-6 py-5 border-b border-teal-50 dark:border-slate-700 bg-teal-50/30 dark:bg-slate-800/50 flex justify-between items-center">
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="font-black text-sm text-teal-900 dark:text-teal-100 uppercase tracking-wider">Notifikasi</h3>
+                                            <span className="bg-teal-100 text-teal-700 text-[10px] font-black px-2 py-0.5 rounded-full">Baru</span>
                                         </div>
-                                    )}
+                                        <button onClick={() => setShowNotif(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                                            <X size={16} />
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+                                        {(() => {
+                                            const notifications = [
+                                                ...(data?.pendingPsikolog || []).map(p => ({ ...p, type: 'psikolog', nid: `psikolog_${p.id}` })),
+                                                ...(data?.latestPremiumUsers || []).map(u => ({ ...u, type: 'premium', nid: `premium_${u.id}` }))
+                                            ]
+                                            .filter(item => !readNotifIds.includes(item.nid))
+                                            .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
+
+                                            if (notifications.length === 0) {
+                                                return (
+                                                    <div className="px-6 py-12 text-center">
+                                                        <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                                            <Bell className="text-slate-300" size={24} />
+                                                        </div>
+                                                        <p className="text-sm font-bold text-slate-400">Tidak ada notifikasi baru</p>
+                                                    </div>
+                                                );
+                                            }
+
+                                            return (
+                                                <div className="divide-y divide-teal-50/50 dark:divide-slate-700/50">
+                                                    {notifications.map((item, idx) => (
+                                                        <div 
+                                                            key={idx} 
+                                                            onClick={() => {
+                                                                // Mark as read
+                                                                const newRead = [...readNotifIds, item.nid];
+                                                                setReadNotifIds(newRead);
+                                                                localStorage.setItem('admin_read_notifs', JSON.stringify(newRead));
+
+                                                                // Navigate
+                                                                if (item.type === 'psikolog') {
+                                                                    navigate('/admin/verifications');
+                                                                } else {
+                                                                    if (window.location.pathname !== '/admin/dashboard') {
+                                                                        navigate('/admin/dashboard', { state: { scrollTo: 'analytics-section' } });
+                                                                    } else {
+                                                                        document.getElementById('analytics-section')?.scrollIntoView({ behavior: 'smooth' });
+                                                                    }
+                                                                }
+                                                                setShowNotif(false);
+                                                            }} 
+                                                            className="px-6 py-4 hover:bg-teal-50/50 dark:hover:bg-slate-700/30 cursor-pointer transition-all flex gap-4 group"
+                                                        >
+                                                            <div className={`w-10 h-10 rounded-2xl flex-shrink-0 flex items-center justify-center ${item.type === 'psikolog' ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'}`}>
+                                                                {item.type === 'psikolog' ? <UserPlus size={18} /> : <CreditCard size={18} />}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex justify-between items-start mb-0.5">
+                                                                    <p className="text-xs font-black text-slate-400 uppercase tracking-tighter">
+                                                                        {item.type === 'psikolog' ? 'Verifikasi' : 'Pembayaran'}
+                                                                    </p>
+                                                                    <span className="text-[9px] font-bold text-slate-300 flex items-center gap-1">
+                                                                        <Clock size={8} /> 
+                                                                        {new Date(item.updated_at || item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                                                                    </span>
+                                                                </div>
+                                                                <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">
+                                                                    {item.name}
+                                                                </p>
+                                                                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
+                                                                    {item.type === 'psikolog' ? 'Baru saja mendaftar sebagai Psikolog.' : 'Upgrade ke akun Premium berhasil!'}
+                                                                </p>
+                                                            </div>
+                                                            <div className="self-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <ChevronRight size={14} className="text-teal-400" />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            );
+                                        })()}
+                                    </div>
+                                    
+                                    <div className="p-4 bg-teal-50/10 dark:bg-slate-800/50 border-t border-teal-50 dark:border-slate-700">
+                                        <button 
+                                            onClick={() => {navigate('/admin/verifications'); setShowNotif(false)}} 
+                                            className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-teal-600/20 transition-all active:scale-[0.98]"
+                                        >
+                                            Lihat Semua Aktivitas
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>

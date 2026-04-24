@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import { api } from '../../../lib/api';
+import { Mail, Lock, Eye, EyeOff, X, ArrowLeft, LogIn, ChevronRight, ShieldCheck, FileText, LockKeyhole } from 'lucide-react';
 import logoCurhatin from '../../../assets/logoCurhatin.png';
 import './Auth.css';
 
@@ -136,7 +137,9 @@ const Login = () => {
                                 <div className="modern-field">
                                     <label htmlFor="email">Alamat email</label>
                                     <div className="modern-input-wrap">
-                                        <span className="modern-input-icon">✉</span>
+                                        <span className="modern-input-icon">
+                                            <Mail size={18} strokeWidth={2.5} />
+                                        </span>
                                         <input
                                             id="email"
                                             type="email"
@@ -153,7 +156,9 @@ const Login = () => {
                                         <label htmlFor="password">Kata sandi</label>
                                     </div>
                                     <div className="modern-input-wrap">
-                                        <span className="modern-input-icon">🔒</span>
+                                        <span className="modern-input-icon">
+                                            <LockKeyhole size={18} strokeWidth={2.5} />
+                                        </span>
                                         <input
                                             id="password"
                                             type={showPassword ? 'text' : 'password'}
@@ -167,20 +172,26 @@ const Login = () => {
                                             type="button"
                                             onClick={() => setShowPassword((prev) => !prev)}
                                         >
-                                            {showPassword ? '🙈' : '👁'}
+                                            {showPassword ? <EyeOff size={18} strokeWidth={2.5} /> : <Eye size={18} strokeWidth={2.5} />}
                                         </button>
                                     </div>
                                 </div>
 
-                                <button type="submit" className="login-modern-submit">Masuk</button>
+                                <button type="submit" className="login-modern-submit">
+                                    <LogIn size={18} strokeWidth={2.5} />
+                                    Masuk
+                                </button>
                             </form>
 
                             <div className="login-modern-bottom">
                                 <p>
                                     Belum punya akun?
-                                    <Link to="/register">Daftar gratis</Link>
+                                    <Link to="/register">Daftar gratis <ChevronRight size={14} style={{display: 'inline', marginLeft: '4px'}} /></Link>
                                 </p>
-                                <Link to="/" className="back-home-link">Kembali ke beranda</Link>
+                                <Link to="/" className="back-home-link">
+                                    <ArrowLeft size={16} />
+                                    Kembali ke beranda
+                                </Link>
                             </div>
                         </div>
                     </section>
@@ -193,9 +204,18 @@ const Login = () => {
                     <p>© 2024 Curhatin. Ruang digital aman untuk ekspresi diri yang jujur.</p>
                 </div>
                 <div className="footer-right">
-                    <button type="button" onClick={() => setActivePopup('privacy')}>Kebijakan Privasi</button>
-                    <button type="button" onClick={() => setActivePopup('terms')}>Syarat Layanan</button>
-                    <button type="button" onClick={() => setActivePopup('safety')}>Pusat Keamanan</button>
+                    <button type="button" onClick={() => setActivePopup('privacy')}>
+                        <ShieldCheck size={14} style={{marginRight: '6px'}} />
+                        Kebijakan Privasi
+                    </button>
+                    <button type="button" onClick={() => setActivePopup('terms')}>
+                        <FileText size={14} style={{marginRight: '6px'}} />
+                        Syarat Layanan
+                    </button>
+                    <button type="button" onClick={() => setActivePopup('safety')}>
+                        <ShieldCheck size={14} style={{marginRight: '6px'}} />
+                        Pusat Keamanan
+                    </button>
                 </div>
             </footer>
 
@@ -204,7 +224,9 @@ const Login = () => {
                     <div className="login-popup-card" onClick={(e) => e.stopPropagation()}>
                         <div className="login-popup-head">
                             <h3>{popupContent[activePopup].title}</h3>
-                            <button type="button" onClick={() => setActivePopup(null)}>✕</button>
+                            <button type="button" onClick={() => setActivePopup(null)}>
+                                <X size={20} />
+                            </button>
                         </div>
                         <p>{popupContent[activePopup].body}</p>
                     </div>
@@ -216,7 +238,9 @@ const Login = () => {
                     <div className="login-popup-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
                         <div className="login-popup-head">
                             <h3>{confirmModal.title}</h3>
-                            <button type="button" onClick={() => setConfirmModal({ show: false, onConfirm: null })}>✕</button>
+                            <button type="button" onClick={() => setConfirmModal({ show: false, onConfirm: null })}>
+                                <X size={20} />
+                            </button>
                         </div>
                         <p style={{ marginBottom: '25px', lineHeight: '1.6' }}>{confirmModal.message}</p>
                         <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>

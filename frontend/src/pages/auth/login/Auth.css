@@ -359,6 +359,9 @@
   top: 50%;
   transform: translateY(-50%);
   color: #88767a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modern-input-wrap input {
@@ -380,12 +383,21 @@
 
 .toggle-pass-btn {
   position: absolute;
-  right: 10px;
+  right: 14px;
   top: 50%;
   transform: translateY(-50%);
   border: none;
   background: transparent;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #88767a;
+  transition: color 0.2s;
+}
+
+.toggle-pass-btn:hover {
+  color: #884d60;
 }
 
 .login-modern-submit {
@@ -400,6 +412,10 @@
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 8px 16px rgba(170, 109, 130, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 .login-modern-submit:hover {
@@ -426,11 +442,20 @@
 }
 
 .back-home-link {
-  display: inline-block;
-  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
   color: #894d5f;
   text-decoration: none;
   font-size: 14px;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.back-home-link:hover {
+  opacity: 0.8;
 }
 
 .login-modern-footer {
@@ -477,6 +502,18 @@
   background: transparent;
   color: #6b5b5f;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.footer-right button:hover {
+  background: rgba(137, 77, 95, 0.05);
+  color: #884d60;
 }
 
 .login-popup-overlay {
@@ -517,10 +554,18 @@
   background: #fce9ec;
   color: #894d5f;
   border-radius: 8px;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   cursor: pointer;
-  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.login-popup-head button:hover {
+  background: #f8d7dd;
+  transform: rotate(90deg);
 }
 
 .login-popup-card p {

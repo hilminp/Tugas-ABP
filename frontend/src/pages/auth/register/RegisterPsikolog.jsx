@@ -23,7 +23,15 @@ const RegisterPsikolog = () => {
     const [showKodeEtik, setShowKodeEtik] = useState(false);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [dropdowns, setDropdowns] = useState({ spesialisasi: false, nama_bank: false });
     const navigate = useNavigate();
+
+    // Close dropdowns when clicking outside
+    React.useEffect(() => {
+        const handleClickOutside = () => setDropdowns({ spesialisasi: false, nama_bank: false });
+        window.addEventListener('click', handleClickOutside);
+        return () => window.removeEventListener('click', handleClickOutside);
+    }, []);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -181,41 +189,70 @@ const RegisterPsikolog = () => {
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold uppercase tracking-wider text-[#534346] px-1">Spesialisasi</label>
-                                    <div className="relative">
-                                        <select
-                                            name="spesialisasi"
-                                            value={formData.spesialisasi}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-2.5 rounded-full bg-white border border-[#d8c2c5]/30 focus:border-[#A46477] focus:ring-2 focus:ring-[#A46477]/20 outline-none transition-all text-[#1A1416] appearance-none cursor-pointer text-sm"
+                                    <div className="relative" onClick={(e) => e.stopPropagation()}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setDropdowns({ ...dropdowns, spesialisasi: !dropdowns.spesialisasi, nama_bank: false })}
+                                            className={`w-full px-4 py-2.5 rounded-full bg-white border border-[#d8c2c5]/30 focus:border-[#A46477] focus:ring-2 focus:ring-[#A46477]/20 outline-none transition-all text-left flex items-center justify-between text-sm ${!formData.spesialisasi ? 'text-[#857376]/50' : 'text-[#1A1416]'}`}
                                         >
-                                            <option value="" disabled>Pilih Spesialisasi Anda</option>
-                                            {PSYCHOLOGIST_CATEGORIES.map((category) => (
-                                                <option key={category.value} value={category.value}>
-                                                    {category.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-[#857376] pointer-events-none text-sm">expand_more</span>
+                                            <span className="truncate">
+                                                {formData.spesialisasi 
+                                                    ? PSYCHOLOGIST_CATEGORIES.find(c => c.value === formData.spesialisasi)?.label 
+                                                    : 'Pilih Spesialisasi Anda'}
+                                            </span>
+                                            <span className={`material-symbols-outlined transition-transform duration-300 ${dropdowns.spesialisasi ? 'rotate-180' : ''}`}>expand_more</span>
+                                        </button>
+                                        
+                                        {dropdowns.spesialisasi && (
+                                            <div className="absolute top-full left-0 right-0 mt-2 bg-white/90 backdrop-blur-xl border border-[#d8c2c5]/30 rounded-2xl shadow-2xl z-[60] overflow-hidden animate-in fade-in zoom-in duration-200 max-h-48 overflow-y-auto custom-scrollbar">
+                                                {PSYCHOLOGIST_CATEGORIES.map((category) => (
+                                                    <div
+                                                        key={category.value}
+                                                        onClick={() => {
+                                                            setFormData({ ...formData, spesialisasi: category.value });
+                                                            setDropdowns({ ...dropdowns, spesialisasi: false });
+                                                        }}
+                                                        className={`px-5 py-2.5 text-sm cursor-pointer transition-colors hover:bg-[#A46477]/5 ${formData.spesialisasi === category.value ? 'bg-[#A46477]/10 text-[#A46477] font-bold' : 'text-[#534346]'}`}
+                                                    >
+                                                        {category.label}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold uppercase tracking-wider text-[#534346] px-1">Nama Bank</label>
-                                    <div className="relative">
-                                        <select
-                                            name="nama_bank"
-                                            value={formData.nama_bank}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-2.5 rounded-full bg-white border border-[#d8c2c5]/30 focus:border-[#A46477] focus:ring-2 focus:ring-[#A46477]/20 outline-none transition-all text-[#1A1416] appearance-none cursor-pointer text-sm"
-                                            required
+                                    <div className="relative" onClick={(e) => e.stopPropagation()}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setDropdowns({ ...dropdowns, nama_bank: !dropdowns.nama_bank, spesialisasi: false })}
+                                            className={`w-full px-4 py-2.5 rounded-full bg-white border border-[#d8c2c5]/30 focus:border-[#A46477] focus:ring-2 focus:ring-[#A46477]/20 outline-none transition-all text-left flex items-center justify-between text-sm ${!formData.nama_bank ? 'text-[#857376]/50' : 'text-[#1A1416]'}`}
                                         >
-                                            <option value="" disabled>Pilih Bank</option>
-                                            {POPULAR_BANKS.map((bank) => (
-                                                <option key={bank.value} value={bank.value}>
-                                                    {bank.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-[#857376] pointer-events-none text-sm">account_balance</span>
+                                            <span className="truncate">
+                                                {formData.nama_bank 
+                                                    ? POPULAR_BANKS.find(b => b.value === formData.nama_bank)?.label 
+                                                    : 'Pilih Bank'}
+                                            </span>
+                                            <span className={`material-symbols-outlined transition-transform duration-300 ${dropdowns.nama_bank ? 'rotate-180' : ''}`}>account_balance</span>
+                                        </button>
+
+                                        {dropdowns.nama_bank && (
+                                            <div className="absolute top-full left-0 right-0 mt-2 bg-white/90 backdrop-blur-xl border border-[#d8c2c5]/30 rounded-2xl shadow-2xl z-[60] overflow-hidden animate-in fade-in zoom-in duration-200 max-h-48 overflow-y-auto custom-scrollbar">
+                                                {POPULAR_BANKS.map((bank) => (
+                                                    <div
+                                                        key={bank.value}
+                                                        onClick={() => {
+                                                            setFormData({ ...formData, nama_bank: bank.value });
+                                                            setDropdowns({ ...dropdowns, nama_bank: false });
+                                                        }}
+                                                        className={`px-5 py-2.5 text-sm cursor-pointer transition-colors hover:bg-[#A46477]/5 ${formData.nama_bank === bank.value ? 'bg-[#A46477]/10 text-[#A46477] font-bold' : 'text-[#534346]'}`}
+                                                    >
+                                                        {bank.label}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="space-y-1">
