@@ -76,7 +76,7 @@ class FriendshipController extends Controller
     {
         $meId = $request->user()->id;
         $requests = Friendship::where('friend_id', $meId)
-            // ->where('status', 'pending') // Removing this to allow seeing other statuses if needed, or I'll handle it in frontend
+            ->where('status', 'pending')
             ->with('requester')
             ->orderBy('created_at', 'desc')
             ->get();

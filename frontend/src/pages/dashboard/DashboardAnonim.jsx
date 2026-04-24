@@ -57,6 +57,7 @@ const S = {
         borderRadius: '999px',
         cursor: 'default',
         userSelect: 'none',
+        transition: 'all 0.18s ease',
     },
     commentList: {
         marginTop: '10px',
@@ -143,6 +144,7 @@ const DashboardAnonim = () => {
     const hasAccess = user?.is_premium || user?.is_admin;
     const [posts, setPosts] = useState([]);
     const [commentInputs, setCommentInputs] = useState({});
+    const [expandedComments, setExpandedComments] = useState({});
     const [body, setBody] = useState('');
     const [image, setImage] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -277,14 +279,38 @@ const DashboardAnonim = () => {
 
     const handleLike = async (postId) => {
         if (likingPostId === postId) return;
+        const targetPost = posts.find((post) => post.id === postId);
+        if (!targetPost) return;
+
+        const wasLiked = Boolean(targetPost.is_liked);
+        const prevLikeCount = targetPost.likes_count ?? targetPost.likes?.length ?? 0;
+        const nextLikeCount = Math.max(0, prevLikeCount + (wasLiked ? -1 : 1));
+
+        // Optimistic UI: like berubah instan tanpa menunggu fetch ulang.
+        setPosts((prev) =>
+            prev.map((post) =>
+                post.id === postId
+                    ? { ...post, is_liked: !wasLiked, likes_count: nextLikeCount }
+                    : post
+            )
+        );
+
         setLikingPostId(postId);
         try {
             await api.post(`/posts/${postId}/like`);
-            await fetchPosts();
         } catch (error) {
+            // Rollback jika request gagal.
+            setPosts((prev) =>
+                prev.map((post) =>
+                    post.id === postId
+                        ? { ...post, is_liked: wasLiked, likes_count: prevLikeCount }
+                        : post
+                )
+            );
             setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal menyukai post.' });
         } finally {
             setLikingPostId(null);
+            fetchPosts();
         }
     };
 
@@ -302,6 +328,13 @@ const DashboardAnonim = () => {
         } finally {
             setSubmittingCommentId(null);
         }
+    };
+
+    const toggleComments = (postId) => {
+        setExpandedComments((prev) => ({
+            ...prev,
+            [postId]: !prev[postId]
+        }));
     };
 
     /* ─── Admin Actions ─── */
@@ -540,7 +573,6 @@ const DashboardAnonim = () => {
                                         <h2>Kategori Psikolog</h2>
                                         <p>Pilih topik agar lebih cepat menemukan psikolog yang sesuai.</p>
                                     </div>
-                                    <button type="button" onClick={() => handleCategoryClick('')}>Lihat Semua</button>
                                 </div>
                                 <div className="topic-grid">
                                     {PSYCHOLOGIST_CATEGORIES.map((category) => (
@@ -577,7 +609,7 @@ const DashboardAnonim = () => {
                                             <div className="empty-psychologist-state">Belum ada psikolog pada kategori ini.</div>
                                         ) : (
                                             <>
-                                                <div className="psychologist-list">
+                                                <div className="psychologist-grid-list">
                                                     {psychologists.map((psychologist) => {
                                                         const status = psychologistStatuses[psychologist.id];
                                                         const isAccepted = status === 'accepted';
@@ -764,6 +796,8 @@ const DashboardAnonim = () => {
                                                     onClick={() => handleLike(post.id)}
                                                     disabled={likingPostId === post.id}
                                                     aria-label="Like post"
+                                                    onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.95)'; }}
+                                                    onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
                                                     onMouseEnter={(e) => {
                                                         if (!isLiked) {
                                                             e.currentTarget.style.background = '#fff0f0';
@@ -785,17 +819,26 @@ const DashboardAnonim = () => {
                                                 </button>
 
                                                 {/* Comment count chip */}
-                                                <div style={S.commentCountChip}>
+                                                <button
+                                                    type="button"
+                                                    style={{ ...S.commentCountChip, cursor: 'pointer' }}
+                                                    onClick={() => toggleComments(post.id)}
+                                                    aria-expanded={Boolean(expandedComments[post.id])}
+                                                    aria-label={expandedComments[post.id] ? 'Sembunyikan komentar' : 'Tampilkan komentar'}
+                                                    onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.95)'; }}
+                                                    onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                                                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                                                >
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                                                     </svg>
                                                     <span>{commentCount}</span>
                                                     <span style={{ fontWeight: 400, color: '#b0a0a8' }}>komentar</span>
-                                                </div>
+                                                </button>
                                             </div>
 
                                             {/* ─── Comment bubbles ─── */}
-                                            {Array.isArray(post.comments) && post.comments.length > 0 && (
+                                            {expandedComments[post.id] && Array.isArray(post.comments) && post.comments.length > 0 && (
                                                 <div style={S.commentList}>
                                                     {post.comments.map((comment) => (
                                                         <div key={comment.id} style={S.commentBubble}>
@@ -836,37 +879,39 @@ const DashboardAnonim = () => {
                                             )}
 
                                             {/* ─── Comment input ─── */}
-                                            <div style={S.commentInputWrap}
-                                                onFocus={(e) => { e.currentTarget.style.borderColor = '#db7391'; }}
-                                                onBlur={(e) => { e.currentTarget.style.borderColor = '#edd5e3'; }}
-                                            >
-                                                <input
-                                                    type="text"
-                                                    value={commentInputs[post.id] || ''}
-                                                    onChange={(e) =>
-                                                        setCommentInputs((prev) => ({ ...prev, [post.id]: e.target.value }))
-                                                    }
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter') submitComment(post.id);
-                                                    }}
-                                                    placeholder="Tulis komentar..."
-                                                    style={S.commentInput}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => submitComment(post.id)}
-                                                    disabled={submittingCommentId === post.id}
-                                                    style={S.sendBtn(submittingCommentId === post.id)}
-                                                    aria-label="Kirim komentar"
-                                                    onMouseEnter={(e) => { if (submittingCommentId !== post.id) e.currentTarget.style.opacity = '0.85'; }}
-                                                    onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
+                                            {expandedComments[post.id] && (
+                                                <div style={S.commentInputWrap}
+                                                    onFocus={(e) => { e.currentTarget.style.borderColor = '#db7391'; }}
+                                                    onBlur={(e) => { e.currentTarget.style.borderColor = '#edd5e3'; }}
                                                 >
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                        <line x1="22" y1="2" x2="11" y2="13" />
-                                                        <polygon points="22 2 15 22 11 13 2 9 22 2" fill="white" stroke="white" />
-                                                    </svg>
-                                                </button>
-                                            </div>
+                                                    <input
+                                                        type="text"
+                                                        value={commentInputs[post.id] || ''}
+                                                        onChange={(e) =>
+                                                            setCommentInputs((prev) => ({ ...prev, [post.id]: e.target.value }))
+                                                        }
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') submitComment(post.id);
+                                                        }}
+                                                        placeholder="Tulis komentar..."
+                                                        style={S.commentInput}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => submitComment(post.id)}
+                                                        disabled={submittingCommentId === post.id}
+                                                        style={S.sendBtn(submittingCommentId === post.id)}
+                                                        aria-label="Kirim komentar"
+                                                        onMouseEnter={(e) => { if (submittingCommentId !== post.id) e.currentTarget.style.opacity = '0.85'; }}
+                                                        onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
+                                                    >
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                            <line x1="22" y1="2" x2="11" y2="13" />
+                                                            <polygon points="22 2 15 22 11 13 2 9 22 2" fill="white" stroke="white" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })}

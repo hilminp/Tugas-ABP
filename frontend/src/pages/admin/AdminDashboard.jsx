@@ -659,7 +659,7 @@ const AdminDashboard = () => {
                             <div className="flex items-center justify-between mb-5">
                                 <div>
                                     <h4 className="font-bold text-slate-800">Aktivitas Konten</h4>
-                                    <p className="text-xs text-slate-400 font-medium mt-0.5">Postingan dan Like per hari (7 hari terakhir)</p>
+                                    <p className="text-xs text-slate-400 font-medium mt-0.5">Postingan, Like, dan Komentar per hari (7 hari terakhir)</p>
                                 </div>
                                 <div className="w-9 h-9 rounded-xl bg-rose-50 flex items-center justify-center">
                                     <span className="material-symbols-outlined text-rose-500 text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>trending_up</span>
@@ -677,6 +677,7 @@ const AdminDashboard = () => {
                                     <Legend wrapperStyle={{ fontSize: '11px', fontWeight: 700, paddingTop: '16px' }} />
                                     <Bar dataKey="posts" name="Postingan" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
                                     <Bar dataKey="likes" name="Like" fill="#f43f5e" radius={[6, 6, 0, 0]} />
+                                    <Bar dataKey="comments" name="Komentar" fill="#0ea5e9" radius={[6, 6, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>

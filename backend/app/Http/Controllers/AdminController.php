@@ -140,9 +140,10 @@ class AdminController extends Controller
         $contentGrowth = collect(range(6, 0))->map(function ($daysAgo) {
             $date = now()->subDays($daysAgo);
             return [
-                'date'  => $date->format('d M'),
-                'posts' => Post::whereDate('created_at', $date->toDateString())->count(),
-                'likes' => PostLike::whereDate('created_at', $date->toDateString())->count(),
+                'date'     => $date->format('d M'),
+                'posts'    => Post::whereDate('created_at', $date->toDateString())->count(),
+                'likes'    => PostLike::whereDate('created_at', $date->toDateString())->count(),
+                'comments' => PostComment::whereDate('created_at', $date->toDateString())->count(),
             ];
         })->values();
 
