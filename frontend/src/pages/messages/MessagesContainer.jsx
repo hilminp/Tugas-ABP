@@ -98,7 +98,7 @@ const MessagesContainer = () => {
     return (
         <div className="bg-background text-on-background font-body aurora-bg min-h-screen flex overflow-hidden">
             {/* Sidebar Navigation & Friend List */}
-            <aside className="hidden md:flex flex-col h-screen w-85 sticky left-0 top-0 overflow-y-auto bg-surface-container-lowest/60 backdrop-blur-3xl border-r border-surface-container-high/30 z-40 animate-in fade-in slide-in-from-left duration-700 ease-in-out shadow-[10px_0_30px_rgba(136,77,96,0.03)]">
+            <aside className="hidden md:flex flex-col h-screen w-85 sticky left-0 top-0 overflow-y-auto bg-white/30 backdrop-blur-md border-r border-white/50 z-40 animate-in fade-in slide-in-from-left duration-700 ease-in-out shadow-[4px_0_24px_rgba(164,100,119,0.05)]">
                 <div className="p-8 pb-6">
                     <div className="flex items-center justify-between mb-8">
                         <h1 className="text-xl font-black text-primary font-headline tracking-tighter hover:scale-105 transition-transform cursor-default">The Sanctuary</h1>
@@ -181,10 +181,10 @@ const MessagesContainer = () => {
                     )}
                 </nav>
 
-                <div className="p-6 bg-white/10 backdrop-blur-md border-t border-white/20">
+                <div className="p-6">
                     <button 
                         onClick={() => navigate('/home')}
-                        className="w-full py-3.5 bg-transparent text-on-surface/60 hover:text-primary rounded-2xl font-black text-[10px] uppercase tracking-[0.25em] flex items-center justify-center gap-3 transition-all hover:bg-white/40 active:scale-95 group"
+                        className="w-full py-3.5 bg-white/40 border border-white/60 shadow-[0_4px_12px_rgba(136,77,96,0.05)] text-on-surface/70 hover:text-primary rounded-full font-black text-[10px] uppercase tracking-[0.25em] flex items-center justify-center gap-3 transition-all hover:bg-white hover:shadow-[0_8px_20px_rgba(136,77,96,0.1)] hover:-translate-y-0.5 active:scale-95 group"
                     >
                         <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
                         Kembali Beranda
@@ -193,7 +193,7 @@ const MessagesContainer = () => {
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 flex flex-col h-screen relative bg-white/10 backdrop-blur-[2px] animate-in fade-in duration-1000">
+            <main className="flex-1 flex flex-col h-screen relative bg-transparent animate-in fade-in duration-1000">
                 {!friendId ? (
                     <div className="flex-1 flex flex-col items-center justify-center p-12 text-center animate-in zoom-in fade-in duration-700">
                         <div className="w-32 h-32 bg-primary/5 rounded-full flex items-center justify-center mb-10 relative">
@@ -209,7 +209,7 @@ const MessagesContainer = () => {
                 ) : (
                     <>
                         {/* Top App Bar */}
-                        <header className="sticky top-0 w-full z-50 flex justify-between items-center px-12 py-6 bg-white/60 dark:bg-rose-950/60 backdrop-blur-3xl border-b border-white/40 shadow-[0_4px_30px_rgba(0,0,0,0.02)] animate-in slide-in-from-top duration-500">
+                        <header className="sticky top-0 w-full z-50 flex justify-between items-center px-12 py-6 bg-white/30 backdrop-blur-md border-b border-white/50 shadow-[0_4px_24px_rgba(164,100,119,0.05)] animate-in slide-in-from-top duration-500">
                             <div className="flex items-center gap-6">
                                 <div className="relative group cursor-pointer">
                                     <img 

@@ -39,8 +39,6 @@ const AppLoadingScreen = ({ progress = 65 }) => {
         </div>
       </main>
 
-      <div className="loading-corner loading-corner-top">✿</div>
-      <div className="loading-corner loading-corner-bottom">❋</div>
     </div>
   );
 };

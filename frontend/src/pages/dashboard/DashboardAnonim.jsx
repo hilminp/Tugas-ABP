@@ -139,7 +139,8 @@ const S = {
 const DashboardAnonim = () => {
     const { user, updateUser } = useAuth();
     const navigate = useNavigate();
-    const [searchQuery, setSearchQuery] = useState('');
+    // Admin mendapat akses penuh ke semua fitur tanpa perlu premium
+    const hasAccess = user?.is_premium || user?.is_admin;
     const [posts, setPosts] = useState([]);
     const [commentInputs, setCommentInputs] = useState({});
     const [body, setBody] = useState('');
@@ -166,6 +167,11 @@ const DashboardAnonim = () => {
     const [submittingFeedback, setSubmittingFeedback] = useState(false);
     const [chatActivity, setChatActivity] = useState([]);
     const [activityStats, setActivityStats] = useState({ posts: 0, likes: 0, comments: 0 });
+    // Admin modals
+    const [adminConfirmModal, setAdminConfirmModal] = useState({ isOpen: false, title: '', message: '', icon: 'delete', color: 'red', onConfirm: null });
+    const [adminBanModal, setAdminBanModal] = useState({ isOpen: false, userId: null, userName: '' });
+    const [adminBanReason, setAdminBanReason] = useState('');
+    const [adminActionLoading, setAdminActionLoading] = useState(false);
 
     /* ─── Hitung statistik milik user sendiri dari data posts ─── */
     const computeMyStats = (allPosts) => {
@@ -248,11 +254,6 @@ const DashboardAnonim = () => {
         }
     };
 
-    const handleSearch = (e) => {
-        e.preventDefault();
-        navigate(`/search?q=${searchQuery}`);
-    };
-
     const handlePostSubmit = async (e) => {
         e.preventDefault();
         if (!body.trim() && !image) return;
@@ -300,6 +301,73 @@ const DashboardAnonim = () => {
             setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal menambahkan komentar.' });
         } finally {
             setSubmittingCommentId(null);
+        }
+    };
+
+    /* ─── Admin Actions ─── */
+    const handleAdminDeletePost = (postId) => {
+        setAdminConfirmModal({
+            isOpen: true,
+            title: 'Hapus Postingan?',
+            message: 'Postingan ini akan dihapus secara permanen. Tindakan tidak bisa dibatalkan.',
+            icon: 'delete',
+            color: 'red',
+            onConfirm: async () => {
+                setAdminActionLoading(true);
+                try {
+                    await api.delete(`/admin/post/${postId}`);
+                    setAdminConfirmModal(m => ({ ...m, isOpen: false }));
+                    setStatusModal({ isOpen: true, type: 'success', message: 'Postingan berhasil dihapus.' });
+                    await fetchPosts();
+                } catch (error) {
+                    setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal menghapus postingan.' });
+                } finally {
+                    setAdminActionLoading(false);
+                }
+            }
+        });
+    };
+
+    const handleAdminDeleteComment = (commentId) => {
+        setAdminConfirmModal({
+            isOpen: true,
+            title: 'Hapus Komentar?',
+            message: 'Komentar ini akan dihapus secara permanen.',
+            icon: 'chat_remove',
+            color: 'red',
+            onConfirm: async () => {
+                setAdminActionLoading(true);
+                try {
+                    await api.delete(`/admin/comment/${commentId}`);
+                    setAdminConfirmModal(m => ({ ...m, isOpen: false }));
+                    setStatusModal({ isOpen: true, type: 'success', message: 'Komentar berhasil dihapus.' });
+                    await fetchPosts();
+                } catch (error) {
+                    setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal menghapus komentar.' });
+                } finally {
+                    setAdminActionLoading(false);
+                }
+            }
+        });
+    };
+
+    const handleAdminBanUser = (userId, userName) => {
+        setAdminBanReason('');
+        setAdminBanModal({ isOpen: true, userId, userName });
+    };
+
+    const handleConfirmBan = async () => {
+        if (!adminBanReason.trim()) return;
+        setAdminActionLoading(true);
+        try {
+            await api.post(`/admin/user/${adminBanModal.userId}/suspend`, { action: 'suspend', reason: adminBanReason });
+            setAdminBanModal({ isOpen: false, userId: null, userName: '' });
+            setStatusModal({ isOpen: true, type: 'success', message: `User ${adminBanModal.userName || ''} berhasil di-ban.` });
+            await fetchPosts();
+        } catch (error) {
+            setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal ban user.' });
+        } finally {
+            setAdminActionLoading(false);
         }
     };
 
@@ -378,7 +446,7 @@ const DashboardAnonim = () => {
         : 'Semua Kategori';
 
     const handleAddPsychologist = async (psychologistId) => {
-        if (!user?.is_premium) { handleUpgradePremium(); return; }
+        if (!hasAccess) { handleUpgradePremium(); return; }
         if (sendingRequestId) return;
         setSendingRequestId(psychologistId);
         try {
@@ -435,15 +503,6 @@ const DashboardAnonim = () => {
                     <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-[#f5d7e4]/30" />
                 </div>
                 <div className="relative z-10">
-                    <form className="search" onSubmit={handleSearch}>
-                        <input
-                            type="text"
-                            placeholder="Cari topik atau konselor..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </form>
-
                     {user?.is_suspended && (
                         <div className="suspend-alert">
                             <strong>Akun Anda saat ini disuspend oleh admin.</strong>
@@ -460,7 +519,7 @@ const DashboardAnonim = () => {
                                     <p>Ruang aman untuk berbagi beban pikiran tanpa takut dihakimi. Mulai percakapan pertamamu secara anonim.</p>
                                     <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
                                         <Link className="hero-button" to="/messages">Mulai Konsultasi</Link>
-                                        {!user?.is_premium && (
+                                        {!hasAccess && (
                                             <button
                                                 onClick={handleUpgradePremium}
                                                 disabled={isPaying}
@@ -505,7 +564,7 @@ const DashboardAnonim = () => {
                                             <h3>{selectedCategoryLabel}</h3>
                                             <span>{psychologistTotal} psikolog tersedia</span>
                                         </div>
-                                        {!user?.is_premium && (
+                                        {!hasAccess && (
                                             <div className="empty-psychologist-state" style={{ marginBottom: '10px' }}>
                                                 Upgrade ke Premium untuk bisa menambahkan psikolog.
                                             </div>
@@ -557,7 +616,7 @@ const DashboardAnonim = () => {
                                                                         onClick={() => handleAddPsychologist(psychologist.id)}
                                                                         disabled={isRequestDisabled}
                                                                     >
-                                                                        {!user?.is_premium ? 'Premium Diperlukan'
+                                                                        {!hasAccess ? 'Premium Diperlukan'
                                                                             : sendingRequestId === psychologist.id ? 'Mengirim...'
                                                                             : isAccepted ? 'Mulai Konsultasi'
                                                                             : isPending ? 'Permintaan Terkirim'
@@ -594,7 +653,7 @@ const DashboardAnonim = () => {
                                 )}
                             </div>
 
-                            {!user?.is_premium ? (
+                            {!hasAccess ? (
                                 <div className="post-create" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '40px 20px', background: '#fff', border: '2px dashed #fbd8e1', borderRadius: '16px' }}>
                                     <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#db7391', marginBottom: '10px' }}>lock</span>
                                     <h3 style={{ fontSize: '18px', margin: '0 0 10px', color: '#1a3635' }}>Fitur Ekslusif Premium</h3>
@@ -645,21 +704,49 @@ const DashboardAnonim = () => {
 
                                     return (
                                         <div className="post" key={post.id}>
-                                            {/* Author */}
-                                            <div className="post-author">
-                                                {post.user?.profile_image ? (
-                                                    <img src={`http://localhost:8000/storage/${post.user.profile_image}`} alt={post.user.name} />
-                                                ) : (
-                                                    <div className="post-fallback-avatar">
-                                                        {post.user?.name?.charAt(0).toUpperCase()}
-                                                    </div>
-                                                )}
-                                                <div>
-                                                    <strong>{post.user?.name}</strong>
-                                                    <div className="post-username">
-                                                        ({post.user?.role === 'psikolog' ? 'psikolog' : 'anonim'})
+                                            {/* Author + Admin actions */}
+                                            <div className="post-author" style={{ justifyContent: 'space-between' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                    {post.user?.profile_image ? (
+                                                        <img src={`http://localhost:8000/storage/${post.user.profile_image}`} alt={post.user.name} />
+                                                    ) : (
+                                                        <div className="post-fallback-avatar">
+                                                            {post.user?.name?.charAt(0).toUpperCase()}
+                                                        </div>
+                                                    )}
+                                                    <div>
+                                                        <strong>{post.user?.name}</strong>
+                                                        <div className="post-username">
+                                                            ({post.user?.role === 'psikolog' ? 'psikolog' : 'anonim'})
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                {user?.is_admin && (
+                                                    <div style={{ display: 'flex', gap: '6px' }}>
+                                                        <button
+                                                            title="Hapus Postingan"
+                                                            onClick={() => handleAdminDeletePost(post.id)}
+                                                            style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: '700', background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', cursor: 'pointer', transition: 'all 0.2s' }}
+                                                            onMouseEnter={e => e.currentTarget.style.background = '#fee2e2'}
+                                                            onMouseLeave={e => e.currentTarget.style.background = '#fef2f2'}
+                                                        >
+                                                            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span>
+                                                            Hapus Post
+                                                        </button>
+                                                        {post.user?.id && (
+                                                            <button
+                                                                title={`Ban ${post.user.name}`}
+                                                                onClick={() => handleAdminBanUser(post.user.id, post.user.name)}
+                                                                style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: '700', background: '#fff7ed', color: '#ea580c', border: '1px solid #fed7aa', cursor: 'pointer', transition: 'all 0.2s' }}
+                                                                onMouseEnter={e => e.currentTarget.style.background = '#ffedd5'}
+                                                                onMouseLeave={e => e.currentTarget.style.background = '#fff7ed'}
+                                                            >
+                                                                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>block</span>
+                                                                Ban User
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
 
                                             {/* Body */}
@@ -715,9 +802,31 @@ const DashboardAnonim = () => {
                                                             <div style={S.commentAvatar}>
                                                                 {(comment.user?.name || 'U').charAt(0).toUpperCase()}
                                                             </div>
-                                                            <div style={S.commentContent}>
-                                                                <div style={S.commentName}>
-                                                                    {comment.user?.name || 'User'}
+                                                            <div style={{ ...S.commentContent, flex: 1 }}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                                    <div style={S.commentName}>{comment.user?.name || 'User'}</div>
+                                                                    {user?.is_admin && (
+                                                                        <div style={{ display: 'flex', gap: '4px' }}>
+                                                                            <button
+                                                                                title="Hapus Komentar"
+                                                                                onClick={() => handleAdminDeleteComment(comment.id)}
+                                                                                style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '2px 8px', borderRadius: '999px', fontSize: '10px', fontWeight: '700', background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', cursor: 'pointer' }}
+                                                                            >
+                                                                                <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>delete</span>
+                                                                                Hapus
+                                                                            </button>
+                                                                            {comment.user?.id && (
+                                                                                <button
+                                                                                    title={`Ban ${comment.user.name}`}
+                                                                                    onClick={() => handleAdminBanUser(comment.user.id, comment.user.name)}
+                                                                                    style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '2px 8px', borderRadius: '999px', fontSize: '10px', fontWeight: '700', background: '#fff7ed', color: '#ea580c', border: '1px solid #fed7aa', cursor: 'pointer' }}
+                                                                                >
+                                                                                    <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>block</span>
+                                                                                    Ban
+                                                                                </button>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                                 <p style={S.commentText}>{comment.content}</p>
                                                             </div>
@@ -788,7 +897,7 @@ const DashboardAnonim = () => {
                             </div>
 
                             {/* ─── Grafik Batang Aktivitas (khusus anonim berbayar) ─── */}
-                            {user?.is_premium && user?.role !== 'psikolog' && (
+                            {hasAccess && user?.role !== 'psikolog' && (
                                 <div className="side-card activity-bar-card">
                                     <div className="activity-bar-header">
                                         <div className="activity-bar-title">
@@ -961,6 +1070,93 @@ const DashboardAnonim = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* ─── Admin Confirm Modal (Hapus Post / Komentar) ─── */}
+            {adminConfirmModal.isOpen && (
+                <div className="fixed inset-0 z-[10002] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-md" onClick={() => !adminActionLoading && setAdminConfirmModal(m => ({ ...m, isOpen: false }))} />
+                    <div className="relative bg-white rounded-3xl w-full max-w-sm p-8 shadow-2xl animate-in fade-in zoom-in duration-300 flex flex-col items-center text-center">
+                        <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mb-5 shadow-inner">
+                            <span className="material-symbols-outlined text-4xl text-red-500" style={{ fontVariationSettings: "'FILL' 1" }}>{adminConfirmModal.icon}</span>
+                        </div>
+                        <h3 className="text-xl font-black text-slate-800 mb-2 tracking-tight">{adminConfirmModal.title}</h3>
+                        <p className="text-slate-500 mb-8 font-medium leading-relaxed text-sm">{adminConfirmModal.message}</p>
+                        <div className="flex gap-3 w-full">
+                            <button
+                                onClick={() => setAdminConfirmModal(m => ({ ...m, isOpen: false }))}
+                                disabled={adminActionLoading}
+                                className="flex-1 py-3 rounded-2xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all active:scale-95 disabled:opacity-50"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={adminConfirmModal.onConfirm}
+                                disabled={adminActionLoading}
+                                className="flex-1 py-3 rounded-2xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-200 transition-all active:scale-95 disabled:opacity-70 flex items-center justify-center gap-2"
+                            >
+                                {adminActionLoading ? (
+                                    <>
+                                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        Memproses...
+                                    </>
+                                ) : 'Ya, Hapus'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ─── Admin Ban Modal ─── */}
+            {adminBanModal.isOpen && (
+                <div className="fixed inset-0 z-[10002] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-md" onClick={() => !adminActionLoading && setAdminBanModal({ isOpen: false, userId: null, userName: '' })} />
+                    <div className="relative bg-white rounded-3xl w-full max-w-sm p-8 shadow-2xl animate-in fade-in zoom-in duration-300">
+                        <div className="flex flex-col items-center text-center mb-6">
+                            <div className="w-20 h-20 rounded-full bg-orange-50 flex items-center justify-center mb-4 shadow-inner">
+                                <span className="material-symbols-outlined text-4xl text-orange-500" style={{ fontVariationSettings: "'FILL' 1" }}>block</span>
+                            </div>
+                            <h3 className="text-xl font-black text-slate-800 tracking-tight">Ban User</h3>
+                            <p className="text-slate-500 mt-1 text-sm font-medium">Suspend akun <span className="font-bold text-orange-600">{adminBanModal.userName}</span>?</p>
+                        </div>
+                        <div className="mb-6">
+                            <label className="block text-xs font-black text-stone-400 uppercase tracking-widest mb-2">Alasan Ban *</label>
+                            <textarea
+                                className="w-full bg-stone-50 border-2 border-stone-100 rounded-2xl p-4 text-slate-700 font-medium placeholder:text-stone-300 focus:border-orange-300 focus:bg-white outline-none transition-all resize-none h-28"
+                                placeholder="Tuliskan alasan ban untuk user ini..."
+                                value={adminBanReason}
+                                onChange={(e) => setAdminBanReason(e.target.value)}
+                                disabled={adminActionLoading}
+                            />
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setAdminBanModal({ isOpen: false, userId: null, userName: '' })}
+                                disabled={adminActionLoading}
+                                className="flex-1 py-3 rounded-2xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all active:scale-95 disabled:opacity-50"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={handleConfirmBan}
+                                disabled={adminActionLoading || !adminBanReason.trim()}
+                                className="flex-1 py-3 rounded-2xl font-bold text-white bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-200 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                {adminActionLoading ? (
+                                    <>
+                                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        Memproses...
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="material-symbols-outlined text-sm">block</span>
+                                        Ban User
+                                    </>
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

@@ -165,15 +165,15 @@ const DashboardPsikolog = () => {
         setConfirmModal({
             isOpen: true,
             type: 'success',
-            message: 'Apakah Anda yakin ingin menerima pasien ini?',
+            message: 'Apakah Anda yakin ingin menerima Teman Curhat ini?',
             action: async () => {
                 setRequestActionLoadingId(requesterId);
                 try {
                     const res = await api.post(`/friend/${requesterId}/accept`);
-                    setStatusModal({ isOpen: true, type: 'success', title: 'Berhasil!', message: res.data?.message || 'Pasien berhasil diterima.' });
+                    setStatusModal({ isOpen: true, type: 'success', title: 'Berhasil!', message: res.data?.message || 'Teman Curhat berhasil diterima.' });
                     fetchIncomingRequests();
                 } catch (error) {
-                    setStatusModal({ isOpen: true, type: 'error', title: 'Gagal', message: error.response?.data?.message || 'Gagal menerima pasien.' });
+                    setStatusModal({ isOpen: true, type: 'error', title: 'Gagal', message: error.response?.data?.message || 'Gagal menerima Teman Curhat.' });
                 } finally {
                     setRequestActionLoadingId(null);
                 }
@@ -185,15 +185,15 @@ const DashboardPsikolog = () => {
         setConfirmModal({
             isOpen: true,
             type: 'warning',
-            message: 'Apakah Anda yakin ingin menolak permintaan pasien ini?',
+            message: 'Apakah Anda yakin ingin menolak permintaan Teman Curhat ini?',
             action: async () => {
                 setRequestActionLoadingId(requesterId);
                 try {
                     const res = await api.post(`/friend/${requesterId}/reject`);
-                    setStatusModal({ isOpen: true, type: 'info', title: 'Informasi', message: res.data?.message || 'Permintaan pasien ditolak.' });
+                    setStatusModal({ isOpen: true, type: 'info', title: 'Informasi', message: res.data?.message || 'Permintaan Teman Curhat ditolak.' });
                     fetchIncomingRequests();
                 } catch (error) {
-                    setStatusModal({ isOpen: true, type: 'error', title: 'Gagal', message: error.response?.data?.message || 'Gagal menolak pasien.' });
+                    setStatusModal({ isOpen: true, type: 'error', title: 'Gagal', message: error.response?.data?.message || 'Gagal menolak Teman Curhat.' });
                 } finally {
                     setRequestActionLoadingId(null);
                 }
@@ -412,11 +412,11 @@ const DashboardPsikolog = () => {
                         <aside className="lg:col-span-4 space-y-6">
                             <section className="bg-white border border-[#edd8e3] rounded-2xl p-5 shadow-sm">
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-sm font-bold text-[#7a4d62] uppercase tracking-wider">Permintaan Pasien</h3>
+                                    <h3 className="text-sm font-bold text-[#7a4d62] uppercase tracking-wider">Permintaan Teman Curhat</h3>
                                     <span className="text-xs text-[#a77990]">{incomingRequests.length} menunggu</span>
                                 </div>
                                 {incomingRequests.length === 0 ? (
-                                    <p className="text-sm text-stone-500">Belum ada permintaan pasien baru.</p>
+                                    <p className="text-sm text-stone-500">Belum ada permintaan Teman Curhat baru.</p>
                                 ) : (
                                     <div className="space-y-4">
                                         {incomingRequests.slice(0, 3).map((request) => (
@@ -428,7 +428,7 @@ const DashboardPsikolog = () => {
                                                         </div>
                                                         <div>
                                                             <p className="text-sm font-bold text-[#3f2f38]">
-                                                                {request.requester?.name || 'Pasien Anonim'}
+                                                                {request.requester?.name || 'Anonim'}
                                                                 <span className="ml-2 text-[10px] px-1.5 py-0.5 bg-stone-100 text-stone-500 rounded uppercase tracking-tighter">Anonim</span>
                                                             </p>
                                                             <div className="flex items-center gap-2 mt-0.5">
@@ -456,19 +456,31 @@ const DashboardPsikolog = () => {
                                                             type="button"
                                                             onClick={() => handleAcceptRequest(request.user_id)}
                                                             disabled={requestActionLoadingId === request.user_id}
-                                                            className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-[#22c55e] text-white hover:bg-[#16a34a] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-[#22c55e]/20"
+                                                            className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-[#22c55e] text-white hover:bg-[#16a34a] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-[#22c55e]/20 disabled:opacity-70 disabled:cursor-not-allowed"
                                                         >
-                                                            <span className="material-symbols-outlined text-sm">check_circle</span>
-                                                            Terima
+                                                            {requestActionLoadingId === request.user_id ? (
+                                                                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                            ) : (
+                                                                <>
+                                                                    <span className="material-symbols-outlined text-sm">check_circle</span>
+                                                                    Terima
+                                                                </>
+                                                            )}
                                                         </button>
                                                         <button
                                                             type="button"
                                                             onClick={() => handleRejectRequest(request.user_id)}
                                                             disabled={requestActionLoadingId === request.user_id}
-                                                            className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                                                            className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 hover:text-red-700 hover:border-red-300 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-red-100/50 disabled:opacity-70 disabled:cursor-not-allowed"
                                                         >
-                                                            <span className="material-symbols-outlined text-sm">cancel</span>
-                                                            Tolak
+                                                            {requestActionLoadingId === request.user_id ? (
+                                                                <span className="w-4 h-4 border-2 border-stone-200 border-t-stone-500 rounded-full animate-spin" />
+                                                            ) : (
+                                                                <>
+                                                                    <span className="material-symbols-outlined text-sm">cancel</span>
+                                                                    Tolak
+                                                                </>
+                                                            )}
                                                         </button>
                                                     </div>
                                                 )}
@@ -563,7 +575,7 @@ const DashboardPsikolog = () => {
                                                 <div className="w-12 h-12 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-3">
                                                     <span className="material-symbols-outlined text-stone-300">rate_review</span>
                                                 </div>
-                                                <p className="text-xs font-medium text-stone-400">Belum ada review dari pasien.</p>
+                                                <p className="text-xs font-medium text-stone-400">Belum ada review dari Teman Curhat.</p>
                                             </div>
                                         ) : (
                                             reviewsData.reviews.map((review) => (
@@ -644,7 +656,7 @@ const DashboardPsikolog = () => {
                                                     <span className="text-[10px] uppercase">{new Date(session.session_date).toLocaleString('id-ID', { month: 'short' })}</span>
                                                 </div>
                                                 <div className="flex-1">
-                                                    <p className="text-sm font-bold text-[#2a2651] leading-none">Konsultasi {session.user?.name || 'Pasien'}</p>
+                                                    <p className="text-sm font-bold text-[#2a2651] leading-none">Konsultasi {session.user?.name || 'Teman Curhat'}</p>
                                                     <p className="text-xs text-[#6b6699] mt-1">{session.session_time.substring(0, 5)} • {session.status === 'pending_approval' ? 'MENUNGGU' : 'TERJADWAL'}</p>
                                                     {session.status === 'pending_approval' && (
                                                         <Link to="/sessions" className="text-[10px] font-black text-amber-600 underline mt-1 block">KONFIRMASI SEKARANG</Link>

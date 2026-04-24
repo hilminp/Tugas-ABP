@@ -3,7 +3,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fff8f8;
+  background: radial-gradient(circle at 10% 20%, #faece9 0%, transparent 40%),
+              radial-gradient(circle at 90% 80%, #cca2a7 0%, transparent 60%),
+              radial-gradient(circle at 50% 50%, #eed4d4 0%, #dcaab2 100%);
   color: #3c2f32;
   position: relative;
   overflow: hidden;
@@ -17,9 +19,7 @@
 }
 
 .loading-gradient-base {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, #fff8f8 0%, #fff0f2 55%, rgba(243, 221, 225, 0.4) 100%);
+  display: none;
 }
 
 .loading-blob {

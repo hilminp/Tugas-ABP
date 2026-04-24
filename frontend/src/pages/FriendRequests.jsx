@@ -31,15 +31,15 @@ const FriendRequests = () => {
         setConfirmModal({
             isOpen: true,
             type: 'success',
-            message: 'Apakah Anda yakin ingin menerima pasien ini?',
+            message: 'Apakah Anda yakin ingin menerima Teman Curhat ini?',
             action: async () => {
                 setActionLoadingId(id);
                 try {
                     const res = await api.post(`/friend/${id}/accept`);
-                    setStatusModal({ isOpen: true, type: 'success', title: 'Berhasil!', message: res.data?.message || 'Pasien berhasil diterima.' });
+                    setStatusModal({ isOpen: true, type: 'success', title: 'Berhasil!', message: res.data?.message || 'Teman Curhat berhasil diterima.' });
                     fetchRequests();
                 } catch (err) {
-                    setStatusModal({ isOpen: true, type: 'error', title: 'Gagal', message: err.response?.data?.message || 'Gagal menerima pasien.' });
+                    setStatusModal({ isOpen: true, type: 'error', title: 'Gagal', message: err.response?.data?.message || 'Gagal menerima Teman Curhat.' });
                 } finally {
                     setActionLoadingId(null);
                 }
@@ -51,15 +51,15 @@ const FriendRequests = () => {
         setConfirmModal({
             isOpen: true,
             type: 'warning',
-            message: 'Apakah Anda yakin ingin menolak permintaan pasien ini?',
+            message: 'Apakah Anda yakin ingin menolak permintaan Teman Curhat ini?',
             action: async () => {
                 setActionLoadingId(id);
                 try {
                     const res = await api.post(`/friend/${id}/reject`);
-                    setStatusModal({ isOpen: true, type: 'info', title: 'Informasi', message: res.data?.message || 'Permintaan pasien ditolak.' });
+                    setStatusModal({ isOpen: true, type: 'info', title: 'Informasi', message: res.data?.message || 'Permintaan Teman Curhat ditolak.' });
                     fetchRequests();
                 } catch (err) {
-                    setStatusModal({ isOpen: true, type: 'error', title: 'Gagal', message: err.response?.data?.message || 'Gagal menolak pasien.' });
+                    setStatusModal({ isOpen: true, type: 'error', title: 'Gagal', message: err.response?.data?.message || 'Gagal menolak Teman Curhat.' });
                 } finally {
                     setActionLoadingId(null);
                 }
@@ -84,15 +84,15 @@ const FriendRequests = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#fff9fc] py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto">
+        <div className="requests-page-wrapper min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto relative z-10">
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-3xl font-black text-[#A46477] tracking-tight">Riwayat Permintaan</h1>
-                        <p className="text-stone-500 mt-1">Kelola semua permintaan konsultasi dari pasien Anda.</p>
+                        <p className="text-stone-500 mt-1">Kelola semua permintaan konsultasi dari Teman Curhat Anda.</p>
                     </div>
-                    <Link to="/home" className="flex items-center gap-2 px-4 py-2 bg-white border border-stone-200 rounded-xl text-stone-600 font-bold text-sm hover:bg-stone-50 transition-colors shadow-sm">
-                        <span className="material-symbols-outlined text-lg">arrow_back</span>
+                    <Link to="/home" className="group flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-md border border-stone-200 rounded-xl text-stone-600 font-bold text-sm hover:bg-white hover:text-[#A46477] hover:border-[#A46477]/30 hover:shadow-[0_8px_16px_rgba(164,100,119,0.1)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-300 shadow-sm">
+                        <span className="material-symbols-outlined text-lg transition-transform duration-300 group-hover:-translate-x-1">arrow_back</span>
                         Kembali
                     </Link>
                 </div>
@@ -121,13 +121,13 @@ const FriendRequests = () => {
                         </div>
                         <h3 className="text-xl font-bold text-stone-800">Belum Ada Permintaan</h3>
                         <p className="text-stone-500 mt-2 max-w-sm mx-auto">
-                            Daftar permintaan konsultasi Anda akan muncul di sini setelah ada pasien yang menghubungi Anda.
+                            Daftar permintaan konsultasi Anda akan muncul di sini setelah ada Teman Curhat yang menghubungi Anda.
                         </p>
                     </div>
                 ) : (
                     <div className="space-y-4">
                         {requests.map(r => (
-                            <div key={r.id} className="group bg-white rounded-2xl p-6 border border-[#f0dde7] shadow-sm hover:shadow-md transition-all duration-300">
+                            <div key={r.id} className="request-card group bg-white/90 backdrop-blur-xl border border-[rgba(255,182,193,0.6)] rounded-2xl p-6 shadow-[0_24px_48px_rgba(136,77,96,0.15)] hover:shadow-[0_30px_60px_rgba(136,77,96,0.2)] hover:-translate-y-1 transition-all duration-300">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                                     <div className="flex items-center gap-4">
                                         <div className="w-14 h-14 rounded-full bg-[#A46477]/10 flex items-center justify-center text-[#A46477] font-black text-xl border-2 border-[#A46477]/20">
@@ -162,20 +162,32 @@ const FriendRequests = () => {
                                         {r.status === 'pending' && (
                                             <>
                                                 <button 
-                                                    className="px-6 py-2.5 bg-[#22c55e] text-white rounded-xl font-bold text-sm hover:bg-[#16a34a] active:scale-95 transition-all shadow-lg shadow-[#22c55e]/20 flex items-center gap-2"
+                                                    className="px-6 py-2.5 bg-[#22c55e] text-white rounded-xl font-bold text-sm hover:bg-[#16a34a] active:scale-95 transition-all shadow-lg shadow-[#22c55e]/20 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                                                     onClick={() => handleAccept(r.user_id)}
                                                     disabled={actionLoadingId === r.user_id}
                                                 >
-                                                    <span className="material-symbols-outlined text-sm">check</span>
-                                                    Terima
+                                                    {actionLoadingId === r.user_id ? (
+                                                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                    ) : (
+                                                        <>
+                                                            <span className="material-symbols-outlined text-sm">check</span>
+                                                            Terima
+                                                        </>
+                                                    )}
                                                 </button>
                                                 <button 
-                                                    className="px-6 py-2.5 bg-white text-stone-600 border border-stone-200 rounded-xl font-bold text-sm hover:bg-stone-50 active:scale-95 transition-all flex items-center gap-2"
+                                                    className="px-6 py-2.5 bg-white text-stone-600 border border-stone-200 rounded-xl font-bold text-sm hover:bg-stone-50 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                                                     onClick={() => handleReject(r.user_id)}
                                                     disabled={actionLoadingId === r.user_id}
                                                 >
-                                                    <span className="material-symbols-outlined text-sm">close</span>
-                                                    Tolak
+                                                    {actionLoadingId === r.user_id ? (
+                                                        <span className="w-4 h-4 border-2 border-stone-200 border-t-stone-500 rounded-full animate-spin" />
+                                                    ) : (
+                                                        <>
+                                                            <span className="material-symbols-outlined text-sm">close</span>
+                                                            Tolak
+                                                        </>
+                                                    )}
                                                 </button>
                                             </>
                                         )}

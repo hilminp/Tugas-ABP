@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Post;
+use App\Models\PostComment;
+use App\Models\PostLike;
 use App\Models\Message;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -110,5 +114,59 @@ class AdminController extends Controller
         ]);
         try { event(new \App\Events\MessageSent($message)); } catch (\Throwable $e) { logger()->warning('Broadcast failed: ' . $e->getMessage()); }
         return response()->json(['message' => 'Message sent to user.']);
+    }
+    public function analytics()
+    {
+        // User growth: last 7 days
+        $userGrowth = collect(range(6, 0))->map(function ($daysAgo) {
+            $date = now()->subDays($daysAgo);
+            return [
+                'date'  => $date->format('d M'),
+                'users' => User::whereDate('created_at', $date->toDateString())->count(),
+            ];
+        })->values();
+
+        // Revenue: last 7 days (approx by premium upgrades)
+        $revenueGrowth = collect(range(6, 0))->map(function ($daysAgo) {
+            $date = now()->subDays($daysAgo);
+            $count = User::whereDate('updated_at', $date->toDateString())->where('is_premium', true)->count();
+            return [
+                'date'    => $date->format('d M'),
+                'revenue' => $count * 15000,
+            ];
+        })->values();
+
+        // Post & like stats: last 7 days
+        $contentGrowth = collect(range(6, 0))->map(function ($daysAgo) {
+            $date = now()->subDays($daysAgo);
+            return [
+                'date'  => $date->format('d M'),
+                'posts' => Post::whereDate('created_at', $date->toDateString())->count(),
+                'likes' => PostLike::whereDate('created_at', $date->toDateString())->count(),
+            ];
+        })->values();
+
+        // Totals
+        $totalPosts = Post::count();
+        $totalLikes = PostLike::count();
+        $totalComments = PostComment::count();
+
+        return response()->json(compact('userGrowth', 'revenueGrowth', 'contentGrowth', 'totalPosts', 'totalLikes', 'totalComments'));
+    }
+
+    public function deletePost(Request $request, $id)
+    {
+        $post = Post::find($id);
+        if (!$post) return response()->json(['message' => 'Post tidak ditemukan.'], 404);
+        $post->delete();
+        return response()->json(['message' => 'Post berhasil dihapus oleh admin.']);
+    }
+
+    public function deleteComment(Request $request, $id)
+    {
+        $comment = PostComment::find($id);
+        if (!$comment) return response()->json(['message' => 'Komentar tidak ditemukan.'], 404);
+        $comment->delete();
+        return response()->json(['message' => 'Komentar berhasil dihapus oleh admin.']);
     }
 }

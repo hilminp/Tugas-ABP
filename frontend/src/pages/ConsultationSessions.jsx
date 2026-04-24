@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import Skeleton from '../components/ui/Skeleton';
+import Flatpickr from "react-flatpickr";
+import "flatpickr/dist/flatpickr.css";
 import './ConsultationSessions.css';
 
 const ConsultationSessions = () => {
@@ -143,10 +145,11 @@ const ConsultationSessions = () => {
 
     return (
         <div className="sessions-page">
-            <div className="sessions-header">
+            <div className="sessions-page-inner">
+                <div className="sessions-header">
                 <div>
                     <h1>{isPsychologist ? 'Kelola Sesi Konsultasi' : 'Jadwal Konsultasi'}</h1>
-                    <p>{isPsychologist ? 'Atur jam ketersediaan Anda untuk pasien.' : 'Lihat dan pilih jadwal konsultasi Anda.'}</p>
+                    <p>{isPsychologist ? 'Atur jam ketersediaan Anda untuk Teman Curhat.' : 'Lihat dan pilih jadwal konsultasi Anda.'}</p>
                 </div>
                 <Link to="/home" className="back-link">
                     <span className="material-symbols-outlined">arrow_back</span>
@@ -161,21 +164,42 @@ const ConsultationSessions = () => {
                         <form onSubmit={handleCreateSession}>
                             <div className="form-group">
                                 <label>Tanggal</label>
-                                <input 
-                                    type="date" 
-                                    value={newSession.session_date} 
-                                    onChange={e => setNewSession({...newSession, session_date: e.target.value})}
-                                    required
-                                    min={new Date().toISOString().split('T')[0]}
+                                <Flatpickr
+                                    value={newSession.session_date}
+                                    onChange={([date]) => {
+                                        if (date) {
+                                            const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+                                            const localISOTime = (new Date(date - tzoffset)).toISOString().slice(0, 10);
+                                            setNewSession({...newSession, session_date: localISOTime});
+                                        }
+                                    }}
+                                    options={{
+                                        minDate: "today",
+                                        dateFormat: "Y-m-d"
+                                    }}
+                                    className="modern-date-picker"
+                                    placeholder="Pilih Tanggal"
                                 />
                             </div>
                             <div className="form-group">
                                 <label>Jam</label>
-                                <input 
-                                    type="time" 
-                                    value={newSession.session_time} 
-                                    onChange={e => setNewSession({...newSession, session_time: e.target.value})}
-                                    required
+                                <Flatpickr
+                                    value={newSession.session_time}
+                                    onChange={([date]) => {
+                                        if (date) {
+                                            const hours = date.getHours().toString().padStart(2, '0');
+                                            const minutes = date.getMinutes().toString().padStart(2, '0');
+                                            setNewSession({...newSession, session_time: `${hours}:${minutes}`});
+                                        }
+                                    }}
+                                    options={{
+                                        enableTime: true,
+                                        noCalendar: true,
+                                        dateFormat: "H:i",
+                                        time_24hr: true
+                                    }}
+                                    className="modern-time-picker"
+                                    placeholder="Pilih Jam"
                                 />
                             </div>
                             <button type="submit" disabled={submitting}>
@@ -270,6 +294,7 @@ const ConsultationSessions = () => {
                         </div>
                     )}
                 </div>
+            </div>
             </div>
 
             {/* Modal for Selecting Slot */}

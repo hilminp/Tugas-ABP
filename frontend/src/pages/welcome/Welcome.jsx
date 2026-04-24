@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import shieldLockIcon from '../../assets/logo_kunci_pink_shield.svg';
 import './Welcome.css';
 
 const Welcome = () => {
@@ -35,9 +36,7 @@ const Welcome = () => {
                     <span className="brand-heart">❤</span>
                     <span className="brand-name">Curhatin</span>
                 </div>
-                <div className="nav-actions">
-                    <button className="menu-btn" type="button">☰</button>
-                </div>
+
             </nav>
 
             <main className="hero-wrap">
@@ -65,10 +64,6 @@ const Welcome = () => {
                         ) : (
                             <Link to="/login" className="btn-gradient">Mulai Curhat Sekarang</Link>
                         )}
-                        <button className="btn-ghost" type="button">
-                            <span>▶</span>
-                            Pelajari Cara Kerja
-                        </button>
                     </div>
 
                     <div className="proof-row">
@@ -92,18 +87,21 @@ const Welcome = () => {
 
                         <div className="cta-actions">
                             {user ? (
-                                <Link to={user.is_admin ? "/admin/dashboard" : "/home"} className="btn-gradient">
+                                <Link to={user.is_admin ? "/admin/dashboard" : "/home"} className="btn-maroon">
                                     Dashboard
                                 </Link>
                             ) : (
                                 <>
-                                    <Link to="/login" className="btn-gradient">Masuk</Link>
+                                    <Link to="/login" className="btn-maroon">Masuk</Link>
                                     <Link to="/register" className="btn-outline">Register</Link>
                                 </>
                             )}
                         </div>
 
-                        <div className="secure-badge">🛡 Data Terenkripsi & Anonim</div>
+                        <div className="secure-badge">
+                            <img src={shieldLockIcon} alt="Shield Lock" className="secure-badge-icon" />
+                            <span className="secure-badge-text">Data Terenkripsi & Anonim</span>
+                        </div>
                     </div>
                 </section>
             </main>

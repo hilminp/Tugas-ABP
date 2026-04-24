@@ -3,15 +3,38 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api, STORAGE_BASE_URL } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
 import { getSpesialisasiLabel } from '../../lib/constants';
+import {
+    AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+    Tooltip, ResponsiveContainer, Legend
+} from 'recharts';
+import { Bell, UserPlus, CreditCard, CheckCircle, Clock, ChevronRight, X } from 'lucide-react';
 
 const AdminDashboard = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [data, setData] = useState(null);
+    const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showNotif, setShowNotif] = useState(false);
     const [txPage, setTxPage] = useState(0);
     const notifRef = useRef(null);
+    const [readNotifIds, setReadNotifIds] = useState(() => {
+        try {
+            const saved = localStorage.getItem('admin_read_notifs');
+            return saved ? JSON.parse(saved) : [];
+        } catch { return []; }
+    });
+
+    // Handle scroll from notification
+    useEffect(() => {
+        if (location.state?.scrollTo) {
+            setTimeout(() => {
+                document.getElementById(location.state.scrollTo)?.scrollIntoView({ behavior: 'smooth' });
+                // Clear state to avoid scrolling again on refresh
+                window.history.replaceState({}, document.title);
+            }, 500);
+        }
+    }, [location.state]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -26,8 +49,12 @@ const AdminDashboard = () => {
     useEffect(() => {
         const fetchDashboard = async () => {
             try {
-                const res = await api.get('/admin/dashboard');
-                setData(res.data);
+                const [dashRes, analyticsRes] = await Promise.all([
+                    api.get('/admin/dashboard'),
+                    api.get('/admin/analytics'),
+                ]);
+                setData(dashRes.data);
+                setAnalytics(analyticsRes.data);
             } catch (err) {
                 console.error("Failed to load admin dashboard", err);
             } finally {
@@ -106,56 +133,148 @@ const AdminDashboard = () => {
             <main className="flex-1 flex flex-col overflow-y-auto">
                 {/* TopNavBar */}
                 <header className="w-full docked top-0 flex justify-between items-center px-8 py-3 bg-teal-50/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-teal-100/20 sticky z-20">
-                    <div className="flex items-center gap-4 flex-1">
-                        <div className="relative w-64">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-teal-600/70 text-sm">search</span>
-                            <input className="w-full bg-teal-100/50 border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-teal-600/50" placeholder="Cari data..." type="text" />
-                        </div>
+                    <div className="flex items-center gap-3 flex-1">
+                        <button 
+                            onClick={() => document.getElementById('summary-section')?.scrollIntoView({behavior: 'smooth'})}
+                            className="flex items-center gap-2 px-4 py-2 rounded-full bg-teal-100/50 text-teal-700 hover:bg-teal-100 transition-all text-xs font-bold border border-teal-200/50 shadow-sm"
+                        >
+                            <span className="material-symbols-outlined text-sm">grid_view</span>
+                            Ringkasan
+                        </button>
+                        <button 
+                            onClick={() => document.getElementById('activity-section')?.scrollIntoView({behavior: 'smooth'})}
+                            className="flex items-center gap-2 px-4 py-2 rounded-full bg-teal-100/50 text-teal-700 hover:bg-teal-100 transition-all text-xs font-bold border border-teal-200/50 shadow-sm"
+                        >
+                            <span className="material-symbols-outlined text-sm">history</span>
+                            Aktivitas
+                        </button>
+                        <button 
+                            onClick={() => document.getElementById('analytics-section')?.scrollIntoView({behavior: 'smooth'})}
+                            className="flex items-center gap-2 px-4 py-2 rounded-full bg-teal-100/50 text-teal-700 hover:bg-teal-100 transition-all text-xs font-bold border border-teal-200/50 shadow-sm"
+                        >
+                            <span className="material-symbols-outlined text-sm">analytics</span>
+                            Analytics
+                        </button>
                     </div>
                     <div className="flex items-center gap-6">
                         {/* Notification Bell */}
                         <div className="relative" ref={notifRef}>
                             <button 
                                 onClick={() => setShowNotif(!showNotif)}
-                                className="relative p-2 rounded-full hover:bg-teal-100/50 text-teal-700 dark:text-teal-300 transition-colors"
+                                className={`relative p-2.5 rounded-full transition-all duration-300 ${showNotif ? 'bg-teal-100 text-teal-700 shadow-inner' : 'hover:bg-teal-100/50 text-teal-700/70 dark:text-teal-300/70'}`}
                             >
-                                <span className="material-symbols-outlined">notifications</span>
-                                {data?.pendingCount > 0 && (
-                                    <span className="absolute top-1 right-1 flex h-3 w-3">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-teal-50 dark:border-slate-900"></span>
-                                    </span>
-                                )}
+                                <Bell size={20} strokeWidth={2.5} />
+                                {(() => {
+                                    const unreadCount = [
+                                        ...(data?.pendingPsikolog || []).map(p => `psikolog_${p.id}`),
+                                        ...(data?.latestPremiumUsers || []).map(u => `premium_${u.id}`)
+                                    ].filter(id => !readNotifIds.includes(id)).length;
+                                    
+                                    return unreadCount > 0 && (
+                                        <span className="absolute top-1.5 right-1.5 flex h-3.5 w-3.5">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-500 border-2 border-white dark:border-slate-900 shadow-sm"></span>
+                                        </span>
+                                    );
+                                })()}
                             </button>
 
                             {/* Notification Dropdown */}
                             {showNotif && (
-                                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-teal-100 dark:border-slate-700 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                                    <div className="px-4 py-3 border-b border-teal-50 dark:border-slate-700 bg-teal-50/50 dark:bg-slate-800/50 flex justify-between items-center">
-                                        <h3 className="font-bold text-sm text-teal-900 dark:text-teal-100">Notifikasi</h3>
-                                        {data?.pendingCount > 0 && (
-                                            <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-full">{data.pendingCount} Baru</span>
-                                        )}
-                                    </div>
-                                    <div className="max-h-[300px] overflow-y-auto">
-                                        {!data || data.pendingCount === 0 || !data.pendingPsikolog ? (
-                                            <div className="px-4 py-6 text-center text-sm text-slate-500">
-                                                Tidak ada notifikasi baru
-                                            </div>
-                                        ) : (
-                                            data.pendingPsikolog.slice(0, 5).map(p => (
-                                                <div key={p.id} onClick={() => {navigate('/admin/verifications'); setShowNotif(false)}} className="px-4 py-3 border-b last:border-0 border-teal-50 dark:border-slate-700 hover:bg-teal-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors">
-                                                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 line-clamp-1">{p.name} <span className="font-normal text-slate-500">mendaftar sebagai Psikolog.</span></p>
-                                                    <p className="text-[10px] text-teal-600 dark:text-teal-400 font-bold mt-1 uppercase">Menunggu Verifikasi</p>
-                                                </div>
-                                            ))
-                                        )}
-                                    </div>
-                                    {data?.pendingCount > 0 && (
-                                        <div onClick={() => {navigate('/admin/verifications'); setShowNotif(false)}} className="px-4 py-2 bg-teal-50 dark:bg-slate-800 text-center text-xs font-bold text-teal-700 dark:text-teal-400 cursor-pointer hover:bg-teal-100 dark:hover:bg-slate-700 transition-colors">
-                                            Lihat Semua Verifikasi
+                                <div className="absolute right-0 mt-3 w-[360px] bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-teal-100 dark:border-slate-700 overflow-hidden z-50 animate-in fade-in slide-in-from-top-4 duration-300">
+                                    <div className="px-6 py-5 border-b border-teal-50 dark:border-slate-700 bg-teal-50/30 dark:bg-slate-800/50 flex justify-between items-center">
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="font-black text-sm text-teal-900 dark:text-teal-100 uppercase tracking-wider">Notifikasi</h3>
+                                            <span className="bg-teal-100 text-teal-700 text-[10px] font-black px-2 py-0.5 rounded-full">Baru</span>
                                         </div>
-                                    )}
+                                        <button onClick={() => setShowNotif(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                                            <X size={16} />
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+                                        {(() => {
+                                            const notifications = [
+                                                ...(data?.pendingPsikolog || []).map(p => ({ ...p, type: 'psikolog', nid: `psikolog_${p.id}` })),
+                                                ...(data?.latestPremiumUsers || []).map(u => ({ ...u, type: 'premium', nid: `premium_${u.id}` }))
+                                            ]
+                                            .filter(item => !readNotifIds.includes(item.nid))
+                                            .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
+
+                                            if (notifications.length === 0) {
+                                                return (
+                                                    <div className="px-6 py-12 text-center">
+                                                        <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                                            <Bell className="text-slate-300" size={24} />
+                                                        </div>
+                                                        <p className="text-sm font-bold text-slate-400">Tidak ada notifikasi baru</p>
+                                                    </div>
+                                                );
+                                            }
+
+                                            return (
+                                                <div className="divide-y divide-teal-50/50 dark:divide-slate-700/50">
+                                                    {notifications.map((item, idx) => (
+                                                        <div 
+                                                            key={idx} 
+                                                            onClick={() => {
+                                                                // Mark as read
+                                                                const newRead = [...readNotifIds, item.nid];
+                                                                setReadNotifIds(newRead);
+                                                                localStorage.setItem('admin_read_notifs', JSON.stringify(newRead));
+
+                                                                // Navigate
+                                                                if (item.type === 'psikolog') {
+                                                                    navigate('/admin/verifications');
+                                                                } else {
+                                                                    if (window.location.pathname !== '/admin/dashboard') {
+                                                                        navigate('/admin/dashboard', { state: { scrollTo: 'analytics-section' } });
+                                                                    } else {
+                                                                        document.getElementById('analytics-section')?.scrollIntoView({ behavior: 'smooth' });
+                                                                    }
+                                                                }
+                                                                setShowNotif(false);
+                                                            }} 
+                                                            className="px-6 py-4 hover:bg-teal-50/50 dark:hover:bg-slate-700/30 cursor-pointer transition-all flex gap-4 group"
+                                                        >
+                                                            <div className={`w-10 h-10 rounded-2xl flex-shrink-0 flex items-center justify-center ${item.type === 'psikolog' ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'}`}>
+                                                                {item.type === 'psikolog' ? <UserPlus size={18} /> : <CreditCard size={18} />}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex justify-between items-start mb-0.5">
+                                                                    <p className="text-xs font-black text-slate-400 uppercase tracking-tighter">
+                                                                        {item.type === 'psikolog' ? 'Verifikasi' : 'Pembayaran'}
+                                                                    </p>
+                                                                    <span className="text-[9px] font-bold text-slate-300 flex items-center gap-1">
+                                                                        <Clock size={8} /> 
+                                                                        {new Date(item.updated_at || item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                                                                    </span>
+                                                                </div>
+                                                                <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">
+                                                                    {item.name}
+                                                                </p>
+                                                                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
+                                                                    {item.type === 'psikolog' ? 'Baru saja mendaftar sebagai Psikolog.' : 'Upgrade ke akun Premium berhasil!'}
+                                                                </p>
+                                                            </div>
+                                                            <div className="self-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <ChevronRight size={14} className="text-teal-400" />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            );
+                                        })()}
+                                    </div>
+                                    
+                                    <div className="p-4 bg-teal-50/10 dark:bg-slate-800/50 border-t border-teal-50 dark:border-slate-700">
+                                        <button 
+                                            onClick={() => {navigate('/admin/verifications'); setShowNotif(false)}} 
+                                            className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-teal-600/20 transition-all active:scale-[0.98]"
+                                        >
+                                            Lihat Semua Aktivitas
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -187,7 +306,7 @@ const AdminDashboard = () => {
                 ) : (
                 <div className="p-8 w-full">
                     {/* Welcome Header */}
-                    <div className="mb-10">
+                    <div id="summary-section" className="mb-10 pt-4">
                         <h2 className="text-3xl font-bold tracking-tight text-on-background">Dashboard Ringkasan</h2>
                         <p className="text-on-surface-variant mt-1">Selamat datang kembali di Ethereal Sanctuary Admin Panel.</p>
                     </div>
@@ -260,7 +379,7 @@ const AdminDashboard = () => {
                         </div>
 
                         {/* Large Section: Recent Activity Table */}
-                        <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-lg p-8 shadow-sm">
+                        <div id="activity-section" className="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-lg p-8 shadow-sm scroll-mt-20">
                             <div className="flex justify-between items-center mb-8">
                                 <div>
                                     <h4 className="text-xl font-bold text-on-background leading-tight">Aktivitas Terbaru</h4>
@@ -433,6 +552,136 @@ const AdminDashboard = () => {
                             </div>
                         </div>
                     </div>
+
+                    {/* ─── Analytics Section ─── */}
+                    {analytics && (
+                    <div id="analytics-section" className="mt-10 scroll-mt-20">
+                        {/* Section Header */}
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 className="text-2xl font-bold tracking-tight text-on-background">Analytics Platform</h2>
+                                <p className="text-on-surface-variant mt-1 text-sm">Data statistik 7 hari terakhir secara real-time.</p>
+                            </div>
+                            <span className="flex items-center gap-1.5 text-xs font-black text-teal-600 bg-teal-50 border border-teal-100 px-3 py-1.5 rounded-full">
+                                <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse inline-block"></span>
+                                Live Data
+                            </span>
+                        </div>
+
+                        {/* KPI Row */}
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                            {[
+                                { label: 'Total Postingan', value: analytics.totalPosts, icon: 'article', gradient: 'from-violet-500 to-purple-600', light: 'bg-violet-50', text: 'text-violet-600', border: 'border-violet-100' },
+                                { label: 'Total Like', value: analytics.totalLikes, icon: 'favorite', gradient: 'from-rose-400 to-pink-600', light: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-100' },
+                                { label: 'Total Komentar', value: analytics.totalComments, icon: 'chat_bubble', gradient: 'from-sky-400 to-blue-600', light: 'bg-sky-50', text: 'text-sky-600', border: 'border-sky-100' },
+                                { label: 'Total Pendapatan', value: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(data?.premiumRevenue || 0), icon: 'payments', gradient: 'from-amber-400 to-orange-500', light: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-100' },
+                            ].map((kpi, i) => (
+                                <div key={kpi.label} className={`relative overflow-hidden bg-white border ${kpi.border} rounded-2xl p-5 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 group`}>
+                                    <div className={`absolute -top-6 -right-6 w-20 h-20 rounded-full bg-gradient-to-br ${kpi.gradient} opacity-10 group-hover:opacity-20 transition-opacity`} />
+                                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${kpi.gradient} flex items-center justify-center mb-4 shadow-lg`}>
+                                        <span className="material-symbols-outlined text-white text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>{kpi.icon}</span>
+                                    </div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{kpi.label}</p>
+                                    <p className={`text-2xl font-black ${kpi.text}`}>{kpi.value}</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Charts — full-width area chart for user growth + revenue */}
+                        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
+
+                            {/* User Growth Area Chart — wider */}
+                            <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                                <div className="flex items-center justify-between mb-5">
+                                    <div>
+                                        <h4 className="font-bold text-slate-800">Pertumbuhan Pengguna</h4>
+                                        <p className="text-xs text-slate-400 font-medium mt-0.5">Pengguna baru per hari (7 hari terakhir)</p>
+                                    </div>
+                                    <div className="w-9 h-9 rounded-xl bg-teal-50 flex items-center justify-center">
+                                        <span className="material-symbols-outlined text-teal-600 text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>group_add</span>
+                                    </div>
+                                </div>
+                                <ResponsiveContainer width="100%" height={200}>
+                                    <AreaChart data={analytics.userGrowth} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                                        <defs>
+                                            <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#0d9488" stopOpacity={0.3}/>
+                                                <stop offset="95%" stopColor="#0d9488" stopOpacity={0}/>
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                                        <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 700 }} axisLine={false} tickLine={false} />
+                                        <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                                        <Tooltip
+                                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', fontSize: '12px', fontWeight: 700 }}
+                                            labelStyle={{ color: '#475569', marginBottom: '4px' }}
+                                            formatter={(v) => [v, 'User Baru']}
+                                        />
+                                        <Area type="monotone" dataKey="users" stroke="#0d9488" strokeWidth={2.5} fill="url(#colorUsers)" dot={{ fill: '#0d9488', r: 4 }} activeDot={{ r: 6 }} />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
+
+                            {/* Revenue Area Chart */}
+                            <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                                <div className="flex items-center justify-between mb-5">
+                                    <div>
+                                        <h4 className="font-bold text-slate-800">Revenue Harian</h4>
+                                        <p className="text-xs text-slate-400 font-medium mt-0.5">Estimasi premium (Rp)</p>
+                                    </div>
+                                    <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center">
+                                        <span className="material-symbols-outlined text-amber-500 text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>monetization_on</span>
+                                    </div>
+                                </div>
+                                <ResponsiveContainer width="100%" height={200}>
+                                    <AreaChart data={analytics.revenueGrowth} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                                        <defs>
+                                            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/>
+                                                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                                        <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 700 }} axisLine={false} tickLine={false} />
+                                        <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000 ? `${v/1000}k` : v} />
+                                        <Tooltip
+                                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', fontSize: '12px', fontWeight: 700 }}
+                                            formatter={(v) => [new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(v), 'Revenue']}
+                                        />
+                                        <Area type="monotone" dataKey="revenue" stroke="#f59e0b" strokeWidth={2.5} fill="url(#colorRevenue)" dot={{ fill: '#f59e0b', r: 4 }} activeDot={{ r: 6 }} />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+
+                        {/* Posts & Likes Bar Chart — full width */}
+                        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                            <div className="flex items-center justify-between mb-5">
+                                <div>
+                                    <h4 className="font-bold text-slate-800">Aktivitas Konten</h4>
+                                    <p className="text-xs text-slate-400 font-medium mt-0.5">Postingan dan Like per hari (7 hari terakhir)</p>
+                                </div>
+                                <div className="w-9 h-9 rounded-xl bg-rose-50 flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-rose-500 text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>trending_up</span>
+                                </div>
+                            </div>
+                            <ResponsiveContainer width="100%" height={220}>
+                                <BarChart data={analytics.contentGrowth} margin={{ top: 5, right: 20, left: -20, bottom: 0 }} barCategoryGap="35%" barGap={4}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 700 }} axisLine={false} tickLine={false} />
+                                    <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                                    <Tooltip
+                                        contentStyle={{ borderRadius: '14px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.12)', fontSize: '12px', fontWeight: 700, padding: '10px 14px' }}
+                                        cursor={{ fill: 'rgba(0,0,0,0.03)', radius: 8 }}
+                                    />
+                                    <Legend wrapperStyle={{ fontSize: '11px', fontWeight: 700, paddingTop: '16px' }} />
+                                    <Bar dataKey="posts" name="Postingan" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
+                                    <Bar dataKey="likes" name="Like" fill="#f43f5e" radius={[6, 6, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                    )}
                 </div>
                 )}
             </main>
