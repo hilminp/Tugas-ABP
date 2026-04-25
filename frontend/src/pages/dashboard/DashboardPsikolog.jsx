@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import { api, STORAGE_BASE_URL } from '../../lib/api';
 import { PSYCHOLOGIST_CATEGORIES } from '../../constants/psychologistCategories';
@@ -24,6 +25,34 @@ const DashboardPsikolog = () => {
     const [reviewsLoading, setReviewsLoading] = useState(true);
     const [sessions, setSessions] = useState([]);
     const [sessionsLoading, setSessionsLoading] = useState(true);
+    const [hiddenPostIds, setHiddenPostIds] = useState(() => {
+        try {
+            const saved = localStorage.getItem('hidden_posts');
+            const parsed = saved ? JSON.parse(saved) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            console.error("Error parsing hidden_posts", e);
+            return [];
+        }
+    });
+
+    useEffect(() => {
+        localStorage.setItem('hidden_posts', JSON.stringify(hiddenPostIds));
+    }, [hiddenPostIds]);
+
+    const handleHidePost = (postId) => {
+        setHiddenPostIds(prev => [...prev, postId]);
+    };
+
+    const handlePermanentDeletePost = async (postId) => {
+        if (!confirm('Hapus postingan ini secara permanen? Tindakan ini tidak bisa dibatalkan.')) return;
+        try {
+            await api.delete(`/admin/post/${postId}/permanent`);
+            setPosts(prev => prev.filter(p => p.id !== postId));
+        } catch (err) {
+            alert(err.response?.data?.message || 'Gagal menghapus postingan secara permanen.');
+        }
+    };
 
     const psychologistName = user?.name || user?.username || 'Psikolog';
     const psychologistSpecialty = user?.spesialisasi || 'Spesialis Klinis';
@@ -276,6 +305,16 @@ const DashboardPsikolog = () => {
         }
     };
 
+    const handleHomeClick = (e) => {
+        if (window.location.pathname === '/home') {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => {
+                window.location.reload();
+            }, 300);
+        }
+    };
+
     const highestActivityValue = Math.max(...paidAnonymousActivityData.map((item) => item.value), 1);
 
     return (
@@ -291,13 +330,13 @@ const DashboardPsikolog = () => {
                     </div>
                 </div>
                 <nav className="flex-1 space-y-2">
-                    <Link className="flex items-center gap-3 px-4 py-3 rounded-lg text-[#A46477] bg-[#A46477]/10 font-bold border-r-4 border-[#A46477] transition-all" to="/home">
+                    <Link className="flex items-center gap-3 px-4 py-3 rounded-lg text-[#A46477] bg-[#A46477]/10 font-bold border-r-4 border-[#A46477] transition-all" to="/home" onClick={handleHomeClick}>
                         <span className="material-symbols-outlined">home</span>
                         <span className="font-['Plus_Jakarta_Sans'] font-medium">Beranda</span>
                     </Link>
                     <Link className="flex items-center gap-3 px-4 py-3 rounded-lg text-stone-500 hover:bg-stone-100 transition-colors active:scale-95 duration-150" to="/messages">
                         <span className="material-symbols-outlined">chat_bubble</span>
-                        <span className="font-['Plus_Jakarta_Sans'] font-medium">Antrean Chat</span>
+                        <span className="font-['Plus_Jakarta_Sans'] font-medium">Pesan</span>
                     </Link>
                     <Link className="flex items-center gap-3 px-4 py-3 rounded-lg text-stone-500 hover:bg-stone-100 transition-colors active:scale-95 duration-150" to="/friend-requests">
                         <span className="material-symbols-outlined">history</span>
@@ -353,85 +392,157 @@ const DashboardPsikolog = () => {
                         <div className="lg:col-span-8 space-y-6">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-lg font-bold text-on-surface">Linimasa</h3>
-                            </div>
+                            </div>                            <div className="post-list">
+                                <AnimatePresence mode="popLayout">
+                                    {posts.filter(p => !hiddenPostIds.includes(p.id)).map((post, index) => {
+                                        const likeCount = post.likes_count ?? post.likes?.length ?? 0;
+                                        const commentCount = Array.isArray(post.comments) ? post.comments.length : 0;
+                                        const isLiked = Boolean(post.is_liked);
+                                        const isModerated = Boolean(post.is_deleted_by_admin);
 
-                            {posts.map((post) => (
-                                <article key={post.id} className="bg-white border border-stone-200 rounded-xl p-6 shadow-sm hover:border-primary-container/50 transition-colors">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>person_outline</span>
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-on-surface">{post.user?.name || 'Anonim'}</p>
-                                                <p className="text-xs text-stone-500">{formatPostMeta(post)}</p>
-                                            </div>
-                                        </div>
-                                        <button className="text-stone-400 hover:text-primary" type="button">
-                                            <span className="material-symbols-outlined">more_horiz</span>
-                                        </button>
-                                    </div>
-                                    <p className="text-on-surface-variant leading-relaxed mb-4">{post.body}</p>
-                                    {post.image && (
-                                        <img className="w-full h-64 object-cover rounded-lg mb-4" src={`${STORAGE_BASE_URL}/${post.image}`} alt="Post attachment" />
-                                    )}
-                                    <div className="post-feedback-bar border-t border-stone-100">
-                                        <div className="flex items-center gap-4">
-                                            <button
-                                                className={`post-like-icon ${Boolean(post.is_liked) ? 'liked' : ''}`}
-                                                type="button"
-                                                onClick={() => handleLike(post.id)}
-                                                disabled={likingPostId === post.id}
-                                                aria-label="Like post"
+                                        return (
+                                            <motion.div 
+                                                key={post.id}
+                                                layout
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, scale: 0.9 }}
+                                                transition={{ duration: 0.4, delay: index * 0.05 }}
+                                                className="post-card-premium"
                                             >
-                                                <span aria-hidden="true">&#9829;</span>
-                                            </button>
-                                            <p className="post-like-count">
-                                                {post.likes_count ?? post.likes?.length ?? 0} suka
-                                            </p>
-                                            <button
-                                                type="button"
-                                                className="post-feedback-button"
-                                                onClick={() => toggleComments(post.id)}
-                                                aria-expanded={Boolean(expandedComments[post.id])}
-                                                aria-label={expandedComments[post.id] ? 'Sembunyikan komentar' : 'Tampilkan komentar'}
-                                            >
-                                                <span className="material-symbols-outlined text-[24px]">chat_bubble</span>
-                                                Komentar
-                                                <span className="post-feedback-count">{Array.isArray(post.comments) ? post.comments.length : 0}</span>
-                                            </button>
-                                        </div>
-                                        {expandedComments[post.id] && Array.isArray(post.comments) && post.comments.length > 0 && (
-                                            <div className="post-comment-list">
-                                                {post.comments.map((comment) => (
-                                                    <p key={comment.id} className="post-comment-row">
-                                                        <strong>{comment.user?.name || 'User'}</strong>
-                                                        : {comment.content}
-                                                    </p>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                    {expandedComments[post.id] && (
-                                        <form className="post-comment-inline" onSubmit={(e) => submitComment(e, post.id)}>
-                                            <input
-                                                type="text"
-                                                value={commentInputs[post.id] || ''}
-                                                onChange={(e) =>
-                                                    setCommentInputs((prev) => ({ ...prev, [post.id]: e.target.value }))
-                                                }
-                                                placeholder="Tulis komentar..."
-                                            />
-                                            <button
-                                                type="submit"
-                                                disabled={submittingCommentId === post.id}
-                                            >
-                                                {submittingCommentId === post.id ? 'Mengirim...' : 'Kirim'}
-                                            </button>
-                                        </form>
-                                    )}
-                                </article>
-                            ))}
+                                                {/* Author */}
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="relative">
+                                                            {post.user?.profile_image ? (
+                                                                <img src={`${STORAGE_BASE_URL}/${post.user.profile_image}`} alt={post.user.name} className="w-10 h-10 rounded-2xl object-cover ring-2 ring-white shadow-sm" />
+                                                            ) : (
+                                                                <div className="w-10 h-10 rounded-2xl bg-[#f0dde7] text-[#81556a] font-black flex items-center justify-center ring-2 ring-white shadow-sm">
+                                                                    {post.user?.name?.charAt(0).toUpperCase()}
+                                                                </div>
+                                                            )}
+                                                            <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></div>
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="font-bold text-slate-800 text-sm leading-tight">{post.user?.name}</h4>
+                                                            <div className="flex items-center gap-1.5 mt-0.5">
+                                                                <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${post.user?.role === 'psikolog' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
+                                                                    {post.user?.role === 'psikolog' ? 'Psikolog' : 'Anonim'}
+                                                                </span>
+                                                                <span className="text-[10px] text-slate-300">•</span>
+                                                                <span className="text-[10px] text-slate-400 font-medium">{new Date(post.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {isModerated && (
+                                                        <div className="flex gap-1">
+                                                            <button
+                                                                onClick={() => handleHidePost(post.id)}
+                                                                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
+                                                                title="Sembunyikan dari Feed Saya"
+                                                            >
+                                                                <span className="material-symbols-outlined text-lg">visibility_off</span>
+                                                            </button>
+                                                            {(user?.is_admin || user?.id === post.user?.id) && (
+                                                                <button
+                                                                    onClick={() => handlePermanentDeletePost(post.id)}
+                                                                    className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                                                    title="Hapus Permanen"
+                                                                >
+                                                                    <span className="material-symbols-outlined text-lg">delete_forever</span>
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Body */}
+                                                <p className={`text-slate-700 text-[15px] leading-relaxed mb-4 whitespace-pre-wrap ${isModerated ? 'moderated-body-text' : ''}`}>{post.body}</p>
+                                                
+                                                {post.image && !isModerated && (
+                                                    <div className="rounded-2xl overflow-hidden mb-4 border border-slate-100 bg-slate-50">
+                                                        <img className="w-full max-h-[450px] object-contain" src={`${STORAGE_BASE_URL}/${post.image}`} alt="Post attachment" />
+                                                    </div>
+                                                )}
+
+                                                {/* Interaction Bar */}
+                                                <div className="flex items-center gap-2 pt-4 border-t border-slate-50">
+                                                    {!isModerated && (
+                                                        <>
+                                                            <button
+                                                                onClick={() => handleLike(post.id)}
+                                                                disabled={likingPostId === post.id}
+                                                                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all active:scale-95 ${isLiked ? 'bg-red-50 text-red-500 font-bold' : 'hover:bg-slate-50 text-slate-500 font-medium'}`}
+                                                            >
+                                                                <span className={`material-symbols-outlined text-[20px] ${isLiked ? 'fill-1' : ''}`} style={{ fontVariationSettings: isLiked ? "'FILL' 1" : "''" }}>
+                                                                    favorite
+                                                                </span>
+                                                                <span className="text-xs">{likeCount}</span>
+                                                            </button>
+
+                                                            <button
+                                                                onClick={() => toggleComments(post.id)}
+                                                                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all active:scale-95 ${expandedComments[post.id] ? 'bg-indigo-50 text-indigo-600 font-bold' : 'hover:bg-slate-50 text-slate-500 font-medium'}`}
+                                                            >
+                                                                <span className="material-symbols-outlined text-[20px]">
+                                                                    chat_bubble
+                                                                </span>
+                                                                <span className="text-xs">{commentCount}</span>
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
+
+                                                {/* Comments Section */}
+                                                <AnimatePresence>
+                                                    {expandedComments[post.id] && (
+                                                        <motion.div 
+                                                            initial={{ opacity: 0, height: 0 }}
+                                                            animate={{ opacity: 1, height: 'auto' }}
+                                                            exit={{ opacity: 0, height: 0 }}
+                                                            className="overflow-hidden"
+                                                        >
+                                                            <div className="mt-4 pt-4 border-t border-slate-50 space-y-4">
+                                                                {Array.isArray(post.comments) && post.comments.map((comment) => (
+                                                                    <div key={comment.id} className="flex gap-3">
+                                                                        <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500 shrink-0">
+                                                                            {(comment.user?.name || 'U').charAt(0).toUpperCase()}
+                                                                        </div>
+                                                                        <div className="bg-slate-50 rounded-2xl p-3 flex-1">
+                                                                            <div className="flex justify-between items-start mb-1">
+                                                                                <span className="text-xs font-bold text-slate-800">{comment.user?.name || 'User'}</span>
+                                                                            </div>
+                                                                            <p className="text-xs text-slate-600 leading-relaxed">{comment.content}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+
+                                                                {/* Comment Input */}
+                                                                <form className="flex items-center gap-3 bg-slate-50 rounded-2xl p-1 pl-4" onSubmit={(e) => submitComment(e, post.id)}>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={commentInputs[post.id] || ''}
+                                                                        onChange={(e) => setCommentInputs((prev) => ({ ...prev, [post.id]: e.target.value }))}
+                                                                        placeholder="Tulis komentar..."
+                                                                        className="flex-1 bg-transparent border-none focus:ring-0 text-xs font-medium text-slate-700 placeholder:text-slate-300"
+                                                                    />
+                                                                    <button
+                                                                        type="submit"
+                                                                        disabled={submittingCommentId === post.id}
+                                                                        className="w-8 h-8 bg-[#A46477] text-white rounded-xl flex items-center justify-center shadow-md active:scale-90 disabled:opacity-30"
+                                                                    >
+                                                                        <span className="material-symbols-outlined text-sm">send</span>
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+                                            </motion.div>
+                                        );
+                                    })}
+                                </AnimatePresence>
+                            </div>
 
                             {posts.length === 0 ? (
                                 <div className="bg-white border border-stone-200 rounded-xl p-8 text-center text-stone-500">

@@ -392,13 +392,21 @@
   font-weight: 500;
   color: var(--clr-outline);
 }
-.rrs-footer-links a {
+.rrs-footer-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
   color: var(--clr-outline);
+  cursor: pointer;
+  transition: all 0.2s ease;
   text-decoration: none;
-  transition: color 0.2s ease;
 }
-.rrs-footer-links a:hover {
+.rrs-footer-btn:hover {
   color: var(--clr-primary);
+  transform: translateY(-1px);
 }
 .rrs-dot {
   width: 4px;

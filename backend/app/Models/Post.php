@@ -13,6 +13,8 @@ class Post extends Model
         'user_id',
         'body',
         'image',
+        'is_deleted_by_admin',
+        'deletion_reason',
     ];
 
     public function user()

@@ -98,8 +98,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/user/{id}/toggle-admin', [AdminController::class, 'toggleAdmin']);
         Route::post('/user/{id}/suspend', [AdminController::class, 'suspend']);
         Route::post('/user/{id}/message', [AdminController::class, 'message']);
-        Route::delete('/post/{id}', [AdminController::class, 'deletePost']);
+        Route::delete('/post/{id}/delete', [AdminController::class, 'deletePost']);
+        Route::delete('/post/{id}/permanent', [AdminController::class, 'permanentDeletePost']);
         Route::delete('/comment/{id}', [AdminController::class, 'deleteComment']);
         Route::get('/analytics', [AdminController::class, 'analytics']);
+        
+        // Appeals Management
+        Route::get('/appeals', [\App\Http\Controllers\AppealController::class, 'index']);
+        Route::post('/appeals/{id}/handle', [\App\Http\Controllers\AppealController::class, 'handle']);
     });
+
+    // Public Appeal Submission (needs email/pass for security since user is logged out)
+    Route::post('/appeals/submit', [\App\Http\Controllers\AppealController::class, 'store'])->withoutMiddleware('auth:sanctum');
 });

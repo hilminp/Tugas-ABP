@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '../../components/Sidebar';
 import { useAuth } from '../../hooks/useAuth';
 import { api, STORAGE_BASE_URL } from '../../lib/api';
@@ -157,6 +158,34 @@ const DashboardAnonim = () => {
     const [psychologistTotal, setPsychologistTotal] = useState(0);
     const [psychologistLoading, setPsychologistLoading] = useState(false);
     const [loadingMorePsychologists, setLoadingMorePsychologists] = useState(false);
+    const [hiddenPostIds, setHiddenPostIds] = useState(() => {
+        try {
+            const saved = localStorage.getItem('hidden_posts');
+            const parsed = saved ? JSON.parse(saved) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            console.error("Error parsing hidden_posts", e);
+            return [];
+        }
+    });
+
+    useEffect(() => {
+        localStorage.setItem('hidden_posts', JSON.stringify(hiddenPostIds));
+    }, [hiddenPostIds]);
+
+    const handleHidePost = (postId) => {
+        setHiddenPostIds(prev => [...prev, postId]);
+    };
+
+    const handlePermanentDeletePost = async (postId) => {
+        if (!confirm('Hapus postingan ini secara permanen? Tindakan ini tidak bisa dibatalkan.')) return;
+        try {
+            await api.delete(`/admin/post/${postId}/permanent`);
+            setPosts(prev => prev.filter(p => p.id !== postId));
+        } catch (err) {
+            alert(err.response?.data?.message || 'Gagal menghapus postingan secara permanen.');
+        }
+    };
     const [psychologistError, setPsychologistError] = useState('');
     const [hasMorePsychologists, setHasMorePsychologists] = useState(false);
     const [hasSelectedCategory, setHasSelectedCategory] = useState(false);
@@ -174,6 +203,8 @@ const DashboardAnonim = () => {
     const [adminBanModal, setAdminBanModal] = useState({ isOpen: false, userId: null, userName: '' });
     const [adminBanReason, setAdminBanReason] = useState('');
     const [adminActionLoading, setAdminActionLoading] = useState(false);
+    const [sessions, setSessions] = useState([]);
+    const [sessionsLoading, setSessionsLoading] = useState(true);
 
     /* ─── Hitung statistik milik user sendiri dari data posts ─── */
     const computeMyStats = (allPosts) => {
@@ -236,12 +267,26 @@ const DashboardAnonim = () => {
     useEffect(() => {
         fetchPosts();
         fetchPsychologistStatuses();
+        fetchSessions();
         /* ─── Auto-refresh setiap 10 detik ─── */
         const interval = setInterval(() => {
             fetchPosts();
+            fetchSessions();
         }, 10000);
         return () => clearInterval(interval);
     }, []);
+
+    const fetchSessions = async () => {
+        try {
+            const endpoint = user?.role === 'psikolog' ? '/consultation-sessions' : '/my-booked-sessions';
+            const res = await api.get(endpoint);
+            setSessions(res.data.sessions || []);
+        } catch (error) {
+            console.error('Error fetching sessions:', error);
+        } finally {
+            setSessionsLoading(false);
+        }
+    };
 
 
     const fetchPosts = async () => {
@@ -339,21 +384,24 @@ const DashboardAnonim = () => {
 
     /* ─── Admin Actions ─── */
     const handleAdminDeletePost = (postId) => {
+        let reason = '';
         setAdminConfirmModal({
             isOpen: true,
-            title: 'Hapus Postingan?',
-            message: 'Postingan ini akan dihapus secara permanen. Tindakan tidak bisa dibatalkan.',
-            icon: 'delete',
+            title: 'Moderasi Postingan',
+            message: 'Masukkan alasan penghapusan postingan ini. User akan melihat alasan ini di feed mereka.',
+            icon: 'gavel',
             color: 'red',
+            showInput: true,
+            onInputChange: (val) => { reason = val; },
             onConfirm: async () => {
                 setAdminActionLoading(true);
                 try {
-                    await api.delete(`/admin/post/${postId}`);
+                    await api.post(`/admin/post/${postId}/delete`, { _method: 'DELETE', reason });
                     setAdminConfirmModal(m => ({ ...m, isOpen: false }));
-                    setStatusModal({ isOpen: true, type: 'success', message: 'Postingan berhasil dihapus.' });
+                    setStatusModal({ isOpen: true, type: 'success', message: 'Postingan berhasil dimoderasi.' });
                     await fetchPosts();
                 } catch (error) {
-                    setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal menghapus postingan.' });
+                    setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal moderasi postingan.' });
                 } finally {
                     setAdminActionLoading(false);
                 }
@@ -571,7 +619,7 @@ const DashboardAnonim = () => {
                                 <div className="popular-header">
                                     <div className="category-box-title">
                                         <h2>Kategori Psikolog</h2>
-                                        <p>Pilih topik agar lebih cepat menemukan psikolog yang sesuai.</p>
+                                        <p>Pilih psikolog dengan keahlian yang sesuai dengan kebutuhanmu.</p>
                                     </div>
                                 </div>
                                 <div className="topic-grid">
@@ -697,248 +745,285 @@ const DashboardAnonim = () => {
                                     </button>
                                 </div>
                             ) : (
-                                <div className="post-create">
-                                    <form onSubmit={handlePostSubmit}>
-                                        <textarea
-                                            value={body}
-                                            onChange={(e) => setBody(e.target.value)}
-                                            placeholder="Bagikan apa yang ada di pikiranmu secara anonim..."
-                                            required
-                                        />
-                                        <div className="post-actions">
-                                            <div className="file-input-wrapper">
-                                                <label htmlFor="post-image-input" className="file-input-label">
-                                                    <span className="material-symbols-outlined">add_photo_alternate</span>
-                                                    <span>{image ? image.name : 'Tambahkan Foto'}</span>
-                                                </label>
-                                                <input 
-                                                    id="post-image-input" 
-                                                    type="file" 
-                                                    accept="image/*" 
-                                                    onChange={(e) => setImage(e.target.files[0])} 
-                                                    className="hidden-file-input"
-                                                />
-                                            </div>
-                                            <button type="submit" disabled={loading} className="submit-post-btn">
-                                                {loading ? 'Memposting...' : 'Kirim Post'}
-                                            </button>
+                                <div className="post-create-card group">
+                                    <div className="flex gap-4 p-5">
+                                        <div className="shrink-0">
+                                            {user?.profile_image ? (
+                                                <img src={`${STORAGE_BASE_URL}/${user.profile_image}`} alt={user.name} className="w-11 h-11 rounded-2xl object-cover shadow-sm" />
+                                            ) : (
+                                                <div className="w-11 h-11 rounded-2xl bg-[#f0dde7] text-[#81556a] font-black flex items-center justify-center shadow-sm">
+                                                    {user?.name?.charAt(0).toUpperCase()}
+                                                </div>
+                                            )}
                                         </div>
-                                    </form>
+                                        <form onSubmit={handlePostSubmit} className="flex-1">
+                                            <textarea
+                                                value={body}
+                                                onChange={(e) => {
+                                                    setBody(e.target.value);
+                                                    e.target.style.height = 'auto';
+                                                    e.target.style.height = e.target.scrollHeight + 'px';
+                                                }}
+                                                placeholder="Apa yang Anda pikirkan hari ini? Bagikan secara anonim..."
+                                                className="w-full bg-transparent border-none focus:ring-0 text-slate-700 text-base font-medium placeholder:text-slate-300 resize-none min-h-[50px] transition-all py-2"
+                                                required
+                                            />
+                                            
+                                            <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-50 transition-all group-focus-within:border-slate-100">
+                                                <div className="flex gap-2">
+                                                    <div className="file-input-wrapper">
+                                                        <label htmlFor="post-image-input" className="post-action-btn hover:bg-teal-50 hover:text-teal-600">
+                                                            <span className="material-symbols-outlined text-[20px]">add_photo_alternate</span>
+                                                            <span className="text-xs font-bold uppercase tracking-wider">{image ? 'Foto Terpilih' : 'Tambahkan Foto'}</span>
+                                                        </label>
+                                                        <input 
+                                                            id="post-image-input" 
+                                                            type="file" 
+                                                            accept="image/*" 
+                                                            onChange={(e) => setImage(e.target.files[0])} 
+                                                            className="hidden"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <button 
+                                                    type="submit" 
+                                                    disabled={loading || !body.trim()} 
+                                                    className="px-6 py-2.5 bg-[#A46477] text-white rounded-xl font-black text-xs uppercase tracking-[0.15em] shadow-lg shadow-[#A46477]/20 hover:bg-[#8a5263] hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:translate-y-0 transition-all flex items-center gap-2"
+                                                >
+                                                    {loading ? 'Mengirim...' : (
+                                                        <>
+                                                            <span>Posting</span>
+                                                            <span className="material-symbols-outlined text-sm">send</span>
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    {image && (
+                                        <div className="px-5 pb-5">
+                                            <div className="relative inline-block group/img">
+                                                <img src={URL.createObjectURL(image)} alt="Preview" className="max-h-32 rounded-xl shadow-md" />
+                                                <button 
+                                                    onClick={() => setImage(null)} 
+                                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg opacity-0 group-hover/img:opacity-100 transition-opacity"
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">close</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
                             {/* ─── POST LIST ─── */}
                             <div className="post-list">
-                                {posts.map((post) => {
-                                    const likeCount = post.likes_count ?? post.likes?.length ?? 0;
-                                    const commentCount = Array.isArray(post.comments) ? post.comments.length : 0;
-                                    const isLiked = Boolean(post.is_liked);
+                                <AnimatePresence mode="popLayout">
+                                    {posts.filter(p => !hiddenPostIds.includes(p.id)).map((post, index) => {
+                                        const likeCount = post.likes_count ?? post.likes?.length ?? 0;
+                                        const commentCount = Array.isArray(post.comments) ? post.comments.length : 0;
+                                        const isLiked = Boolean(post.is_liked);
+                                        const isModerated = Boolean(post.is_deleted_by_admin);
 
-                                    return (
-                                        <div className="post" key={post.id}>
-                                            {/* Author + Admin actions */}
-                                            <div className="post-author" style={{ justifyContent: 'space-between' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                    {post.user?.profile_image ? (
-                                                        <img src={`http://localhost:8000/storage/${post.user.profile_image}`} alt={post.user.name} />
-                                                    ) : (
-                                                        <div className="post-fallback-avatar">
-                                                            {post.user?.name?.charAt(0).toUpperCase()}
+                                        return (
+                                            <motion.div 
+                                                key={post.id}
+                                                layout
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, scale: 0.9 }}
+                                                transition={{ duration: 0.4, delay: index * 0.05 }}
+                                                className={`post-card-premium ${isModerated ? 'moderated-notice-card' : ''}`}
+                                            >
+                                                {/* Author + Admin actions */}
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="relative">
+                                                            {post.user?.profile_image ? (
+                                                                <img src={`${STORAGE_BASE_URL}/${post.user.profile_image}`} alt={post.user.name} className="w-10 h-10 rounded-2xl object-cover ring-2 ring-white shadow-sm" />
+                                                            ) : (
+                                                                <div className="w-10 h-10 rounded-2xl bg-[#f0dde7] text-[#81556a] font-black flex items-center justify-center ring-2 ring-white shadow-sm">
+                                                                    {post.user?.name?.charAt(0).toUpperCase()}
+                                                                </div>
+                                                            )}
+                                                            <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></div>
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="font-bold text-slate-800 text-sm leading-tight">{post.user?.name}</h4>
+                                                            <div className="flex items-center gap-1.5 mt-0.5">
+                                                                <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${post.user?.role === 'psikolog' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
+                                                                    {post.user?.role === 'psikolog' ? 'Psikolog' : 'Anonim'}
+                                                                </span>
+                                                                <span className="text-[10px] text-slate-300">•</span>
+                                                                <span className="text-[10px] text-slate-400 font-medium">{new Date(post.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {user?.is_admin && !isModerated && (
+                                                        <div className="flex gap-1">
+                                                            <button
+                                                                onClick={() => handleAdminDeletePost(post.id)}
+                                                                className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                                                title="Moderasi Post"
+                                                            >
+                                                                <span className="material-symbols-outlined text-lg">gavel</span>
+                                                            </button>
+                                                            {post.user?.id && (
+                                                                <button
+                                                                    onClick={() => handleAdminBanUser(post.user.id, post.user.name)}
+                                                                    className="p-1.5 text-orange-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all"
+                                                                    title="Ban User"
+                                                                >
+                                                                    <span className="material-symbols-outlined text-lg">block</span>
+                                                                </button>
+                                                            )}
                                                         </div>
                                                     )}
-                                                    <div>
-                                                        <strong>{post.user?.name}</strong>
-                                                        <div className="post-username">
-                                                            ({post.user?.role === 'psikolog' ? 'psikolog' : 'anonim'})
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                {user?.is_admin && (
-                                                    <div style={{ display: 'flex', gap: '6px' }}>
-                                                        <button
-                                                            title="Hapus Postingan"
-                                                            onClick={() => handleAdminDeletePost(post.id)}
-                                                            style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: '700', background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', cursor: 'pointer', transition: 'all 0.2s' }}
-                                                            onMouseEnter={e => e.currentTarget.style.background = '#fee2e2'}
-                                                            onMouseLeave={e => e.currentTarget.style.background = '#fef2f2'}
-                                                        >
-                                                            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span>
-                                                            Hapus Post
-                                                        </button>
-                                                        {post.user?.id && (
+                                                    {isModerated && (
+                                                        <div className="flex gap-1">
                                                             <button
-                                                                title={`Ban ${post.user.name}`}
-                                                                onClick={() => handleAdminBanUser(post.user.id, post.user.name)}
-                                                                style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: '700', background: '#fff7ed', color: '#ea580c', border: '1px solid #fed7aa', cursor: 'pointer', transition: 'all 0.2s' }}
-                                                                onMouseEnter={e => e.currentTarget.style.background = '#ffedd5'}
-                                                                onMouseLeave={e => e.currentTarget.style.background = '#fff7ed'}
+                                                                onClick={() => handleHidePost(post.id)}
+                                                                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
+                                                                title="Sembunyikan dari Feed Saya"
                                                             >
-                                                                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>block</span>
-                                                                Ban User
+                                                                <span className="material-symbols-outlined text-lg">visibility_off</span>
                                                             </button>
-                                                        )}
+                                                            {(user?.is_admin || user?.id === post.user?.id) && (
+                                                                <button
+                                                                    onClick={() => handlePermanentDeletePost(post.id)}
+                                                                    className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                                                    title="Hapus Permanen"
+                                                                >
+                                                                    <span className="material-symbols-outlined text-lg">delete_forever</span>
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Body */}
+                                                <p className={`text-slate-700 text-[15px] leading-relaxed mb-4 whitespace-pre-wrap ${isModerated ? 'moderated-body-text' : ''}`}>
+                                                    {post.body}
+                                                </p>
+                                                
+                                                {post.image && !isModerated && (
+                                                    <div className="rounded-2xl overflow-hidden mb-4 border border-slate-100 bg-slate-50">
+                                                        <img className="w-full max-h-[450px] object-contain" src={`${STORAGE_BASE_URL}/${post.image}`} alt="Post attachment" />
                                                     </div>
                                                 )}
-                                            </div>
 
-                                            {/* Body */}
-                                            <p className="post-body">{post.body}</p>
-                                            {post.image && (
-                                                <img className="post-image" src={`${STORAGE_BASE_URL}/${post.image}`} alt="Post attachment" />
-                                            )}
+                                                {/* Interaction Bar */}
+                                                <div className="flex items-center gap-2 pt-4 border-t border-slate-50">
+                                                    {!isModerated && (
+                                                        <>
+                                                            <button
+                                                                onClick={() => handleLike(post.id)}
+                                                                disabled={likingPostId === post.id}
+                                                                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all active:scale-95 ${isLiked ? 'bg-red-50 text-red-500 font-bold' : 'hover:bg-slate-50 text-slate-500 font-medium'}`}
+                                                            >
+                                                                <span className={`material-symbols-outlined text-[20px] ${isLiked ? 'fill-1' : ''}`} style={{ fontVariationSettings: isLiked ? "'FILL' 1" : "''" }}>
+                                                                    favorite
+                                                                </span>
+                                                                <span className="text-xs">{likeCount}</span>
+                                                            </button>
 
-                                            {/* ─── Like & Comment count bar ─── */}
-                                            <div style={S.feedbackBar}>
-                                                {/* Like button */}
-                                                <button
-                                                    type="button"
-                                                    style={S.likeBtn(isLiked)}
-                                                    onClick={() => handleLike(post.id)}
-                                                    disabled={likingPostId === post.id}
-                                                    aria-label="Like post"
-                                                    onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.95)'; }}
-                                                    onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
-                                                    onMouseEnter={(e) => {
-                                                        if (!isLiked) {
-                                                            e.currentTarget.style.background = '#fff0f0';
-                                                            e.currentTarget.style.borderColor = '#f87171';
-                                                        }
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        if (!isLiked) {
-                                                            e.currentTarget.style.background = 'transparent';
-                                                            e.currentTarget.style.borderColor = '#e8e0e4';
-                                                        }
-                                                    }}
-                                                >
-                                                    <svg viewBox="0 0 24 24" style={S.heartSvg(isLiked)} xmlns="http://www.w3.org/2000/svg">
-                                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" strokeLinecap="round" strokeLinejoin="round" />
-                                                    </svg>
-                                                    <span>{likeCount}</span>
-                                                    <span style={{ color: isLiked ? '#e53e3e' : '#b0a0a8', fontWeight: 400 }}>suka</span>
-                                                </button>
+                                                            <button
+                                                                onClick={() => toggleComments(post.id)}
+                                                                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all active:scale-95 ${expandedComments[post.id] ? 'bg-indigo-50 text-indigo-600 font-bold' : 'hover:bg-slate-50 text-slate-500 font-medium'}`}
+                                                            >
+                                                                <span className="material-symbols-outlined text-[20px]">
+                                                                    chat_bubble
+                                                                </span>
+                                                                <span className="text-xs">{commentCount}</span>
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
 
-                                                {/* Comment count chip */}
-                                                <button
-                                                    type="button"
-                                                    style={{ ...S.commentCountChip, cursor: 'pointer' }}
-                                                    onClick={() => toggleComments(post.id)}
-                                                    aria-expanded={Boolean(expandedComments[post.id])}
-                                                    aria-label={expandedComments[post.id] ? 'Sembunyikan komentar' : 'Tampilkan komentar'}
-                                                    onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.95)'; }}
-                                                    onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
-                                                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
-                                                >
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                                                    </svg>
-                                                    <span>{commentCount}</span>
-                                                    <span style={{ fontWeight: 400, color: '#b0a0a8' }}>komentar</span>
-                                                </button>
-                                            </div>
-
-                                            {/* ─── Comment bubbles ─── */}
-                                            {expandedComments[post.id] && Array.isArray(post.comments) && post.comments.length > 0 && (
-                                                <div style={S.commentList}>
-                                                    {post.comments.map((comment) => (
-                                                        <div key={comment.id} style={S.commentBubble}>
-                                                            <div style={S.commentAvatar}>
-                                                                {(comment.user?.name || 'U').charAt(0).toUpperCase()}
-                                                            </div>
-                                                            <div style={{ ...S.commentContent, flex: 1 }}>
-                                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                                    <div style={S.commentName}>{comment.user?.name || 'User'}</div>
-                                                                    {user?.is_admin && (
-                                                                        <div style={{ display: 'flex', gap: '4px' }}>
-                                                                            <button
-                                                                                title="Hapus Komentar"
-                                                                                onClick={() => handleAdminDeleteComment(comment.id)}
-                                                                                style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '2px 8px', borderRadius: '999px', fontSize: '10px', fontWeight: '700', background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', cursor: 'pointer' }}
-                                                                            >
-                                                                                <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>delete</span>
-                                                                                Hapus
-                                                                            </button>
-                                                                            {comment.user?.id && (
-                                                                                <button
-                                                                                    title={`Ban ${comment.user.name}`}
-                                                                                    onClick={() => handleAdminBanUser(comment.user.id, comment.user.name)}
-                                                                                    style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '2px 8px', borderRadius: '999px', fontSize: '10px', fontWeight: '700', background: '#fff7ed', color: '#ea580c', border: '1px solid #fed7aa', cursor: 'pointer' }}
-                                                                                >
-                                                                                    <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>block</span>
-                                                                                    Ban
-                                                                                </button>
-                                                                            )}
+                                                {/* Comments Section */}
+                                                <AnimatePresence>
+                                                    {expandedComments[post.id] && (
+                                                        <motion.div 
+                                                            initial={{ opacity: 0, height: 0 }}
+                                                            animate={{ opacity: 1, height: 'auto' }}
+                                                            exit={{ opacity: 0, height: 0 }}
+                                                            className="overflow-hidden"
+                                                        >
+                                                            <div className="mt-4 pt-4 border-t border-slate-50 space-y-4">
+                                                                {Array.isArray(post.comments) && post.comments.map((comment) => (
+                                                                    <div key={comment.id} className="flex gap-3">
+                                                                        <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500 shrink-0">
+                                                                            {(comment.user?.name || 'U').charAt(0).toUpperCase()}
                                                                         </div>
-                                                                    )}
-                                                                </div>
-                                                                <p style={S.commentText}>{comment.content}</p>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
+                                                                        <div className="bg-slate-50 rounded-2xl p-3 flex-1">
+                                                                            <div className="flex justify-between items-start mb-1">
+                                                                                <span className="text-xs font-bold text-slate-800">{comment.user?.name || 'User'}</span>
+                                                                                {user?.is_admin && (
+                                                                                    <button onClick={() => handleAdminDeleteComment(comment.id)} className="text-red-400 hover:text-red-600">
+                                                                                        <span className="material-symbols-outlined text-sm">delete</span>
+                                                                                    </button>
+                                                                                )}
+                                                                            </div>
+                                                                            <p className="text-xs text-slate-600 leading-relaxed">{comment.content}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
 
-                                            {/* ─── Comment input ─── */}
-                                            {expandedComments[post.id] && (
-                                                <div style={S.commentInputWrap}
-                                                    onFocus={(e) => { e.currentTarget.style.borderColor = '#db7391'; }}
-                                                    onBlur={(e) => { e.currentTarget.style.borderColor = '#edd5e3'; }}
-                                                >
-                                                    <input
-                                                        type="text"
-                                                        value={commentInputs[post.id] || ''}
-                                                        onChange={(e) =>
-                                                            setCommentInputs((prev) => ({ ...prev, [post.id]: e.target.value }))
-                                                        }
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter') submitComment(post.id);
-                                                        }}
-                                                        placeholder="Tulis komentar..."
-                                                        style={S.commentInput}
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => submitComment(post.id)}
-                                                        disabled={submittingCommentId === post.id}
-                                                        style={S.sendBtn(submittingCommentId === post.id)}
-                                                        aria-label="Kirim komentar"
-                                                        onMouseEnter={(e) => { if (submittingCommentId !== post.id) e.currentTarget.style.opacity = '0.85'; }}
-                                                        onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
-                                                    >
-                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                            <line x1="22" y1="2" x2="11" y2="13" />
-                                                            <polygon points="22 2 15 22 11 13 2 9 22 2" fill="white" stroke="white" />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                                {posts.length === 0 && (
-                                    <div className="empty-posts">Belum ada postingan. Jadilah yang pertama!</div>
-                                )}
+                                                                {/* Comment Input */}
+                                                                <div className="flex items-center gap-3 bg-slate-50 rounded-2xl p-1 pl-4">
+                                                                    <input
+                                                                        type="text"
+                                                                        value={commentInputs[post.id] || ''}
+                                                                        onChange={(e) => setCommentInputs((prev) => ({ ...prev, [post.id]: e.target.value }))}
+                                                                        onKeyDown={(e) => { if (e.key === 'Enter') submitComment(post.id); }}
+                                                                        placeholder="Tulis komentar..."
+                                                                        className="flex-1 bg-transparent border-none focus:ring-0 text-xs font-medium text-slate-700 placeholder:text-slate-300"
+                                                                    />
+                                                                    <button
+                                                                        onClick={() => submitComment(post.id)}
+                                                                        disabled={submittingCommentId === post.id}
+                                                                        className="w-8 h-8 bg-[#A46477] text-white rounded-xl flex items-center justify-center shadow-md active:scale-90 disabled:opacity-30"
+                                                                    >
+                                                                        <span className="material-symbols-outlined text-sm">send</span>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+                                            </motion.div>
+                                        );
+                                    })}
+                                </AnimatePresence>
                             </div>
                         </section>
 
                         <aside className="right-section">
                             <div className="side-card">
                                 <div className="side-card-title">Sesi Terbaru</div>
-                                <div className="session-item">
-                                    <div>
-                                        <small>Mendatang</small>
-                                        <strong>Dr. Sarah Wijaya</strong>
-                                        <span>Besok, 14:00</span>
+                                {sessionsLoading ? (
+                                    <div className="text-xs text-stone-400 p-4 text-center">Memuat sesi...</div>
+                                ) : sessions.length === 0 ? (
+                                    <div className="text-xs text-stone-400 p-4 text-center">Belum ada sesi terjadwal.</div>
+                                ) : (
+                                    <div className="flex flex-col gap-1">
+                                        {sessions.slice(0, 3).map((session) => (
+                                            <div key={session.id} className={`session-item ${session.status === 'completed' || session.status === 'cancelled' ? 'muted' : ''}`}>
+                                                <span className="material-symbols-outlined text-[20px] opacity-70">event_upcoming</span>
+                                                <div>
+                                                    <small className="capitalize">{session.status === 'booked' ? 'Mendatang' : session.status.replace('_', ' ')}</small>
+                                                    <strong>{user?.role === 'psikolog' ? session.user?.name : session.psychologist?.name}</strong>
+                                                    <span>{new Date(session.session_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} • {session.session_time.substring(0, 5)}</span>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                </div>
-                                <div className="session-item muted">
-                                    <div>
-                                        <small>Selesai</small>
-                                        <strong>Bpk Andi Pratama</strong>
-                                        <span>3 hari lalu</span>
-                                    </div>
-                                </div>
-                                <Link to="/friend-requests" className="side-link">Lihat Semua Riwayat</Link>
+                                )}
+                                <Link to="/sessions" className="side-link">
+                                    Lihat Jadwal Lengkap
+                                    <span className="material-symbols-outlined">arrow_forward</span>
+                                </Link>
                             </div>
 
                             {/* ─── Grafik Batang Aktivitas (khusus anonim berbayar) ─── */}
@@ -1128,7 +1213,19 @@ const DashboardAnonim = () => {
                             <span className="material-symbols-outlined text-4xl text-red-500" style={{ fontVariationSettings: "'FILL' 1" }}>{adminConfirmModal.icon}</span>
                         </div>
                         <h3 className="text-xl font-black text-slate-800 mb-2 tracking-tight">{adminConfirmModal.title}</h3>
-                        <p className="text-slate-500 mb-8 font-medium leading-relaxed text-sm">{adminConfirmModal.message}</p>
+                        <p className="text-slate-500 mb-6 font-medium leading-relaxed text-sm">{adminConfirmModal.message}</p>
+                        
+                        {adminConfirmModal.showInput && (
+                            <div className="w-full mb-6">
+                                <textarea
+                                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-slate-700 text-sm font-medium placeholder:text-slate-300 focus:border-red-200 focus:bg-white outline-none transition-all resize-none h-24"
+                                    placeholder="Masukkan alasan penghapusan..."
+                                    onChange={(e) => adminConfirmModal.onInputChange(e.target.value)}
+                                    autoFocus
+                                />
+                            </div>
+                        )}
+
                         <div className="flex gap-3 w-full">
                             <button
                                 onClick={() => setAdminConfirmModal(m => ({ ...m, isOpen: false }))}
@@ -1147,7 +1244,7 @@ const DashboardAnonim = () => {
                                         <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                         Memproses...
                                     </>
-                                ) : 'Ya, Hapus'}
+                                ) : (adminConfirmModal.showInput ? 'Ya, Moderasi' : 'Ya, Hapus')}
                             </button>
                         </div>
                     </div>

@@ -13,6 +13,7 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [activePopup, setActivePopup] = useState(null);
     const [confirmModal, setConfirmModal] = useState({ show: false, onConfirm: null });
+    const [appealModal, setAppealModal] = useState({ show: false, reason: '', loading: false });
     const { login } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -31,6 +32,8 @@ const Login = () => {
         } catch (err) {
             if (err.response?.data?.is_rejected) {
                 setError({ type: 'rejected', message: err.response.data.message });
+            } else if (err.response?.data?.is_suspended) {
+                setError({ type: 'suspended', message: err.response.data.message });
             } else {
                 setError({ type: 'general', message: err.response?.data?.message || 'Login failed.' });
             }
@@ -54,6 +57,25 @@ const Login = () => {
                 }
             }
         });
+    };
+
+    const handleAppealSubmit = async (e) => {
+        e.preventDefault();
+        setAppealModal(prev => ({ ...prev, loading: true }));
+        try {
+            const res = await api.post('/appeals/submit', { 
+                email, 
+                password, 
+                reason: appealModal.reason 
+            });
+            alert(res.data.message);
+            setAppealModal({ show: false, reason: '', loading: false });
+            setError(null);
+        } catch (err) {
+            alert(err.response?.data?.message || 'Gagal mengirim banding.');
+        } finally {
+            setAppealModal(prev => ({ ...prev, loading: false }));
+        }
     };
 
     const popupContent = {
@@ -128,6 +150,25 @@ const Login = () => {
                                             }}
                                         >
                                             Hapus data lama & Daftar Ulang
+                                        </button>
+                                    )}
+                                    {error.type === 'suspended' && (
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setAppealModal({ ...appealModal, show: true })}
+                                            style={{
+                                                background: '#fff', 
+                                                color: '#f39c12', 
+                                                border: '1px solid #f39c12', 
+                                                padding: '8px 14px', 
+                                                borderRadius: '8px',
+                                                fontWeight: 600,
+                                                cursor: 'pointer',
+                                                alignSelf: 'flex-start',
+                                                fontSize: '13px'
+                                            }}
+                                        >
+                                            Ajukan Banding
                                         </button>
                                     )}
                                 </div>
@@ -259,6 +300,74 @@ const Login = () => {
                                 Ya, Lanjutkan
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+            {appealModal.show && (
+                <div className="login-popup-overlay" onClick={() => setAppealModal({ ...appealModal, show: false })}>
+                    <div className="login-popup-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
+                        <div className="login-popup-head">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#fff7ed', color: '#f97316', display: 'flex', alignItems: 'center', justifyCenter: 'center' }}>
+                                    <ShieldCheck size={20} />
+                                </div>
+                                <h3>Ajukan Banding</h3>
+                            </div>
+                            <button type="button" onClick={() => setAppealModal({ ...appealModal, show: false })}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <p style={{ marginBottom: '20px', fontSize: '14px', color: '#64748b' }}>
+                            Akun Anda sedang disuspend. Jika Anda merasa ini adalah kesalahan, silakan berikan alasan mengapa akun Anda harus diaktifkan kembali.
+                        </p>
+                        <form onSubmit={handleAppealSubmit}>
+                            <div className="modern-field" style={{ marginBottom: '25px' }}>
+                                <label style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', display: 'block' }}>Alasan Banding</label>
+                                <textarea 
+                                    required
+                                    value={appealModal.reason}
+                                    onChange={(e) => setAppealModal({ ...appealModal, reason: e.target.value })}
+                                    style={{ 
+                                        width: '100%', 
+                                        minHeight: '120px', 
+                                        padding: '16px', 
+                                        borderRadius: '16px', 
+                                        background: '#f8fafc', 
+                                        border: '2px solid #f1f5f9',
+                                        fontSize: '14px',
+                                        resize: 'none',
+                                        outline: 'none',
+                                        transition: 'all 0.2s'
+                                    }}
+                                    placeholder="Tuliskan alasan Anda di sini..."
+                                />
+                            </div>
+                            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                                <button 
+                                    type="button" 
+                                    onClick={() => setAppealModal({ ...appealModal, show: false })}
+                                    style={{ padding: '12px 24px', borderRadius: '14px', background: '#f1f5f9', color: '#64748b', fontWeight: 600, fontSize: '14px' }}
+                                >
+                                    Batal
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    disabled={appealModal.loading}
+                                    style={{ 
+                                        padding: '12px 24px', 
+                                        borderRadius: '14px', 
+                                        background: '#A46477', 
+                                        color: '#fff', 
+                                        fontWeight: 700, 
+                                        fontSize: '14px',
+                                        boxShadow: '0 10px 15px -3px rgba(164, 100, 119, 0.3)',
+                                        opacity: appealModal.loading ? 0.7 : 1
+                                    }}
+                                >
+                                    {appealModal.loading ? 'Mengirim...' : 'Kirim Banding'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

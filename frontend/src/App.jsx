@@ -19,6 +19,7 @@ import MessagesContainer from './pages/messages/MessagesContainer';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminVerifications from './pages/admin/AdminVerifications';
+import AdminAppeals from './pages/admin/AdminAppeals';
 import ConsultationSessions from './pages/ConsultationSessions';
 
 // Protected Route Component
@@ -61,6 +62,7 @@ function AppRoutes() {
             <Route path="/admin/dashboard" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute adminOnly><AdminUsers /></ProtectedRoute>} />
             <Route path="/admin/verifications" element={<ProtectedRoute adminOnly><AdminVerifications /></ProtectedRoute>} />
+            <Route path="/admin/appeals" element={<ProtectedRoute adminOnly><AdminAppeals /></ProtectedRoute>} />
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />

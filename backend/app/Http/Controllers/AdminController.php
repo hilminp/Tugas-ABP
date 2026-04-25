@@ -93,6 +93,9 @@ class AdminController extends Controller
         if ($action === 'suspend') {
             $reason = (string) $request->input('reason');
             $u->update(['is_suspended' => true, 'suspended_reason' => $reason]);
+            
+            // Revoke all tokens to kick user out immediately
+            $u->tokens()->delete();
         } else {
             $u->update(['is_suspended' => false, 'suspended_reason' => null]);
         }
@@ -159,8 +162,15 @@ class AdminController extends Controller
     {
         $post = Post::find($id);
         if (!$post) return response()->json(['message' => 'Post tidak ditemukan.'], 404);
-        $post->delete();
-        return response()->json(['message' => 'Post berhasil dihapus oleh admin.']);
+        
+        $reason = $request->input('reason', 'Melanggar ketentuan komunitas.');
+        
+        $post->update([
+            'is_deleted_by_admin' => true,
+            'deletion_reason' => $reason
+        ]);
+
+        return response()->json(['message' => 'Post berhasil ditandai sebagai dihapus oleh admin.']);
     }
 
     public function deleteComment(Request $request, $id)
@@ -169,5 +179,18 @@ class AdminController extends Controller
         if (!$comment) return response()->json(['message' => 'Komentar tidak ditemukan.'], 404);
         $comment->delete();
         return response()->json(['message' => 'Komentar berhasil dihapus oleh admin.']);
+    }
+
+    public function permanentDeletePost(Request $request, $id)
+    {
+        $post = Post::find($id);
+        if (!$post) return response()->json(['message' => 'Post tidak ditemukan.'], 404);
+        
+        if (!$request->user()->is_admin && $request->user()->id !== $post->user_id) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        $post->delete();
+        return response()->json(['message' => 'Post berhasil dihapus secara permanen.']);
     }
 }
