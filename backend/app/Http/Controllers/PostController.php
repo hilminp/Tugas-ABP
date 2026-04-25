@@ -22,6 +22,12 @@ class PostController extends Controller
             ->latest()
             ->get()
             ->map(function ($post) use ($request) {
+                // Handle moderation notice
+                if ($post->is_deleted_by_admin) {
+                    $post->body = "⚠️ [Postingan ini telah dihapus oleh admin. Alasan: " . ($post->deletion_reason ?? 'Melanggar ketentuan komunitas') . "]";
+                    $post->image = null;
+                }
+
                 $this->maskAnonymousUser($post->user);
                 
                 // Cek apakah user saat ini menyukai post ini

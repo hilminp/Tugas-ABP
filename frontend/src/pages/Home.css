@@ -328,38 +328,31 @@ button:focus {
     font-size: 14px;
 }
 
-.post-create {
+.post-create-card {
     background: #fff;
     border: 1px solid #efdeea;
-    border-radius: 14px;
-    margin: 18px 0;
-    padding: 16px;
+    border-radius: 20px;
+    margin: 18px 0 24px;
+    box-shadow: 0 4px 12px rgba(164, 100, 119, 0.05);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.post-create textarea {
-    width: 100%;
-    border: none;
-    resize: vertical;
-    min-height: 86px;
-    font-family: inherit;
-    outline: none;
+.post-create-card:focus-within {
+    border-color: #A46477;
+    box-shadow: 0 12px 30px rgba(164, 100, 119, 0.1);
+    transform: translateY(-2px);
 }
 
-.post-actions {
-    display: flex;
-    justify-content: space-between;
+.post-action-btn {
+    display: inline-flex;
     align-items: center;
-    margin-top: 10px;
-}
-
-.post-actions button {
-    border: none;
-    background: #955170;
-    color: #fff;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #fdf5f8;
+    color: #A46477;
     border-radius: 999px;
-    padding: 9px 20px;
     cursor: pointer;
-    font-weight: 600;
+    transition: all 0.2s ease;
 }
 
 .file-input-wrapper {
@@ -397,14 +390,21 @@ button:focus {
 .post-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
 }
 
-.post {
+.post-card-premium {
     background: #fff;
-    border-radius: 14px;
-    border: 1px solid #efdeea;
-    padding: 14px;
+    border-radius: 24px;
+    border: 1px solid #f1e4eb;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(164, 100, 119, 0.03);
+    transition: all 0.3s ease;
+}
+
+.post-card-premium:hover {
+    box-shadow: 0 10px 25px rgba(164, 100, 119, 0.08);
+    border-color: #edd5e3;
 }
 
 .post-author {
@@ -652,32 +652,95 @@ button:focus {
 }
 
 .session-item {
-    border: 1px solid #f0dde7;
-    border-radius: 10px;
-    padding: 10px;
-    margin-bottom: 8px;
+    border: none;
+    border-radius: 16px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    background: #A46477;
+    color: white;
+    box-shadow: 0 4px 12px rgba(164, 100, 119, 0.2);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.session-item small,
-.session-item span {
+.session-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(164, 100, 119, 0.3);
+    background: #8e5465;
+}
+
+.session-item small {
     display: block;
-    color: #8f7a85;
-    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 10px;
+    margin-bottom: 2px;
 }
 
 .session-item strong {
     display: block;
-    color: #5f4b56;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 1px;
+}
+
+.session-item span {
+    display: block;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 11px;
 }
 
 .session-item.muted {
-    opacity: 0.85;
+    background: #f8f0f4;
+    color: #8a7480;
+    box-shadow: none;
+    border: 1px solid #edd5e3;
+}
+
+.session-item.muted small {
+    color: #a77990;
+}
+
+.session-item.muted strong {
+    color: #5f4b56;
+}
+
+.session-item.muted span {
+    color: #b0a0a8;
 }
 
 .side-link {
-    color: #824863;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 10px;
+    background: #fdf2f7;
+    color: #A46477;
     text-decoration: none;
     font-size: 13px;
+    font-weight: 700;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    border: 1px solid #fbd8e1;
+}
+
+.side-link:hover {
+    background: #A46477;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(164, 100, 119, 0.15);
+}
+
+.side-link span {
+    font-size: 18px;
 }
 
 .activity-chart {
@@ -987,4 +1050,23 @@ button:focus {
     color: #b0919f;
     text-align: center;
     font-style: italic;
+}
+
+/* Moderated Post Styles */
+.moderated-notice-card {
+    border: 2px solid #fee2e2 !important;
+    background-color: #fef2f2 !important;
+    box-shadow: none !important;
+}
+
+.moderated-body-text {
+    background-color: white !important;
+    border: 1px solid #fee2e2 !important;
+    padding: 1.25rem !important;
+    border-radius: 1rem !important;
+    color: #ef4444 !important;
+    font-weight: 600 !important;
+    font-style: italic !important;
+    font-size: 0.875rem !important;
+    margin-bottom: 0 !important;
 }

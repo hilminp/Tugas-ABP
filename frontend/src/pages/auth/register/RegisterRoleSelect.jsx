@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import './RegisterRoleSelect.css';
 
@@ -27,6 +28,26 @@ const Feature = ({ icon, iconClass, children }) => (
 
 const RegisterRoleSelect = () => {
     const navigate = useNavigate();
+    const [modal, setModal] = useState({ isOpen: false, title: '', content: '' });
+
+    const openModal = (title, content) => {
+        setModal({ isOpen: true, title, content });
+    };
+
+    const modalData = {
+        safeSpaces: {
+            title: "Safe Spaces",
+            content: "Kami percaya setiap orang berhak punya ruang yang aman untuk bercerita. Di Curhatin, kamu bisa berbagi tanpa takut dihakimi, didengarkan dengan empati, dan merasa lebih tenang setelahnya."
+        },
+        philosophy: {
+            title: "Our Philosophy",
+            content: "Kami percaya bahwa setiap cerita itu penting. Curhatin hadir untuk menjadi tempat yang suportif, di mana kamu bisa merasa didengar, dipahami, dan menemukan arah yang lebih baik bersama orang yang tepat."
+        },
+        privacy: {
+            title: "Privacy",
+            content: "Privasi kamu adalah prioritas kami. Semua percakapan dan data dijaga dengan aman, sehingga kamu bisa berbagi dengan lebih nyaman tanpa khawatir informasi kamu disalahgunakan."
+        }
+    };
 
     return (
         <div className="rrs-page">
@@ -126,20 +147,54 @@ const RegisterRoleSelect = () => {
                     </p>
 
                     <nav className="rrs-footer-links" aria-label="Footer links">
-                        <a href="#">Safe Spaces</a>
+                        <button onClick={() => openModal(modalData.safeSpaces.title, modalData.safeSpaces.content)} className="rrs-footer-btn">Safe Spaces</button>
                         <span className="rrs-dot" aria-hidden="true" />
-                        <a href="#">Our Philosophy</a>
+                        <button onClick={() => openModal(modalData.philosophy.title, modalData.philosophy.content)} className="rrs-footer-btn">Our Philosophy</button>
                         <span className="rrs-dot" aria-hidden="true" />
-                        <a href="#">Privacy</a>
+                        <button onClick={() => openModal(modalData.privacy.title, modalData.privacy.content)} className="rrs-footer-btn">Privacy</button>
                     </nav>
                 </div>
 
-            </main>
+                <AnimatePresence>
+                    {modal.isOpen && (
+                        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setModal({ ...modal, isOpen: false })}
+                                className="absolute inset-0 bg-[#1A1416]/60 backdrop-blur-md"
+                            />
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                                className="relative z-10 bg-white rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden"
+                            >
+                                <div className="p-8">
+                                    <div className="w-12 h-12 bg-[#fdf2f5] rounded-2xl flex items-center justify-center text-[#A46477] mb-6">
+                                        <span className="material-symbols-outlined text-2xl">
+                                            {modal.title === 'Safe Spaces' ? 'verified_user' : 
+                                             modal.title === 'Our Philosophy' ? 'auto_awesome' : 'lock_person'}
+                                        </span>
+                                    </div>
+                                    <h2 className="text-2xl font-black text-slate-800 mb-4">{modal.title}</h2>
+                                    <p className="text-slate-600 leading-relaxed font-medium">
+                                        {modal.content}
+                                    </p>
+                                    <button 
+                                        onClick={() => setModal({ ...modal, isOpen: false })}
+                                        className="w-full mt-8 py-4 bg-[#A46477] text-white rounded-2xl font-bold hover:bg-[#8a5263] transition-all active:scale-95 shadow-lg shadow-[#A46477]/20"
+                                    >
+                                        Tutup
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
 
-            {/* Footer */}
-            <footer className="rrs-footer" style={{ position: 'relative', zIndex: 2 }}>
-                <p>© 2024 The Sanctuary • Intentional Design</p>
-            </footer>
+            </main>
 
         </div>
     );

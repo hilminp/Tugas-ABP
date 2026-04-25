@@ -108,12 +108,18 @@ const MessagesContainer = () => {
                     </div>
 
                     <div className="flex items-center gap-4 p-5 bg-primary/5 rounded-[2rem] transition-all hover:bg-primary/10 group cursor-default border border-primary/5">
-                        <div className="relative">
-                            <img 
-                                alt="User profile" 
-                                className="w-10 h-10 rounded-xl object-cover ring-2 ring-white shadow-md transition-all group-hover:ring-primary/20" 
-                                src={user?.profile_image ? `${STORAGE_BASE_URL}/${user.profile_image}` : "https://lh3.googleusercontent.com/a/default-user"} 
-                            />
+                        <div className="relative shrink-0">
+                            {user?.profile_image ? (
+                                <img 
+                                    alt="User profile" 
+                                    className="w-10 h-10 rounded-xl object-cover ring-2 ring-white shadow-md transition-all group-hover:ring-primary/20" 
+                                    src={`${STORAGE_BASE_URL}/${user.profile_image}`} 
+                                />
+                            ) : (
+                                <div className="w-10 h-10 rounded-xl bg-white ring-2 ring-white shadow-md flex items-center justify-center text-primary font-black text-sm">
+                                    {user?.name?.charAt(0).toUpperCase() || 'U'}
+                                </div>
+                            )}
                             <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-4 border-surface-container-lowest rounded-full shadow-sm"></div>
                         </div>
                         <div className="flex-1 overflow-hidden">
@@ -161,11 +167,17 @@ const MessagesContainer = () => {
                             >
                                 {friendId == f.id && <div className="absolute left-0 w-1 h-8 bg-primary rounded-r-full shadow-[2px_0_10px_rgba(136,77,96,0.2)]"></div>}
                                 <div className="relative shrink-0">
-                                    <img 
-                                        src={f.profile_image ? `${STORAGE_BASE_URL}/${f.profile_image}` : "https://lh3.googleusercontent.com/a/default-user"} 
-                                        className="w-10 h-10 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform duration-500 ring-2 ring-white" 
-                                        alt={f.name} 
-                                    />
+                                    {f.profile_image ? (
+                                        <img 
+                                            src={`${STORAGE_BASE_URL}/${f.profile_image}`} 
+                                            className="w-10 h-10 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform duration-500 ring-2 ring-white" 
+                                            alt={f.name} 
+                                        />
+                                    ) : (
+                                        <div className="w-10 h-10 rounded-xl bg-white shadow-sm ring-2 ring-white flex items-center justify-center text-primary font-bold text-sm">
+                                            {f.name?.charAt(0).toUpperCase() || 'U'}
+                                        </div>
+                                    )}
                                     <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full shadow-sm"></div>
                                 </div>
                                 <div className="flex-1 text-left overflow-hidden">
@@ -212,11 +224,17 @@ const MessagesContainer = () => {
                         <header className="sticky top-0 w-full z-50 flex justify-between items-center px-12 py-6 bg-white/30 backdrop-blur-md border-b border-white/50 shadow-[0_4px_24px_rgba(164,100,119,0.05)] animate-in slide-in-from-top duration-500">
                             <div className="flex items-center gap-6">
                                 <div className="relative group cursor-pointer">
-                                    <img 
-                                        alt={activeFriend?.name} 
-                                        className="w-10 h-10 rounded-xl object-cover ring-4 ring-white shadow-xl transition-all group-hover:scale-105" 
-                                        src={activeFriend?.profile_image ? `${STORAGE_BASE_URL}/${activeFriend.profile_image}` : "https://lh3.googleusercontent.com/a/default-user"} 
-                                    />
+                                    {activeFriend?.profile_image ? (
+                                        <img 
+                                            alt={activeFriend?.name} 
+                                            className="w-10 h-10 rounded-xl object-cover ring-4 ring-white shadow-xl transition-all group-hover:scale-105" 
+                                            src={`${STORAGE_BASE_URL}/${activeFriend.profile_image}`} 
+                                        />
+                                    ) : (
+                                        <div className="w-10 h-10 rounded-xl bg-white ring-4 ring-white shadow-xl flex items-center justify-center text-primary font-black text-lg">
+                                            {activeFriend?.name?.charAt(0).toUpperCase() || 'U'}
+                                        </div>
+                                    )}
                                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-4 border-white rounded-full shadow-md animate-pulse"></div>
                                 </div>
                                 <div>

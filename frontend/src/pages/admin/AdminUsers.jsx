@@ -206,6 +206,13 @@ const AdminUsers = () => {
             <span className="material-symbols-outlined">verified_user</span>
             <span>Verifikasi</span>
           </Link>
+          <Link
+            to="/admin/appeals"
+            className="flex items-center gap-3 px-4 py-3 text-teal-700/60 dark:text-teal-300/40 hover:bg-teal-100/40 dark:hover:bg-teal-800/20 transition-all rounded-lg group"
+          >
+            <span className="material-symbols-outlined">mail</span>
+            <span>Kotak Surat Banding</span>
+          </Link>
         </nav>
         <div className="px-4 py-6 border-t border-teal-100/10">
           <button
@@ -299,9 +306,14 @@ const AdminUsers = () => {
             <div className="flex items-center gap-3 border-l border-teal-100/20 pl-6">
               <div className="text-right">
                 <p className="text-sm font-semibold text-teal-900 dark:text-teal-50">{me?.name || 'Admin Utama'}</p>
-                <p className="text-xs text-teal-700/80 dark:text-teal-200/60">Administrator</p>
               </div>
-              <img alt="Administrator Profile" className="w-10 h-10 rounded-full object-cover border-2 border-primary-container shadow-sm" src={me?.profile_image ? `${STORAGE_BASE_URL}/${me.profile_image}` : "https://lh3.googleusercontent.com/aida-public/AB6AXuBm481M9tNd-xc5xbiKH6vBwwqPvECsmTBkvCgI5rCPIXYwst6G3CQRvLcybInnUcEpRcwg6rzK3ZDvMbk9oui86445Wilkp_iZLWEHc3cRPllF6klyfsTKO4xDngl3c-P94-0rtEcGNpcOxOtReGlNRLibuBOVnt93rgsi8epyI8mxPf8_v_VkeJhadFWtFTYojBYiOI-IREdst4dtsF8T6PRhP4Uccq16_vAOQiBC0OtqmwijX1DQonTPlvJLxTobFuX-J11qlGw"} />
+              {me?.profile_image ? (
+                <img alt="Administrator Profile" className="w-10 h-10 rounded-full object-cover border-2 border-primary-container shadow-sm" src={`${STORAGE_BASE_URL}/${me.profile_image}`} />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-white border-2 border-teal-100 flex items-center justify-center text-teal-800 font-bold shadow-sm">
+                  {me?.name?.charAt(0).toUpperCase() || 'A'}
+                </div>
+              )}
             </div>
           </div>
         </header>

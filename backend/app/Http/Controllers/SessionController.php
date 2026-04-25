@@ -20,7 +20,7 @@ class SessionController extends Controller
             if ($user->is_suspended) {
                 $msg = 'Akun Anda telah disuspend oleh admin.';
                 if ($user->suspended_reason) $msg .= ' Alasan: ' . $user->suspended_reason;
-                return response()->json(['message' => $msg], 403);
+                return response()->json(['message' => $msg, 'is_suspended' => true], 403);
             }
 
             if ($user->role == 'psikolog' && !$user->is_verified) {

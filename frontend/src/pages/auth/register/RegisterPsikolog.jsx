@@ -102,7 +102,7 @@ const RegisterPsikolog = () => {
             <nav className="fixed top-0 w-full z-50 bg-[#FCF7F8]/80 backdrop-blur-xl border-b border-[#d8c2c5]/30">
                 <div className="flex justify-between items-center px-8 py-3 max-w-7xl mx-auto">
                     <Link to="/" className="text-2xl font-bold tracking-tight text-[#1A1416]">
-                        The Ethereal Sanctuary
+                        Curhatin
                     </Link>
                     <div className="flex items-center gap-4 text-sm font-medium">
                         <span className="text-[#534346]">Sudah punya akun?</span>

@@ -43,7 +43,7 @@ const Welcome = () => {
                 <section className="hero-left">
                     <div className="chip-list">
                         <span>Anonim</span>
-                        <span>Gratis</span>
+                        <span>Psikolog</span>
                         <span>Privat</span>
                         <span>No Judgement</span>
                     </div>

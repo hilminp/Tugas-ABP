@@ -31,6 +31,16 @@ const Sidebar = () => {
         }
     };
 
+    const handleHomeClick = (e) => {
+        if (window.location.pathname === '/home') {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => {
+                window.location.reload();
+            }, 300);
+        }
+    };
+
     return (
         <aside className="sidebar">
             <div className="sidebar-brand" onClick={() => navigate('/home')}>
@@ -59,7 +69,7 @@ const Sidebar = () => {
             </div>
 
             <nav className="sidebar-nav">
-                <Link to="/home" className="nav-item">
+                <Link to="/home" className="nav-item" onClick={handleHomeClick}>
                     <Home size={20} />
                     <span>Beranda</span>
                 </Link>
