@@ -107,6 +107,7 @@ class ConsultationSessionController extends Controller
         $session->update([
             'user_id' => $user->id,
             'status' => 'pending_approval',
+            'is_seen' => false,
         ]);
 
         return response()->json(['message' => 'Permintaan sesi berhasil dikirim. Menunggu persetujuan psikolog.', 'session' => $session]);
@@ -126,7 +127,10 @@ class ConsultationSessionController extends Controller
             return response()->json(['message' => 'Sesi tidak dalam status menunggu persetujuan.'], 400);
         }
 
-        $session->update(['status' => 'booked']);
+        $session->update([
+            'status' => 'booked',
+            'is_seen' => false,
+        ]);
 
         return response()->json(['message' => 'Sesi berhasil dikonfirmasi.', 'session' => $session]);
     }
@@ -162,7 +166,8 @@ class ConsultationSessionController extends Controller
 
         $session->update([
             'ended_at' => now(),
-            'status' => 'completed'
+            'status' => 'completed',
+            'is_seen' => false,
         ]);
 
         return response()->json(['message' => 'Sesi telah berakhir. Chat telah dikunci.', 'session' => $session]);
@@ -203,5 +208,43 @@ class ConsultationSessionController extends Controller
             ->get();
 
         return response()->json(['sessions' => $sessions]);
+    }
+
+    public function notifications(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->role === 'psikolog') {
+            // Notifications for psychologist: new bookings (pending_approval) that are unseen
+            $count = ConsultationSession::where('psychologist_id', $user->id)
+                ->where('status', 'pending_approval')
+                ->where('is_seen', false)
+                ->count();
+        } else {
+            // Notifications for user: accepted bookings (booked) or completed that are unseen
+            $count = ConsultationSession::where('user_id', $user->id)
+                ->whereIn('status', ['booked', 'completed'])
+                ->where('is_seen', false)
+                ->count();
+        }
+
+        return response()->json(['count' => $count]);
+    }
+
+    public function markAsSeen(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->role === 'psikolog') {
+            ConsultationSession::where('psychologist_id', $user->id)
+                ->where('status', 'pending_approval')
+                ->update(['is_seen' => true]);
+        } else {
+            ConsultationSession::where('user_id', $user->id)
+                ->whereIn('status', ['booked', 'completed'])
+                ->update(['is_seen' => true]);
+        }
+
+        return response()->json(['message' => 'Notifikasi jadwal ditandai telah dilihat.']);
     }
 }

@@ -55,6 +55,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Friendships
     Route::post('/friend/{id}', [FriendshipController::class, 'send']);
     Route::get('/friend-requests', [FriendshipController::class, 'incoming']);
+    Route::get('/friend-notifications', [FriendshipController::class, 'notifications']);
+    Route::post('/friend-requests/mark-seen', [FriendshipController::class, 'markAsSeen']);
     Route::get('/friend-statuses/psychologists', [FriendshipController::class, 'myPsychologistStatuses']);
     Route::post('/friend/{id}/accept', [FriendshipController::class, 'accept']);
     Route::post('/friend/{id}/reject', [FriendshipController::class, 'reject']);
@@ -86,6 +88,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/consultation-sessions/{id}/start', [ConsultationSessionController::class, 'start']);
     Route::post('/consultation-sessions/{id}/end', [ConsultationSessionController::class, 'end']);
     Route::delete('/consultation-sessions/{id}', [ConsultationSessionController::class, 'cancel']);
+    
+    // Notifications
+    Route::get('/session-notifications', [ConsultationSessionController::class, 'notifications']);
+    Route::post('/sessions/mark-seen', [ConsultationSessionController::class, 'markAsSeen']);
     Route::get('/my-booked-sessions', [ConsultationSessionController::class, 'myBookedSessions']);
 
     // Admin Group

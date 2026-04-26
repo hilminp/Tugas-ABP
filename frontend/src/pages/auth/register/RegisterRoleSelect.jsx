@@ -143,7 +143,7 @@ const RegisterRoleSelect = () => {
                 <div className="rrs-secondary-nav">
                     <p className="rrs-signin-text">
                         Udah punya akun?
-                        <Link to="/login" className="rrs-signin-link">Udah punya akun?</Link>
+                        <Link to="/login" className="rrs-signin-link">Masuk Yuk </Link>
                     </p>
 
                     <nav className="rrs-footer-links" aria-label="Footer links">

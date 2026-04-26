@@ -110,7 +110,7 @@ const Welcome = () => {
             <footer className="landing-footer">
                 <div className="footer-brand">
                     
-                    <p>© 2026 Editorial Sanctuary. Kisahmu adalah prioritas kami.</p>
+                    <p>© 2026 Curhatin. Kisahmu adalah prioritas kami.</p>
                 </div>
                 <div className="footer-links">
                     <button type="button" onClick={() => setActivePopup('privacy')}>Privacy Policy</button>

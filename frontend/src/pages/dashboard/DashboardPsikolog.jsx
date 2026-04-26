@@ -36,6 +36,9 @@ const DashboardPsikolog = () => {
         }
     });
 
+    const [notifCount, setNotifCount] = useState(0);
+    const [sessionNotifCount, setSessionNotifCount] = useState(0);
+
     useEffect(() => {
         localStorage.setItem('hidden_posts', JSON.stringify(hiddenPostIds));
     }, [hiddenPostIds]);
@@ -66,6 +69,39 @@ const DashboardPsikolog = () => {
         fetchReviews();
         fetchPaidAnonymousActivity();
         fetchSessions();
+
+        // Polling notifications
+        const fetchNotif = async () => {
+            try {
+                const res = await api.get(`/friend-notifications?t=${new Date().getTime()}`);
+                setNotifCount(res.data.count || 0);
+            } catch (e) {}
+        };
+        const fetchSessionNotif = async () => {
+            try {
+                const res = await api.get(`/session-notifications?t=${new Date().getTime()}`);
+                setSessionNotifCount(res.data.count || 0);
+            } catch (e) {}
+        };
+
+        fetchNotif();
+        fetchSessionNotif();
+
+        const interval = setInterval(() => {
+            fetchNotif();
+            fetchSessionNotif();
+        }, 30000);
+
+        const handleFriendSeen = () => setNotifCount(0);
+        const handleSessionSeen = () => setSessionNotifCount(0);
+        window.addEventListener('friendNotifSeen', handleFriendSeen);
+        window.addEventListener('sessionNotifSeen', handleSessionSeen);
+
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('friendNotifSeen', handleFriendSeen);
+            window.removeEventListener('sessionNotifSeen', handleSessionSeen);
+        };
     }, []);
 
     const fetchSessions = async () => {
@@ -341,10 +377,12 @@ const DashboardPsikolog = () => {
                     <Link className="flex items-center gap-3 px-4 py-3 rounded-lg text-stone-500 hover:bg-stone-100 transition-colors active:scale-95 duration-150" to="/friend-requests">
                         <span className="material-symbols-outlined">history</span>
                         <span className="font-['Plus_Jakarta_Sans'] font-medium">Riwayat</span>
+                        {notifCount > 0 && <span className="notif-badge">{notifCount}</span>}
                     </Link>
                     <Link className="flex items-center gap-3 px-4 py-3 rounded-lg text-stone-500 hover:bg-stone-100 transition-colors active:scale-95 duration-150" to="/sessions">
                         <span className="material-symbols-outlined">calendar_today</span>
                         <span className="font-['Plus_Jakarta_Sans'] font-medium">Jadwal Sesi</span>
+                        {sessionNotifCount > 0 && <span className="notif-badge">{sessionNotifCount}</span>}
                     </Link>
                     <Link className="flex items-center gap-3 px-4 py-3 rounded-lg text-stone-500 hover:bg-stone-100 transition-colors active:scale-95 duration-150" to="/profile">
                         <span className="material-symbols-outlined">person</span>
@@ -371,15 +409,6 @@ const DashboardPsikolog = () => {
                     </div>
                     <div className="flex items-center gap-6">
                         <div className="flex items-center gap-4">
-                            <button className="relative p-2 text-stone-600 hover:text-[#A46477] transition-all active:opacity-80" type="button">
-                                <span className="material-symbols-outlined">notifications</span>
-                                {incomingRequests.length > 0 && (
-                                    <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-[#ef4444] text-white text-[10px] font-bold inline-flex items-center justify-center">
-                                        {incomingRequests.length}
-                                    </span>
-                                )}
-                            </button>
-                            <div className="h-8 w-[1px] bg-stone-200 mx-2" />
                             <div className="flex items-center gap-2">
                                 <span className="text-sm font-bold text-stone-700 hidden sm:block">{psychologistName}</span>
                                 <img alt="Psychologist Avatar" className="w-8 h-8 rounded-full object-cover" src={profileImageUrl} />

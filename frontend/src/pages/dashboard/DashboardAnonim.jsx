@@ -661,6 +661,7 @@ const DashboardAnonim = () => {
                                                     {psychologists.map((psychologist) => {
                                                         const status = psychologistStatuses[psychologist.id];
                                                         const isAccepted = status === 'accepted';
+                                                        const isRejected = status === 'rejected';
                                                         const isPending = status === 'pending' || requestedPsychologistIds.includes(psychologist.id);
                                                         const isRequestDisabled = sendingRequestId === psychologist.id || isPending || isAccepted;
                                                         return (
@@ -700,6 +701,7 @@ const DashboardAnonim = () => {
                                                                             : sendingRequestId === psychologist.id ? 'Mengirim...'
                                                                             : isAccepted ? 'Mulai Konsultasi'
                                                                             : isPending ? 'Permintaan Terkirim'
+                                                                            : isRejected ? 'Ajukan Ulang'
                                                                             : 'Konsultasi'}
                                                                     </button>
                                                                     {isAccepted && (

@@ -17,6 +17,7 @@ class ConsultationSession extends Model
         'status',
         'started_at',
         'ended_at',
+        'is_seen',
     ];
 
     public function psychologist()

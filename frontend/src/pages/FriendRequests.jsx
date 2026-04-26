@@ -1,19 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
+import { useAuth } from '../hooks/useAuth';
 import Skeleton from '../components/ui/Skeleton';
 import { PSYCHOLOGIST_CATEGORIES } from '../constants/psychologistCategories';
 import './FriendRequests.css';
 
 const FriendRequests = () => {
+    const { user } = useAuth();
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [actionLoadingId, setActionLoadingId] = useState(null);
     const [statusModal, setStatusModal] = useState({ isOpen: false, type: '', title: '', message: '' });
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: '', message: '', action: null });
 
+    const isPsychologist = user?.role === 'psikolog';
+
     useEffect(() => {
         fetchRequests();
+        markAsSeen();
     }, []);
 
     const fetchRequests = async () => {
@@ -24,6 +29,15 @@ const FriendRequests = () => {
             console.error("Failed to fetch requests", err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const markAsSeen = async () => {
+        try {
+            await api.post('/friend-requests/mark-seen');
+            window.dispatchEvent(new Event('friendNotifSeen'));
+        } catch (err) {
+            console.error("Failed to mark as seen", err);
         }
     };
 
@@ -89,7 +103,11 @@ const FriendRequests = () => {
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-3xl font-black text-[#A46477] tracking-tight">Riwayat Permintaan</h1>
-                        <p className="text-stone-500 mt-1">Kelola semua permintaan konsultasi dari Teman Curhat Anda.</p>
+                        <p className="text-stone-500 mt-1">
+                            {isPsychologist 
+                                ? 'Kelola semua permintaan konsultasi dari Teman Curhat Anda.' 
+                                : 'Lihat status permintaan konsultasi yang Anda kirimkan ke Psikolog.'}
+                        </p>
                     </div>
                     <Link to="/home" className="group flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-md border border-stone-200 rounded-xl text-stone-600 font-bold text-sm hover:bg-white hover:text-[#A46477] hover:border-[#A46477]/30 hover:shadow-[0_8px_16px_rgba(164,100,119,0.1)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-300 shadow-sm">
                         <span className="material-symbols-outlined text-lg transition-transform duration-300 group-hover:-translate-x-1">arrow_back</span>
@@ -121,80 +139,89 @@ const FriendRequests = () => {
                         </div>
                         <h3 className="text-xl font-bold text-stone-800">Belum Ada Permintaan</h3>
                         <p className="text-stone-500 mt-2 max-w-sm mx-auto">
-                            Daftar permintaan konsultasi Anda akan muncul di sini setelah ada Teman Curhat yang menghubungi Anda.
+                            {isPsychologist 
+                                ? 'Daftar permintaan konsultasi Anda akan muncul di sini setelah ada Teman Curhat yang menghubungi Anda.'
+                                : 'Anda belum pernah mengirimkan permintaan konsultasi ke Psikolog manapun.'}
                         </p>
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        {requests.map(r => (
-                            <div key={r.id} className="request-card group bg-white/90 backdrop-blur-xl border border-[rgba(255,182,193,0.6)] rounded-2xl p-6 shadow-[0_24px_48px_rgba(136,77,96,0.15)] hover:shadow-[0_30px_60px_rgba(136,77,96,0.2)] hover:-translate-y-1 transition-all duration-300">
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-14 h-14 rounded-full bg-[#A46477]/10 flex items-center justify-center text-[#A46477] font-black text-xl border-2 border-[#A46477]/20">
-                                            {r.requester?.name?.charAt(0).toUpperCase() || 'P'}
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <h3 className="font-bold text-lg text-slate-800">{r.requester?.name}</h3>
-                                                <span className="px-2 py-0.5 bg-stone-100 text-stone-500 text-[10px] font-bold rounded uppercase">Anonim</span>
+                        {requests.map(r => {
+                            const displayUser = isPsychologist ? r.requester : r.recipient;
+                            const statusLabel = r.status === 'pending' ? 'waiting' : (r.status === 'accepted' ? 'disetujui' : 'ditolak');
+                            
+                            return (
+                                <div key={r.id} className="request-card group bg-white/90 backdrop-blur-xl border border-[rgba(255,182,193,0.6)] rounded-2xl p-6 shadow-[0_24px_48px_rgba(136,77,96,0.15)] hover:shadow-[0_30px_60px_rgba(136,77,96,0.2)] hover:-translate-y-1 transition-all duration-300">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-14 h-14 rounded-full bg-[#A46477]/10 flex items-center justify-center text-[#A46477] font-black text-xl border-2 border-[#A46477]/20">
+                                                {displayUser?.name?.charAt(0).toUpperCase() || 'P'}
                                             </div>
-                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
-                                                <div className="flex items-center gap-1.5 text-sm text-stone-500">
-                                                    <span className="material-symbols-outlined text-lg text-[#A46477]">category</span>
-                                                    <span>{getCategoryLabel(r.category)}</span>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className="font-bold text-lg text-slate-800">{displayUser?.name}</h3>
+                                                    <span className="px-2 py-0.5 bg-stone-100 text-stone-500 text-[10px] font-bold rounded uppercase">
+                                                        {isPsychologist ? 'Anonim' : 'Psikolog'}
+                                                    </span>
                                                 </div>
-                                                <div className="flex items-center gap-1.5 text-sm text-stone-500">
-                                                    <span className="material-symbols-outlined text-lg text-[#A46477]">schedule</span>
-                                                    <span>{formatRequestTime(r.created_at)}</span>
+                                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
+                                                    <div className="flex items-center gap-1.5 text-sm text-stone-500">
+                                                        <span className="material-symbols-outlined text-lg text-[#A46477]">category</span>
+                                                        <span>{getCategoryLabel(r.category)}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5 text-sm text-stone-500">
+                                                        <span className="material-symbols-outlined text-lg text-[#A46477]">schedule</span>
+                                                        <span>{formatRequestTime(r.created_at)}</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-3">
-                                        <div className={`mr-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider
-                                            ${r.status === 'pending' ? 'bg-amber-100 text-amber-600'
-                                            : r.status === 'accepted' ? 'bg-emerald-100 text-emerald-600'
-                                            : 'bg-red-100 text-red-600'}`}>
-                                            {r.status === 'pending' ? 'waiting' : r.status}
                                         </div>
 
-                                        {r.status === 'pending' && (
-                                            <>
-                                                <button 
-                                                    className="px-6 py-2.5 bg-[#22c55e] text-white rounded-xl font-bold text-sm hover:bg-[#16a34a] active:scale-95 transition-all shadow-lg shadow-[#22c55e]/20 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-                                                    onClick={() => handleAccept(r.user_id)}
-                                                    disabled={actionLoadingId === r.user_id}
-                                                >
-                                                    {actionLoadingId === r.user_id ? (
-                                                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                    ) : (
-                                                        <>
-                                                            <span className="material-symbols-outlined text-sm">check</span>
-                                                            Terima
-                                                        </>
-                                                    )}
-                                                </button>
-                                                <button 
-                                                    className="px-6 py-2.5 bg-white text-stone-600 border border-stone-200 rounded-xl font-bold text-sm hover:bg-stone-50 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-                                                    onClick={() => handleReject(r.user_id)}
-                                                    disabled={actionLoadingId === r.user_id}
-                                                >
-                                                    {actionLoadingId === r.user_id ? (
-                                                        <span className="w-4 h-4 border-2 border-stone-200 border-t-stone-500 rounded-full animate-spin" />
-                                                    ) : (
-                                                        <>
-                                                            <span className="material-symbols-outlined text-sm">close</span>
-                                                            Tolak
-                                                        </>
-                                                    )}
-                                                </button>
-                                            </>
-                                        )}
+                                        <div className="flex items-center gap-3">
+                                            <div className={`mr-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider
+                                                ${r.status === 'pending' ? 'bg-amber-100 text-amber-600'
+                                                : r.status === 'accepted' ? 'bg-emerald-100 text-emerald-600'
+                                                : 'bg-red-100 text-red-600'}`}>
+                                                {statusLabel}
+                                            </div>
+
+                                            {isPsychologist && r.status === 'pending' && (
+                                                <>
+                                                    <button 
+                                                        className="px-6 py-2.5 bg-[#22c55e] text-white rounded-xl font-bold text-sm hover:bg-[#16a34a] active:scale-95 transition-all shadow-lg shadow-[#22c55e]/20 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                                                        onClick={() => handleAccept(r.user_id)}
+                                                        disabled={actionLoadingId === r.user_id}
+                                                    >
+                                                        {actionLoadingId === r.user_id ? (
+                                                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                        ) : (
+                                                            <>
+                                                                <span className="material-symbols-outlined text-sm">check</span>
+                                                                Terima
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                    <button 
+                                                        className="px-6 py-2.5 bg-white text-stone-600 border border-stone-200 rounded-xl font-bold text-sm hover:bg-stone-50 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                                                        onClick={() => handleReject(r.user_id)}
+                                                        disabled={actionLoadingId === r.user_id}
+                                                    >
+                                                        {actionLoadingId === r.user_id ? (
+                                                            <span className="w-4 h-4 border-2 border-stone-200 border-t-stone-500 rounded-full animate-spin" />
+                                                        ) : (
+                                                            <>
+                                                                <span className="material-symbols-outlined text-sm">close</span>
+                                                                Tolak
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>
