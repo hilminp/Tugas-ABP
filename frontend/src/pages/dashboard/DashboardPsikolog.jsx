@@ -638,42 +638,7 @@ const DashboardPsikolog = () => {
                                 )}
                             </section>
 
-                            <section className="bg-[#A46477] text-white rounded-2xl p-6 shadow-xl shadow-primary/20">
-                                <div className="flex items-center justify-between mb-6">
-                                    <div className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-2xl">forum</span>
-                                        <h3 className="text-lg font-bold">Antrean Chat</h3>
-                                    </div>
-                                    <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">LANGSUNG</span>
-                                </div>
-                                <div className="bg-white/10 rounded-xl p-4 border border-white/10 mb-4">
-                                    <p className="text-sm text-white/80 mb-1">Sesi Menunggu</p>
-                                    <p className="text-4xl font-black">12</p>
-                                    <div className="mt-2 flex items-center gap-2 text-xs text-white/60">
-                                        <span className="material-symbols-outlined text-sm">schedule</span>
-                                        <span>Rata-rata tunggu: 5 menit</span>
-                                    </div>
-                                </div>
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                                            <span className="text-sm font-medium">Budi Santoso</span>
-                                        </div>
-                                        <button type="button" className="text-xs font-bold underline">Mulai</button>
-                                    </div>
-                                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 opacity-80">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-2 h-2 bg-yellow-400 rounded-full" />
-                                            <span className="text-sm font-medium">Linda W.</span>
-                                        </div>
-                                        <span className="text-[10px]">2m lalu</span>
-                                    </div>
-                                </div>
-                                <button className="w-full mt-6 py-3 bg-white text-[#A46477] rounded-xl font-bold hover:bg-stone-100 transition-colors active:scale-95">
-                                    Buka Panel Konsultasi
-                                </button>
-                            </section>
+
                              <section className="bg-white border border-[#edd8e3] rounded-3xl p-6 shadow-sm overflow-hidden relative">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl" />
                                 <div className="relative z-10">

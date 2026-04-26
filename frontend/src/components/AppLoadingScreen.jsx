@@ -1,5 +1,5 @@
 import React from 'react';
-import logoCurhatin from '../assets/logoCurhatin.png';
+import logoFinal from '../assets/LogoFinal.png';
 import './AppLoadingScreen.css';
 
 const AppLoadingScreen = ({ progress = 65 }) => {
@@ -19,7 +19,7 @@ const AppLoadingScreen = ({ progress = 65 }) => {
         <div className="loading-logo-wrap breathing-logo">
           <div className="loading-logo-glow" />
           <div className="loading-logo-shell">
-            <img src={logoCurhatin} alt="Curhatin Logo" />
+            <img src={logoFinal} alt="Curhatin Logo" />
           </div>
         </div>
 
@@ -33,8 +33,8 @@ const AppLoadingScreen = ({ progress = 65 }) => {
           </div>
 
           <div className="loading-copy">
-            <p>Preparing your sanctuary...</p>
-            <small>Taking a moment just for you</small>
+            <p>Mepersiapkan Curhatin ...</p>
+            <small>Meluangkan waktu sejenak hanya untuk Anda</small>
           </div>
         </div>
       </main>

@@ -1092,11 +1092,6 @@ const DashboardAnonim = () => {
                                 </div>
                             </div>
 
-                            <div className="quick-return-card">
-                                <h3>Pesan Kembali Cepat</h3>
-                                <p>Lanjutkan progresmu dengan konselor yang sama.</p>
-                                <Link to="/messages" className="quick-return-button">Pesan Sekarang</Link>
-                            </div>
                         </aside>
                     </div>
 

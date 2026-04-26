@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../../lib/api';
 import { PSYCHOLOGIST_CATEGORIES } from '../../../constants/psychologistCategories';
 import { POPULAR_BANKS } from '../../../constants/bankList';
+import logoFinal from '../../../assets/LogoFinal.png';
 
 const RegisterPsikolog = () => {
     const [formData, setFormData] = useState({
@@ -101,7 +102,8 @@ const RegisterPsikolog = () => {
             {/* Navbar */}
             <nav className="fixed top-0 w-full z-50 bg-[#FCF7F8]/80 backdrop-blur-xl border-b border-[#d8c2c5]/30">
                 <div className="flex justify-between items-center px-8 py-3 max-w-7xl mx-auto">
-                    <Link to="/" className="text-2xl font-bold tracking-tight text-[#1A1416]">
+                    <Link to="/" className="flex items-center gap-2 text-2xl font-bold tracking-tight text-[#1A1416]">
+                        <img src={logoFinal} alt="Logo" className="h-9 w-auto" />
                         Curhatin
                     </Link>
                     <div className="flex items-center gap-4 text-sm font-medium">
@@ -132,7 +134,7 @@ const RegisterPsikolog = () => {
                             Jadilah Cahaya di Balik <span className="text-[#A46477]">Setiap Cerita.</span>
                         </h1>
                         <p className="text-base text-[#d8c2c5] leading-relaxed font-light">
-                            Misi kami adalah memberikan ruang aman bagi setiap jiwa untuk berbicara. Sebagai Psikolog, Anda adalah pilar penyembuhan di The Ethereal Sanctuary.
+                            Misi kami adalah memberikan ruang aman bagi setiap jiwa untuk berbicara. Sebagai Psikolog, kamu adalah pilar penyembuhan di Curhatin.
                         </p>
                     </div>
                 </section>
@@ -336,7 +338,7 @@ const RegisterPsikolog = () => {
                                     <button type="button" onClick={() => setShowSyarat(true)} className="text-[#A46477] font-bold hover:underline cursor-pointer">Syarat &amp; Ketentuan</button>
                                     {' '}serta{' '}
                                     <button type="button" onClick={() => setShowKodeEtik(true)} className="text-[#A46477] font-bold hover:underline cursor-pointer">Kode Etik Psikolog</button>
-                                    {' '}yang berlaku di The Ethereal Sanctuary.
+                                    {' '}yang berlaku di Curhatin.
                                 </label>
                             </div>
 

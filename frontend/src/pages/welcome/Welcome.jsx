@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import shieldLockIcon from '../../assets/logo_kunci_pink_shield.svg';
+import logoFinal from '../../assets/LogoFinal.png';
 import './Welcome.css';
 
 const Welcome = () => {
@@ -33,7 +34,7 @@ const Welcome = () => {
         <div className="editorial-landing">
             <nav className="top-nav">
                 <div className="brand">
-                    <span className="brand-heart">❤</span>
+                    <img src={logoFinal} alt="Curhatin Logo" className="brand-logo" />
                     <span className="brand-name">Curhatin</span>
                 </div>
 
@@ -108,10 +109,7 @@ const Welcome = () => {
 
             <footer className="landing-footer">
                 <div className="footer-brand">
-                    <div className="brand">
-                        <span className="brand-heart">❤</span>
-                        <span className="brand-name">Curhatin</span>
-                    </div>
+                    
                     <p>© 2026 Editorial Sanctuary. Kisahmu adalah prioritas kami.</p>
                 </div>
                 <div className="footer-links">

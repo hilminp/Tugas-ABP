@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../../lib/api';
+import logoFinal from '../../../assets/LogoFinal.png';
 
 const RegisterAnonim = () => {
     const [formData, setFormData] = useState({
@@ -55,7 +56,8 @@ const RegisterAnonim = () => {
             {/* Navbar */}
             <nav className="fixed top-0 w-full z-50 bg-[#FCF7F8]/80 backdrop-blur-xl border-b border-[#d8c2c5]/30">
                 <div className="flex justify-between items-center px-8 py-3 max-w-7xl mx-auto">
-                    <Link to="/" className="text-2xl font-bold tracking-tight text-[#1A1416]">
+                    <Link to="/" className="flex items-center gap-2 text-2xl font-bold tracking-tight text-[#1A1416]">
+                        <img src={logoFinal} alt="Logo" className="h-9 w-auto" />
                         Curhatin
                     </Link>
                     <div className="flex items-center gap-4 text-sm font-medium">

@@ -784,29 +784,6 @@ button:focus {
     font-size: 13px;
 }
 
-.quick-return-card {
-    background: #5e8a5f;
-    color: #fff;
-}
-
-.quick-return-card h3 {
-    margin: 0 0 8px;
-}
-
-.quick-return-card p {
-    margin: 0 0 12px;
-    font-size: 13px;
-}
-
-.quick-return-button {
-    display: inline-block;
-    background: #fff;
-    color: #456546;
-    text-decoration: none;
-    border-radius: 999px;
-    padding: 8px 14px;
-    font-weight: 600;
-}
 
 .floating-action {
     position: fixed;

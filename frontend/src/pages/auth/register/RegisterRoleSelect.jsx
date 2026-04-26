@@ -36,15 +36,15 @@ const RegisterRoleSelect = () => {
 
     const modalData = {
         safeSpaces: {
-            title: "Safe Spaces",
+            title: "Ruang Aman",
             content: "Kami percaya setiap orang berhak punya ruang yang aman untuk bercerita. Di Curhatin, kamu bisa berbagi tanpa takut dihakimi, didengarkan dengan empati, dan merasa lebih tenang setelahnya."
         },
         philosophy: {
-            title: "Our Philosophy",
+            title: "Tentang Kami",
             content: "Kami percaya bahwa setiap cerita itu penting. Curhatin hadir untuk menjadi tempat yang suportif, di mana kamu bisa merasa didengar, dipahami, dan menemukan arah yang lebih baik bersama orang yang tepat."
         },
         privacy: {
-            title: "Privacy",
+            title: "Privasi",
             content: "Privasi kamu adalah prioritas kami. Semua percakapan dan data dijaga dengan aman, sehingga kamu bisa berbagi dengan lebih nyaman tanpa khawatir informasi kamu disalahgunakan."
         }
     };
@@ -63,7 +63,7 @@ const RegisterRoleSelect = () => {
                 {/* Brand */}
                 <div className="rrs-brand">
                     <h1 className="rrs-brand-title">Curhatin</h1>
-                    <p className="rrs-brand-sub">Step into your digital sanctuary.</p>
+                    <p className="rrs-brand-sub">Masuk ke ruang aman digitalmu.</p>
                 </div>
 
                 {/* Registration path cards */}
@@ -77,18 +77,18 @@ const RegisterRoleSelect = () => {
                             </div>
                             <h2 className="rrs-card-title">Anonim</h2>
                             <p className="rrs-card-desc">
-                                Seek peace and clarity without judgment. Share your heart in a
-                                space built for absolute privacy and empathy.
+                                Lagi pengen cerita tapi takut di-judge? 
+                                Di sini kamu bisa bebas ngomong apa aja, tanpa harus nunjukin siapa kamu.
                             </p>
                         </div>
 
                         <div className="rrs-card-footer">
                             <ul className="rrs-feature-list">
                                 <Feature icon="check_circle" iconClass="primary">
-                                    No real name required
+                                    Nggak perlu pakai nama asli
                                 </Feature>
                                 <Feature icon="check_circle" iconClass="primary">
-                                    Encrypted personal diaries
+                                    Catatan kamu aman & terenkripsi
                                 </Feature>
                             </ul>
 
@@ -97,7 +97,7 @@ const RegisterRoleSelect = () => {
                                 onClick={() => navigate('/register/anonim')}
                                 type="button"
                             >
-                                Start Your Journey
+                                Mulai Cerita Yuk
                                 <Icon name="arrow_forward" />
                             </button>
                         </div>
@@ -111,18 +111,18 @@ const RegisterRoleSelect = () => {
                             </div>
                             <h2 className="rrs-card-title">Psikolog</h2>
                             <p className="rrs-card-desc">
-                                Join our circle of professionals. Guide others through their fog
-                                with your expertise and compassionate voice.
+                                Punya keahlian dan hati buat bantu orang lain? 
+                                Yuk jadi bagian dari Curhatin dan temani mereka yang lagi butuh didengar.
                             </p>
                         </div>
 
                         <div className="rrs-card-footer">
                             <ul className="rrs-feature-list">
                                 <Feature icon="verified" iconClass="tertiary">
-                                    Verified professional badge
+                                    Akun profesional terverifikasi
                                 </Feature>
                                 <Feature icon="verified" iconClass="tertiary">
-                                    Secure consultation portal
+                                    Konsultasi aman & nyaman
                                 </Feature>
                             </ul>
 
@@ -131,7 +131,7 @@ const RegisterRoleSelect = () => {
                                 onClick={() => navigate('/register/psikolog')}
                                 type="button"
                             >
-                                Apply to Guide
+                                Gabung Jadi Psikolog
                                 <Icon name="assignment_ind" />
                             </button>
                         </div>
@@ -142,16 +142,16 @@ const RegisterRoleSelect = () => {
                 {/* Secondary navigation */}
                 <div className="rrs-secondary-nav">
                     <p className="rrs-signin-text">
-                        Already part of the sanctuary?
-                        <Link to="/login" className="rrs-signin-link">Sign in here</Link>
+                        Udah punya akun?
+                        <Link to="/login" className="rrs-signin-link">Udah punya akun?</Link>
                     </p>
 
                     <nav className="rrs-footer-links" aria-label="Footer links">
-                        <button onClick={() => openModal(modalData.safeSpaces.title, modalData.safeSpaces.content)} className="rrs-footer-btn">Safe Spaces</button>
+                        <button onClick={() => openModal(modalData.safeSpaces.title, modalData.safeSpaces.content)} className="rrs-footer-btn">Ruang aman</button>
                         <span className="rrs-dot" aria-hidden="true" />
-                        <button onClick={() => openModal(modalData.philosophy.title, modalData.philosophy.content)} className="rrs-footer-btn">Our Philosophy</button>
+                        <button onClick={() => openModal(modalData.philosophy.title, modalData.philosophy.content)} className="rrs-footer-btn">Tentang Kami</button>
                         <span className="rrs-dot" aria-hidden="true" />
-                        <button onClick={() => openModal(modalData.privacy.title, modalData.privacy.content)} className="rrs-footer-btn">Privacy</button>
+                        <button onClick={() => openModal(modalData.privacy.title, modalData.privacy.content)} className="rrs-footer-btn">Privasi</button>
                     </nav>
                 </div>
 
