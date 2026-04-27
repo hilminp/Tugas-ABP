@@ -33,7 +33,7 @@ const AppLoadingScreen = ({ progress = 65 }) => {
           </div>
 
           <div className="loading-copy">
-            <p>Mempersiapkan Ruang Aman...</p>
+            <p>Mempersiapkan Curhatin anda...</p>
             <small>Meluangkan waktu sejenak hanya untuk Anda</small>
           </div>
         </div>

@@ -93,7 +93,6 @@ class FriendshipController extends Controller
 
         if ($user->role === 'psikolog') {
             $requests = Friendship::where('friend_id', $meId)
-                ->where('status', 'pending')
                 ->with('requester')
                 ->orderBy('created_at', 'desc')
                 ->get();

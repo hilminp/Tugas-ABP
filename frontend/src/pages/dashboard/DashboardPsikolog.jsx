@@ -140,7 +140,10 @@ const DashboardPsikolog = () => {
     const fetchIncomingRequests = async () => {
         try {
             const res = await api.get('/friend-requests');
-            setIncomingRequests(res.data?.requests || []);
+            const allRequests = res.data?.requests || [];
+            // Di Dashboard, kita hanya ingin menampilkan yang masih pending
+            const pendingRequests = allRequests.filter(r => r.status === 'pending');
+            setIncomingRequests(pendingRequests);
         } catch (error) {
             console.error('Error fetching incoming requests:', error);
         }
@@ -240,9 +243,20 @@ const DashboardPsikolog = () => {
 
         setSubmittingCommentId(postId);
         try {
-            await api.post(`/posts/${postId}/comment`, { content });
+            const res = await api.post(`/posts/${postId}/comment`, { content });
+            const newComment = res.data.comment;
+
             setCommentInputs((prev) => ({ ...prev, [postId]: '' }));
-            await fetchPosts();
+
+            // Update state secara lokal agar komentar muncul instan
+            setPosts((prev) => prev.map(post => {
+                if (post.id === postId) {
+                    const updatedComments = Array.isArray(post.comments) ? [newComment, ...post.comments] : [newComment];
+                    return { ...post, comments: updatedComments };
+                }
+                return post;
+            }));
+
         } catch (error) {
             setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal menambahkan komentar.' });
         } finally {

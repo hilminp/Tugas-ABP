@@ -311,10 +311,20 @@ const DashboardAnonim = () => {
         if (image) formData.append('image', image);
 
         try {
-            await api.post('/posts', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+            const res = await api.post('/posts', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+            const newPost = res.data.post;
+            
+            // Tambahkan komentar kosong jika tidak ada agar tidak error saat rendering
+            if (!newPost.comments) newPost.comments = [];
+            
             setBody('');
             setImage(null);
-            await fetchPosts();
+            
+            // Update state secara lokal agar instan muncul di feed
+            setPosts((prev) => [newPost, ...prev]);
+            
+            // Tetap panggil fetchPosts di background untuk memastikan data tersinkronasi (opsional)
+            // await fetchPosts(); 
         } catch (error) {
             setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal membuat postingan.' });
         } finally {
@@ -365,9 +375,21 @@ const DashboardAnonim = () => {
 
         setSubmittingCommentId(postId);
         try {
-            await api.post(`/posts/${postId}/comment`, { content });
+            const res = await api.post(`/posts/${postId}/comment`, { content });
+            const newComment = res.data.comment;
+            
             setCommentInputs((prev) => ({ ...prev, [postId]: '' }));
-            await fetchPosts();
+            
+            // Update state secara lokal agar komentar muncul instan
+            setPosts((prev) => prev.map(post => {
+                if (post.id === postId) {
+                    const updatedComments = Array.isArray(post.comments) ? [newComment, ...post.comments] : [newComment];
+                    return { ...post, comments: updatedComments };
+                }
+                return post;
+            }));
+            
+            // Optional: fetchPosts() di background jika ingin benar-benar sinkron
         } catch (error) {
             setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal menambahkan komentar.' });
         } finally {
