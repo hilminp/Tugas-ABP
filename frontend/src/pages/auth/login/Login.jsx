@@ -13,6 +13,7 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [activePopup, setActivePopup] = useState(null);
     const [confirmModal, setConfirmModal] = useState({ show: false, onConfirm: null });
+    const [successModal, setSuccessModal] = useState({ show: false, message: '' });
     const [appealModal, setAppealModal] = useState({ show: false, reason: '', loading: false });
     const { login } = useAuth();
     const navigate = useNavigate();
@@ -48,10 +49,12 @@ const Login = () => {
             onConfirm: async () => {
                 try {
                     const res = await api.post('/reapply', { email, password });
-                    alert(res.data.message);
-                    setError(null);
                     setConfirmModal({ show: false, onConfirm: null });
-                    navigate('/register/psikolog');
+                    setSuccessModal({ 
+                        show: true, 
+                        message: res.data.message 
+                    });
+                    setError(null);
                 } catch (err) {
                     alert(err.response?.data?.message || 'Gagal menghapus data lama');
                 }
@@ -276,26 +279,39 @@ const Login = () => {
 
             {confirmModal.show && (
                 <div className="login-popup-overlay" onClick={() => setConfirmModal({ show: false, onConfirm: null })}>
-                    <div className="login-popup-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
-                        <div className="login-popup-head">
-                            <h3>{confirmModal.title}</h3>
+                    <div className="login-popup-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px' }}>
+                        <div className="login-popup-head" style={{ marginBottom: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#fef2f2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <LockKeyhole size={20} />
+                                </div>
+                                <h3 style={{ fontSize: '18px', fontWeight: 700 }}>{confirmModal.title}</h3>
+                            </div>
                             <button type="button" onClick={() => setConfirmModal({ show: false, onConfirm: null })}>
                                 <X size={20} />
                             </button>
                         </div>
-                        <p style={{ marginBottom: '25px', lineHeight: '1.6' }}>{confirmModal.message}</p>
+                        <p style={{ marginBottom: '25px', lineHeight: '1.6', color: '#64748b' }}>{confirmModal.message}</p>
                         <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
                             <button 
                                 type="button" 
                                 onClick={() => setConfirmModal({ show: false, onConfirm: null })}
-                                style={{ padding: '10px 20px', borderRadius: '12px', background: '#f5f5f5', color: '#666', fontWeight: 600 }}
+                                style={{ padding: '12px 20px', borderRadius: '14px', background: '#f1f5f9', color: '#64748b', fontWeight: 600, fontSize: '14px' }}
                             >
                                 Batal
                             </button>
                             <button 
                                 type="button" 
                                 onClick={confirmModal.onConfirm}
-                                style={{ padding: '10px 20px', borderRadius: '12px', background: '#884d60', color: '#fff', fontWeight: 700 }}
+                                style={{ 
+                                    padding: '12px 24px', 
+                                    borderRadius: '14px', 
+                                    background: '#ef4444', 
+                                    color: '#fff', 
+                                    fontWeight: 700, 
+                                    fontSize: '14px',
+                                    boxShadow: '0 10px 15px -3px rgba(239, 68, 68, 0.2)'
+                                }}
                             >
                                 Ya, Lanjutkan
                             </button>
@@ -308,7 +324,7 @@ const Login = () => {
                     <div className="login-popup-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
                         <div className="login-popup-head">
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#fff7ed', color: '#f97316', display: 'flex', alignItems: 'center', justifyCenter: 'center' }}>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#fff7ed', color: '#f97316', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <ShieldCheck size={20} />
                                 </div>
                                 <h3>Ajukan Banding</h3>
@@ -368,6 +384,49 @@ const Login = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {successModal.show && (
+                <div className="login-popup-overlay" onClick={() => {
+                    setSuccessModal({ show: false, message: '' });
+                    navigate('/register/psikolog');
+                }}>
+                    <div className="login-popup-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px', textAlign: 'center' }}>
+                        <div style={{ 
+                            width: '64px', 
+                            height: '64px', 
+                            borderRadius: '50%', 
+                            background: '#ecfdf5', 
+                            color: '#10b981', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            margin: '0 auto 20px'
+                        }}>
+                            <ShieldCheck size={32} />
+                        </div>
+                        <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#1e293b', marginBottom: '10px' }}>Berhasil!</h3>
+                        <p style={{ color: '#64748b', lineHeight: '1.6', marginBottom: '25px' }}>{successModal.message}</p>
+                        <button 
+                            type="button" 
+                            onClick={() => {
+                                setSuccessModal({ show: false, message: '' });
+                                navigate('/register/psikolog');
+                            }}
+                            style={{ 
+                                width: '100%',
+                                padding: '14px', 
+                                borderRadius: '14px', 
+                                background: '#10b981', 
+                                color: '#fff', 
+                                fontWeight: 700,
+                                boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.2)'
+                            }}
+                        >
+                            Daftar Sekarang
+                        </button>
                     </div>
                 </div>
             )}

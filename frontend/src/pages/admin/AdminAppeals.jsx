@@ -89,7 +89,7 @@ const AdminAppeals = () => {
                     </button>
                     <div className="flex items-center gap-3 px-4 py-3 text-[#A46477] font-bold border-r-4 border-[#A46477] bg-teal-100/20 rounded-l-lg">
                         <span className="material-symbols-outlined">mail</span>
-                        <span>Kotak Surat Banding</span>
+                        <span>Kotak Surat</span>
                     </div>
                 </nav>
                 <div className="px-4 py-6 border-t border-teal-100/10">
