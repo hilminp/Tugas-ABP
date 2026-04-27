@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import { api } from '../../../lib/api';
 import { Mail, Lock, Eye, EyeOff, X, ArrowLeft, LogIn, ChevronRight, ShieldCheck, FileText, LockKeyhole } from 'lucide-react';
-import logoCurhatin from '../../../assets/logoCurhatin.png';
+import logoFinal from '../../../assets/LogoFinal.png';
 import './Auth.css';
 
 const Login = () => {
@@ -103,7 +103,7 @@ const Login = () => {
                 <div className="login-modern-shell">
                     <section className="login-modern-left">
                         <div className="login-modern-left-content">
-                            <img src={logoCurhatin} alt="Curhatin brand mark" className="login-modern-brand-logo" />
+                            <img src={logoFinal} alt="Curhatin brand mark" className="login-modern-brand-logo" />
                             <h1>
                                 Temukan <span>ruang aman</span> untuk dirimu.
                             </h1>
@@ -242,7 +242,7 @@ const Login = () => {
             <footer className="login-modern-footer">
                 <div className="footer-left">
                     <span className="footer-brand">Curhatin</span>
-                    <p>© 2024 Curhatin. Ruang digital aman untuk ekspresi diri yang jujur.</p>
+                    <p>© 2026 Curhatin. Ruang digital aman untuk ekspresi diri yang jujur.</p>
                 </div>
                 <div className="footer-right">
                     <button type="button" onClick={() => setActivePopup('privacy')}>

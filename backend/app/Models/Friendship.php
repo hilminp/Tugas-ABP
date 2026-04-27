@@ -15,6 +15,7 @@ class Friendship extends Model
         'friend_id',
         'status',
         'category',
+        'is_seen',
     ];
 
     public function requester()

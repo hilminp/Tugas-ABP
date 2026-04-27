@@ -60,27 +60,88 @@ class FriendshipController extends Controller
 
         $meId = $me->id;
         if ($meId == $id) return response()->json(['message' => 'Tidak bisa menambahkan diri sendiri'], 400);
-        if ($me && method_exists($me, 'hasFriendRequestTo') && $me->hasFriendRequestTo($id)) {
-            return response()->json(['message' => 'Permintaan pertemanan sudah ada.']);
+        
+        $existing = Friendship::where('user_id', $meId)->where('friend_id', $id)->first();
+        if ($existing) {
+            if ($existing->status === 'pending') {
+                return response()->json(['message' => 'Permintaan pertemanan sudah ada.']);
+            } elseif ($existing->status === 'accepted') {
+                return response()->json(['message' => 'Anda sudah berteman dengan psikolog ini.']);
+            } elseif ($existing->status === 'rejected') {
+                $existing->update([
+                    'status' => 'pending',
+                    'category' => $request->category,
+                    'is_seen' => false
+                ]);
+                return response()->json(['message' => 'Permintaan pertemanan dikirim ulang.']);
+            }
+        } else {
+            Friendship::create([
+                'user_id' => $meId,
+                'friend_id' => $id,
+                'status' => 'pending',
+                'category' => $request->category,
+            ]);
+            return response()->json(['message' => 'Permintaan pertemanan terkirim.']);
         }
-        Friendship::create([
-            'user_id' => $meId,
-            'friend_id' => $id,
-            'status' => 'pending',
-            'category' => $request->category,
-        ]);
-        return response()->json(['message' => 'Permintaan pertemanan terkirim.']);
     }
 
     public function incoming(\Illuminate\Http\Request $request)
     {
-        $meId = $request->user()->id;
-        $requests = Friendship::where('friend_id', $meId)
-            ->where('status', 'pending')
-            ->with('requester')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $user = $request->user();
+        $meId = $user->id;
+
+        if ($user->role === 'psikolog') {
+            $requests = Friendship::where('friend_id', $meId)
+                ->where('status', 'pending')
+                ->with('requester')
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } else {
+            $requests = Friendship::where('user_id', $meId)
+                ->with('recipient')
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
         return response()->json(['requests' => $requests]);
+    }
+
+    public function notifications(\Illuminate\Http\Request $request)
+    {
+        $user = $request->user();
+        $meId = $user->id;
+
+        if ($user->role === 'psikolog') {
+            $count = Friendship::where('friend_id', $meId)
+                ->where('status', 'pending')
+                ->where('is_seen', false)
+                ->count();
+        } else {
+            $count = Friendship::where('user_id', $meId)
+                ->whereIn('status', ['accepted', 'rejected'])
+                ->where('is_seen', false)
+                ->count();
+        }
+
+        return response()->json(['count' => $count]);
+    }
+
+    public function markAsSeen(\Illuminate\Http\Request $request)
+    {
+        $user = $request->user();
+        $meId = $user->id;
+
+        if ($user->role === 'psikolog') {
+            Friendship::where('friend_id', $meId)
+                ->where('status', 'pending')
+                ->update(['is_seen' => true]);
+        } else {
+            Friendship::where('user_id', $meId)
+                ->whereIn('status', ['accepted', 'rejected'])
+                ->update(['is_seen' => true]);
+        }
+
+        return response()->json(['message' => 'Notifications marked as seen.']);
     }
 
     public function accept(\Illuminate\Http\Request $request, $id)
@@ -91,11 +152,11 @@ class FriendshipController extends Controller
         $meId = $request->user()->id;
         $f = Friendship::where('user_id', $id)->where('friend_id', $meId)->first();
         if (!$f) return response()->json(['message' => 'Permintaan tidak ditemukan'], 404);
-        $f->update(['status' => 'accepted']);
+        $f->update(['status' => 'accepted', 'is_seen' => false]);
         Friendship::firstOrCreate([
             'user_id' => $meId,
             'friend_id' => $id,
-        ], ['status' => 'accepted']);
+        ], ['status' => 'accepted', 'is_seen' => true]);
         return response()->json(['message' => 'Permintaan pertemanan diterima.']);
     }
 
@@ -107,7 +168,7 @@ class FriendshipController extends Controller
         $meId = $request->user()->id;
         $f = Friendship::where('user_id', $id)->where('friend_id', $meId)->first();
         if (!$f) return response()->json(['message' => 'Permintaan tidak ditemukan'], 404);
-        $f->update(['status' => 'rejected']);
+        $f->update(['status' => 'rejected', 'is_seen' => false]);
         return response()->json(['message' => 'Permintaan pertemanan ditolak.']);
     }
 }

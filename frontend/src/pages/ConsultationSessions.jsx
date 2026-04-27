@@ -33,10 +33,20 @@ const ConsultationSessions = () => {
 
     useEffect(() => {
         fetchSessions();
+        markAsSeen();
         if (!isPsychologist) {
             fetchConnectedPsychologists();
         }
     }, []);
+
+    const markAsSeen = async () => {
+        try {
+            await api.post('/sessions/mark-seen');
+            window.dispatchEvent(new Event('sessionNotifSeen'));
+        } catch (err) {
+            console.error("Failed to mark sessions as seen", err);
+        }
+    };
 
     const fetchSessions = async () => {
         setLoading(true);

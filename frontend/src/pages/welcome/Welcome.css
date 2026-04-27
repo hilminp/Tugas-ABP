@@ -48,10 +48,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 18px 24px;
-  max-width: 1240px;
+  padding: 18px 60px;
   width: 100%;
-  margin: 0 auto;
+  background: transparent;
 }
 
 .brand {
@@ -60,9 +59,10 @@
   gap: 8px;
 }
 
-.brand-heart {
-  color: #884d60;
-  font-size: 20px;
+.brand-logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
 }
 
 .brand-name {
@@ -104,9 +104,7 @@
 .hero-wrap {
   flex: 1;
   width: 100%;
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 80px;
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
   gap: 42px;
@@ -143,7 +141,7 @@
   margin: 20px 0 0;
   line-height: 1.08;
   font-weight: 800;
-  font-size: clamp(34px, 6vw, 74px);
+  font-size: clamp(32px, 5vw, 62px);
   letter-spacing: -0.03em;
 }
 
@@ -156,7 +154,7 @@
   margin-top: 20px;
   max-width: 680px;
   color: #6b5b5f;
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1.58;
   font-weight: 500;
 }
@@ -285,14 +283,14 @@
 
 .cta-card h2 {
   margin: 20px 0 10px;
-  font-size: 52px;
+  font-size: 44px;
   line-height: 1.1;
   letter-spacing: -0.02em;
 }
 
 .cta-card p {
   color: #6b5b5f;
-  font-size: 21px;
+  font-size: 18px;
   line-height: 1.5;
 }
 
@@ -384,16 +382,14 @@
 
 .landing-footer {
   margin-top: auto;
-  padding: 16px 24px;
   background: transparent;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 22px;
   flex-wrap: wrap;
-  max-width: 1240px;
   width: 100%;
-  margin: 0 auto;
+  padding: 16px 60px;
 }
 
 .footer-brand p {

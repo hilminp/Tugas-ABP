@@ -18,6 +18,49 @@ const Sidebar = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const roleLabel = user?.role === 'psikolog' ? 'psikolog' : 'anonim';
+    const [notifCount, setNotifCount] = React.useState(0);
+    const [sessionNotifCount, setSessionNotifCount] = React.useState(0);
+
+    React.useEffect(() => {
+        if (user) {
+            fetchNotifCount();
+            fetchSessionNotifCount();
+            const interval = setInterval(() => {
+                fetchNotifCount();
+                fetchSessionNotifCount();
+            }, 30000); // Check every 30s
+            
+            const handleFriendSeen = () => setNotifCount(0);
+            const handleSessionSeen = () => setSessionNotifCount(0);
+            
+            window.addEventListener('friendNotifSeen', handleFriendSeen);
+            window.addEventListener('sessionNotifSeen', handleSessionSeen);
+            
+            return () => {
+                clearInterval(interval);
+                window.removeEventListener('friendNotifSeen', handleFriendSeen);
+                window.removeEventListener('sessionNotifSeen', handleSessionSeen);
+            };
+        }
+    }, [user]);
+
+    const fetchNotifCount = async () => {
+        try {
+            const res = await api.get(`/friend-notifications?t=${new Date().getTime()}`);
+            setNotifCount(res.data.count || 0);
+        } catch (err) {
+            console.error("Failed to fetch notif count", err);
+        }
+    };
+
+    const fetchSessionNotifCount = async () => {
+        try {
+            const res = await api.get(`/session-notifications?t=${new Date().getTime()}`);
+            setSessionNotifCount(res.data.count || 0);
+        } catch (err) {
+            console.error("Failed to fetch session notif count", err);
+        }
+    };
 
     const handleLogout = async () => {
         try {
@@ -80,10 +123,12 @@ const Sidebar = () => {
                 <Link to="/friend-requests" className="nav-item">
                     <History size={20} />
                     <span>Riwayat</span>
+                    {notifCount > 0 && <span className="notif-badge">{notifCount}</span>}
                 </Link>
                 <Link to="/sessions" className="nav-item">
                     <Calendar size={20} />
                     <span>Jadwal</span>
+                    {sessionNotifCount > 0 && <span className="notif-badge">{sessionNotifCount}</span>}
                 </Link>
                 {user?.is_admin && (
                     <Link to="/admin/dashboard" className="nav-item admin-link">
