@@ -211,7 +211,7 @@ const AdminUsers = () => {
             className="flex items-center gap-3 px-4 py-3 text-teal-700/60 dark:text-teal-300/40 hover:bg-teal-100/40 dark:hover:bg-teal-800/20 transition-all rounded-lg group"
           >
             <span className="material-symbols-outlined">mail</span>
-            <span>Kotak Surat Banding</span>
+            <span>Kotak Surat</span>
           </Link>
         </nav>
         <div className="px-4 py-6 border-t border-teal-100/10">
