@@ -21,6 +21,10 @@ const MessagesContainer = () => {
     const [isLocked, setIsLocked] = useState(false);
     const [lockMessage, setLockMessage] = useState('');
     const messagesEndRef = useRef(null);
+    const fileInputRef = useRef(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(null);
 
     // Fetch friend list
     useEffect(() => {
@@ -76,18 +80,56 @@ const MessagesContainer = () => {
     const handleSend = async (e) => {
         e.preventDefault();
         const body = messageBody.trim();
-        if (!body || !friendId) return;
+        if (!body && !selectedImage) return;
+        if (!friendId) return;
 
+        const formData = new FormData();
+        if (body) formData.append('body', body);
+        if (selectedImage) formData.append('image', selectedImage);
+
+        setIsUploading(true);
         try {
-            await api.post(`/messages/${friendId}`, { body });
+            await api.post(`/messages/${friendId}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
             setMessageBody('');
-            // Optimistic update or wait for next poll
-            const res = await api.get(`/messages/${friendId}`);
-            setMessages(res.data.messages);
+            setSelectedImage(null);
+            setPreviewUrl(null);
+            fetchThread();
         } catch (err) {
             console.error("Failed to send message", err);
-            alert(err.response?.data?.message || "Gagal mengirim pesan. Pastikan sesi sudah dimulai.");
+            alert(err.response?.data?.message || "Gagal mengirim pesan.");
+        } finally {
+            setIsUploading(false);
         }
+    };
+
+    const fetchThread = async () => {
+        if (!friendId) return;
+        try {
+            const res = await api.get(`/messages/${friendId}`);
+            setActiveFriend(res.data.friend);
+            setMessages(res.data.messages);
+            setIsLocked(res.data.is_locked);
+            setLockMessage(res.data.lock_message);
+        } catch (err) {
+            console.error("Failed to load thread", err);
+        }
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setSelectedImage(file);
+        setPreviewUrl(URL.createObjectURL(file));
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    const removeSelectedImage = () => {
+        setSelectedImage(null);
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        setPreviewUrl(null);
     };
 
     const handleAutoResize = (e) => {
@@ -277,9 +319,21 @@ const MessagesContainer = () => {
                                                     ? 'bg-gradient-to-br from-primary to-primary-dim text-on-primary rounded-tr-none shadow-primary/20 hover:scale-[1.01]' 
                                                     : 'bg-white/80 backdrop-blur-sm rounded-tl-none border border-white/60 text-on-surface hover:bg-white'
                                                 }`}>
-                                                    <p className="text-[15px] leading-relaxed font-medium">
-                                                        {m.body}
-                                                    </p>
+                                                    {m.image && (
+                                                        <div className="mb-3 rounded-2xl overflow-hidden shadow-inner bg-black/5">
+                                                            <img 
+                                                                src={`${STORAGE_BASE_URL}/${m.image}`} 
+                                                                alt="Sent attachment" 
+                                                                className="max-w-full h-auto object-contain cursor-zoom-in hover:scale-105 transition-transform duration-500" 
+                                                                onClick={() => window.open(`${STORAGE_BASE_URL}/${m.image}`, '_blank')}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    {m.body && (
+                                                        <p className="text-[15px] leading-relaxed font-medium whitespace-pre-wrap">
+                                                            {m.body}
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <div className={`flex items-center gap-2 px-2 ${isMe ? 'flex-row-reverse' : ''}`}>
                                                     <span className="text-[9px] text-on-surface-variant/40 font-black uppercase tracking-tighter">
@@ -297,6 +351,21 @@ const MessagesContainer = () => {
 
                         {/* Message Input Area (Floating) */}
                         <footer className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[85%] max-w-4xl z-50 animate-in slide-in-from-bottom duration-700">
+                            {previewUrl && (
+                                <div className="mb-4 ml-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                    <div className="relative inline-block group">
+                                        <div className="w-24 h-24 rounded-2xl overflow-hidden border-4 border-white shadow-xl ring-1 ring-black/5">
+                                            <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                                        </div>
+                                        <button 
+                                            onClick={removeSelectedImage}
+                                            className="absolute -top-2 -right-2 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors scale-0 group-hover:scale-100 duration-300"
+                                        >
+                                            <span className="material-symbols-outlined text-[16px] font-black">close</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                             {isLocked ? (
                                 <div className="bg-amber-50/90 backdrop-blur-3xl rounded-[2rem] p-6 flex items-center justify-center gap-4 shadow-xl border border-amber-200/50">
                                     <span className="material-symbols-outlined text-amber-600 animate-pulse">lock</span>
@@ -304,8 +373,24 @@ const MessagesContainer = () => {
                                 </div>
                             ) : (
                                 <form onSubmit={handleSend} className="bg-white/80 backdrop-blur-3xl rounded-[2rem] p-2 pr-3 flex items-center gap-4 shadow-[0_20px_50px_rgba(136,77,96,0.15)] border border-white/60">
-                                    <button type="button" className="ml-4 text-primary/40 hover:text-primary transition-all active:scale-90">
-                                        <span className="material-symbols-outlined font-black">add_circle</span>
+                                    <input 
+                                        type="file" 
+                                        ref={fileInputRef} 
+                                        className="hidden" 
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                    />
+                                    <button 
+                                        type="button" 
+                                        onClick={() => fileInputRef.current.click()}
+                                        disabled={isUploading}
+                                        className="ml-4 text-primary/40 hover:text-primary transition-all active:scale-90 disabled:opacity-30"
+                                    >
+                                        {isUploading ? (
+                                            <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                                        ) : (
+                                            <span className="material-symbols-outlined font-black">add_circle</span>
+                                        )}
                                     </button>
                                     <div className="flex-1">
                                         <textarea 
@@ -318,15 +403,16 @@ const MessagesContainer = () => {
                                         ></textarea>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <button type="button" className="text-primary/40 hover:text-primary transition-all active:scale-90">
-                                            <span className="material-symbols-outlined font-black">sentiment_very_satisfied</span>
-                                        </button>
                                         <button 
                                             type="submit" 
-                                            disabled={!messageBody.trim()}
+                                            disabled={isUploading || (!messageBody.trim() && !selectedImage)}
                                             className="w-12 h-12 bg-gradient-to-br from-[#fdb2c7] to-[#955170] text-white rounded-2xl flex items-center justify-center shadow-[0_10px_20px_rgba(149,81,112,0.3)] active:scale-95 disabled:opacity-30 disabled:shadow-none transition-all group"
                                         >
-                                            <span className="material-symbols-outlined transition-transform relative z-10 text-xl group-hover:translate-x-0.5 group-hover:-translate-y-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>send</span>
+                                            {isUploading ? (
+                                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                            ) : (
+                                                <span className="material-symbols-outlined transition-transform relative z-10 text-xl group-hover:translate-x-0.5 group-hover:-translate-y-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>send</span>
+                                            )}
                                         </button>
                                     </div>
                                 </form>

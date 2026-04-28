@@ -78,20 +78,15 @@ function App() {
         let mounted = true;
 
         const bootstrap = async () => {
-            setBootProgress(35);
-            const minDelay = new Promise((resolve) => setTimeout(resolve, 900));
-
+            setBootProgress(60);
             try {
-                await Promise.all([
-                    api.get('/status'),
-                    minDelay,
-                ]);
+                await api.get('/status');
                 if (mounted) setBootProgress(100);
             } catch {
                 if (mounted) setBootProgress(75);
             } finally {
                 if (mounted) {
-                    setTimeout(() => setBootLoading(false), 250);
+                    setBootLoading(false);
                 }
             }
         };

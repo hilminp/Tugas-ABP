@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\Appeal;
 
 class SessionController extends Controller
 {
@@ -20,7 +21,15 @@ class SessionController extends Controller
             if ($user->is_suspended) {
                 $msg = 'Akun Anda telah disuspend oleh admin.';
                 if ($user->suspended_reason) $msg .= ' Alasan: ' . $user->suspended_reason;
-                return response()->json(['message' => $msg, 'is_suspended' => true], 403);
+                
+                $latestAppeal = Appeal::where('user_id', $user->id)->latest()->first();
+                
+                return response()->json([
+                    'message' => $msg, 
+                    'is_suspended' => true,
+                    'appeal_status' => $latestAppeal ? $latestAppeal->status : null,
+                    'admin_notes' => $latestAppeal ? $latestAppeal->admin_notes : null,
+                ], 403);
             }
 
             if ($user->role == 'psikolog' && !$user->is_verified) {

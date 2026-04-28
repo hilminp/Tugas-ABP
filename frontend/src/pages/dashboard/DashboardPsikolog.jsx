@@ -47,14 +47,30 @@ const DashboardPsikolog = () => {
         setHiddenPostIds(prev => [...prev, postId]);
     };
 
-    const handlePermanentDeletePost = async (postId) => {
-        if (!confirm('Hapus postingan ini secara permanen? Tindakan ini tidak bisa dibatalkan.')) return;
-        try {
-            await api.delete(`/admin/post/${postId}/permanent`);
-            setPosts(prev => prev.filter(p => p.id !== postId));
-        } catch (err) {
-            alert(err.response?.data?.message || 'Gagal menghapus postingan secara permanen.');
-        }
+    const handlePermanentDeletePost = (postId) => {
+        setConfirmModal({
+            isOpen: true,
+            type: 'warning',
+            message: 'Hapus postingan ini secara permanen? Tindakan ini tidak bisa dibatalkan.',
+            action: async () => {
+                try {
+                    await api.delete(`/admin/post/${postId}/permanent`);
+                    setPosts(prev => prev.filter(p => p.id !== postId));
+                    setStatusModal({ 
+                        isOpen: true, 
+                        type: 'success', 
+                        title: 'Terhapus!', 
+                        message: 'Postingan telah dihapus secara permanen.' 
+                    });
+                } catch (err) {
+                    setStatusModal({ 
+                        isOpen: true, 
+                        type: 'error', 
+                        message: err.response?.data?.message || 'Gagal menghapus postingan secara permanen.' 
+                    });
+                }
+            }
+        });
     };
 
     const psychologistName = user?.name || user?.username || 'Psikolog';

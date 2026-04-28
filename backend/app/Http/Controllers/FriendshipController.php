@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Friendship;
 use App\Models\User;
+use App\Models\ConsultationSession;
 
 class FriendshipController extends Controller
 {
@@ -93,12 +94,26 @@ class FriendshipController extends Controller
 
         if ($user->role === 'psikolog') {
             $requests = Friendship::where('friend_id', $meId)
-                ->with('requester')
+                ->select('friendships.*')
+                ->addSelect(['latest_session_status' => ConsultationSession::select('status')
+                    ->whereColumn('user_id', 'friendships.user_id')
+                    ->whereColumn('psychologist_id', 'friendships.friend_id')
+                    ->latest()
+                    ->limit(1)
+                ])
+                ->with(['requester'])
                 ->orderBy('created_at', 'desc')
                 ->get();
         } else {
             $requests = Friendship::where('user_id', $meId)
-                ->with('recipient')
+                ->select('friendships.*')
+                ->addSelect(['latest_session_status' => ConsultationSession::select('status')
+                    ->whereColumn('user_id', 'friendships.user_id')
+                    ->whereColumn('psychologist_id', 'friendships.friend_id')
+                    ->latest()
+                    ->limit(1)
+                ])
+                ->with(['recipient'])
                 ->orderBy('created_at', 'desc')
                 ->get();
         }
