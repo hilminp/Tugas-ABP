@@ -7,13 +7,14 @@ import {
     AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
     Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
-import { Bell, UserPlus, CreditCard, CheckCircle, Clock, ChevronRight, X } from 'lucide-react';
+import { Bell, UserPlus, CreditCard, CheckCircle, Clock, ChevronRight, X, Mail } from 'lucide-react';
 
 const AdminDashboard = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [data, setData] = useState(null);
     const [analytics, setAnalytics] = useState(null);
+    const [appeals, setAppeals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showNotif, setShowNotif] = useState(false);
     const [txPage, setTxPage] = useState(0);
@@ -49,12 +50,14 @@ const AdminDashboard = () => {
     useEffect(() => {
         const fetchDashboard = async () => {
             try {
-                const [dashRes, analyticsRes] = await Promise.all([
+                const [dashRes, analyticsRes, appealsRes] = await Promise.all([
                     api.get('/admin/dashboard'),
                     api.get('/admin/analytics'),
+                    api.get('/admin/appeals'),
                 ]);
                 setData(dashRes.data);
                 setAnalytics(analyticsRes.data);
+                setAppeals(appealsRes.data || []);
             } catch (err) {
                 console.error("Failed to load admin dashboard", err);
             } finally {
@@ -171,7 +174,8 @@ const AdminDashboard = () => {
                                 {(() => {
                                     const unreadCount = [
                                         ...(data?.pendingPsikolog || []).map(p => `psikolog_${p.id}`),
-                                        ...(data?.latestPremiumUsers || []).map(u => `premium_${u.id}`)
+                                        ...(data?.latestPremiumUsers || []).map(u => `premium_${u.id}`),
+                                        ...(appeals || []).filter(a => a.status === 'pending').map(a => `appeal_${a.id}`)
                                     ].filter(id => !readNotifIds.includes(id)).length;
                                     
                                     return unreadCount > 0 && (
@@ -200,7 +204,8 @@ const AdminDashboard = () => {
                                         {(() => {
                                             const notifications = [
                                                 ...(data?.pendingPsikolog || []).map(p => ({ ...p, type: 'psikolog', nid: `psikolog_${p.id}` })),
-                                                ...(data?.latestPremiumUsers || []).map(u => ({ ...u, type: 'premium', nid: `premium_${u.id}` }))
+                                                ...(data?.latestPremiumUsers || []).map(u => ({ ...u, type: 'premium', nid: `premium_${u.id}` })),
+                                                ...(appeals || []).filter(a => a.status === 'pending').map(a => ({ ...a, name: a.user?.name || 'User', type: 'appeal', nid: `appeal_${a.id}` }))
                                             ]
                                             .filter(item => !readNotifIds.includes(item.nid))
                                             .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
@@ -230,6 +235,8 @@ const AdminDashboard = () => {
                                                                 // Navigate
                                                                 if (item.type === 'psikolog') {
                                                                     navigate('/admin/verifications');
+                                                                } else if (item.type === 'appeal') {
+                                                                    navigate('/admin/appeals');
                                                                 } else {
                                                                     if (window.location.pathname !== '/admin/dashboard') {
                                                                         navigate('/admin/dashboard', { state: { scrollTo: 'analytics-section' } });
@@ -241,13 +248,13 @@ const AdminDashboard = () => {
                                                             }} 
                                                             className="px-6 py-4 hover:bg-teal-50/50 dark:hover:bg-slate-700/30 cursor-pointer transition-all flex gap-4 group"
                                                         >
-                                                            <div className={`w-10 h-10 rounded-2xl flex-shrink-0 flex items-center justify-center ${item.type === 'psikolog' ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'}`}>
-                                                                {item.type === 'psikolog' ? <UserPlus size={18} /> : <CreditCard size={18} />}
+                                                            <div className={`w-10 h-10 rounded-2xl flex-shrink-0 flex items-center justify-center ${item.type === 'psikolog' ? 'bg-amber-100 text-amber-600' : item.type === 'appeal' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'}`}>
+                                                                {item.type === 'psikolog' ? <UserPlus size={18} /> : item.type === 'appeal' ? <Mail size={18} /> : <CreditCard size={18} />}
                                                             </div>
                                                             <div className="flex-1 min-w-0">
                                                                 <div className="flex justify-between items-start mb-0.5">
                                                                     <p className="text-xs font-black text-slate-400 uppercase tracking-tighter">
-                                                                        {item.type === 'psikolog' ? 'Verifikasi' : 'Pembayaran'}
+                                                                        {item.type === 'psikolog' ? 'Verifikasi' : item.type === 'appeal' ? 'Banding' : 'Pembayaran'}
                                                                     </p>
                                                                     <span className="text-[9px] font-bold text-slate-300 flex items-center gap-1">
                                                                         <Clock size={8} /> 
@@ -258,7 +265,7 @@ const AdminDashboard = () => {
                                                                     {item.name}
                                                                 </p>
                                                                 <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
-                                                                    {item.type === 'psikolog' ? 'Baru saja mendaftar sebagai Psikolog.' : 'Upgrade ke akun Premium berhasil!'}
+                                                                    {item.type === 'psikolog' ? 'Baru saja mendaftar sebagai Psikolog.' : item.type === 'appeal' ? 'Mengajukan banding atas penangguhan akun.' : 'Upgrade ke akun Premium berhasil!'}
                                                                 </p>
                                                             </div>
                                                             <div className="self-center opacity-0 group-hover:opacity-100 transition-opacity">

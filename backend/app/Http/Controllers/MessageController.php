@@ -89,7 +89,15 @@ class MessageController extends Controller
     public function send(Request $request, $id)
     {
         $meId = $request->user()->id;
-        $request->validate(['body' => 'required|string']);
+        $request->validate([
+            'body' => 'nullable|string',
+            'image' => 'nullable|image|max:5120' // max 5MB
+        ]);
+
+        if (!$request->body && !$request->hasFile('image')) {
+            return response()->json(['message' => 'Pesan atau gambar harus diisi.'], 400);
+        }
+
         $isFriend = Friendship::where(function($q) use ($meId, $id) {
             $q->where('user_id', $meId)->where('friend_id', $id)->where('status', 'accepted');
         })->orWhere(function($q) use ($meId, $id) {
@@ -133,6 +141,11 @@ class MessageController extends Controller
             }
         }
 
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('messages', 'public');
+        }
+
         // Sanitize: trim spaces and trailing newlines to avoid tall bubbles
         $clean = trim((string) $request->body);
         // Collapse 3+ consecutive blank lines into max 1 blank line
@@ -141,7 +154,8 @@ class MessageController extends Controller
         $msg = Message::create([
             'sender_id' => $meId,
             'recipient_id' => $id,
-            'body' => $clean,
+            'body' => $clean ?: null,
+            'image' => $imagePath,
         ]);
         return response()->json(['message' => 'Pesan terkirim', 'msg' => $msg]);
     }

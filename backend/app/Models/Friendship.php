@@ -27,5 +27,4 @@ class Friendship extends Model
     {
         return $this->belongsTo(User::class, 'friend_id');
     }
-
 }

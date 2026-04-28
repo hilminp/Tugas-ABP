@@ -654,3 +654,24 @@
 .popup-btn:active {
     transform: translateY(0) scale(0.95);
 }
+
+.btn-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: btn-spin 0.8s linear infinite;
+    display: inline-block;
+}
+
+@keyframes btn-spin {
+    to { transform: rotate(360deg); }
+}
+
+.book-slot-btn {
+    min-width: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

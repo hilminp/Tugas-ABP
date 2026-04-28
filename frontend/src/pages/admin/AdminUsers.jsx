@@ -59,18 +59,18 @@ const AdminUsers = () => {
     };
     fetchUsers();
   }, []);
-  const handleSuspend = async (id, name, isSuspended) => {
+  const handleSuspend = async (id, name, isSuspended, role) => {
     if (!isSuspended) {
       setSuspendModal({
         isOpen: true,
-        user: { id, name },
+        user: { id, name, role },
         reason: "",
         isSubmitting: false,
       });
     } else {
       setUnsuspendModal({
         isOpen: true,
-        user: { id, name },
+        user: { id, name, role },
         isSubmitting: false,
       });
     }
@@ -581,7 +581,7 @@ const AdminUsers = () => {
                                   {u.is_suspended ? (
                                     <button
                                       onClick={() =>
-                                        handleSuspend(u.id, u.name, true)
+                                        handleSuspend(u.id, u.name, true, u.role)
                                       }
                                       className="p-2 hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
                                       title="Buka Penangguhan"
@@ -596,7 +596,7 @@ const AdminUsers = () => {
                                   ) : (
                                     <button
                                       onClick={() =>
-                                        handleSuspend(u.id, u.name, false)
+                                        handleSuspend(u.id, u.name, false, u.role)
                                       }
                                       className="p-2 hover:bg-error/10 hover:text-error rounded-full transition-colors"
                                       title="Tangguhkan Akun"

@@ -317,7 +317,7 @@ const RegisterPsikolog = () => {
                                         <input className="hidden" id="ijazah_file" name="ijazah_file" type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} required />
                                         <label htmlFor="ijazah_file" className={`flex flex-col items-center justify-center p-3 border-2 border-dashed rounded-xl cursor-pointer transition-all ${ijazahLabel ? 'border-[#A46477] bg-[#ffd9e2]/20' : 'border-[#d8c2c5]/60 bg-white hover:bg-[#F5E6E8] hover:border-[#A46477]/50'}`}>
                                             <span className="material-symbols-outlined text-[#A46477] mb-1 text-2xl">school</span>
-                                            <span className="text-xs font-semibold text-[#1A1416] text-center truncate w-full text-center">{ijazahLabel ? ijazahLabel : 'Unggah Ijazah S2'}</span>
+                                            <span className="text-xs font-semibold text-[#1A1416] text-center truncate w-full text-center">{ijazahLabel ? ijazahLabel : 'Unggah Ijazah '}</span>
                                             <span className="text-[9px] text-[#534346] mt-0.5">{ijazahLabel ? '✓ Terpilih' : 'Sertifikat Terakhir'}</span>
                                         </label>
                                     </div>

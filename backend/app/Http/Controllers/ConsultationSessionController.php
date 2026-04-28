@@ -18,7 +18,7 @@ class ConsultationSessionController extends Controller
         }
 
         $sessions = ConsultationSession::where('psychologist_id', $user->id)
-            ->with('user:id,name,username')
+            ->with('user:id,name,username,profile_image')
             ->orderBy('session_date', 'asc')
             ->orderBy('session_time', 'asc')
             ->get();
@@ -197,12 +197,13 @@ class ConsultationSessionController extends Controller
         }
     }
 
-    // User viewing their own booked sessions
+    // User viewing their own booked sessions (excluding completed ones)
     public function myBookedSessions(Request $request)
     {
         $user = $request->user();
         $sessions = ConsultationSession::where('user_id', $user->id)
-            ->with('psychologist:id,name,username')
+            ->where('status', '!=', 'completed')
+            ->with('psychologist:id,name,username,profile_image,spesialisasi')
             ->orderBy('session_date', 'asc')
             ->orderBy('session_time', 'asc')
             ->get();

@@ -177,14 +177,36 @@ const DashboardAnonim = () => {
         setHiddenPostIds(prev => [...prev, postId]);
     };
 
-    const handlePermanentDeletePost = async (postId) => {
-        if (!confirm('Hapus postingan ini secara permanen? Tindakan ini tidak bisa dibatalkan.')) return;
-        try {
-            await api.delete(`/admin/post/${postId}/permanent`);
-            setPosts(prev => prev.filter(p => p.id !== postId));
-        } catch (err) {
-            alert(err.response?.data?.message || 'Gagal menghapus postingan secara permanen.');
-        }
+    const handlePermanentDeletePost = (postId) => {
+        setAdminConfirmModal({
+            isOpen: true,
+            title: 'Hapus Permanen',
+            message: 'Hapus postingan ini secara permanen? Tindakan ini tidak bisa dibatalkan.',
+            icon: 'delete_forever',
+            color: 'red',
+            showInput: false,
+            onConfirm: async () => {
+                setAdminActionLoading(true);
+                try {
+                    await api.delete(`/admin/post/${postId}/permanent`);
+                    setPosts(prev => prev.filter(p => p.id !== postId));
+                    setAdminConfirmModal(m => ({ ...m, isOpen: false }));
+                    setStatusModal({ 
+                        isOpen: true, 
+                        type: 'success', 
+                        message: 'Postingan berhasil dihapus secara permanen.' 
+                    });
+                } catch (err) {
+                    setStatusModal({ 
+                        isOpen: true, 
+                        type: 'error', 
+                        message: err.response?.data?.message || 'Gagal menghapus postingan secara permanen.' 
+                    });
+                } finally {
+                    setAdminActionLoading(false);
+                }
+            }
+        });
     };
     const [psychologistError, setPsychologistError] = useState('');
     const [hasMorePsychologists, setHasMorePsychologists] = useState(false);

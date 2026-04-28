@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import { api } from '../../../lib/api';
-import { Mail, Lock, Eye, EyeOff, X, ArrowLeft, LogIn, ChevronRight, ShieldCheck, FileText, LockKeyhole } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, X, ArrowLeft, LogIn, ChevronRight, ShieldCheck, FileText, LockKeyhole, Clock, XCircle } from 'lucide-react';
 import logoFinal from '../../../assets/LogoFinal.png';
 import './Auth.css';
 
@@ -13,7 +13,7 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [activePopup, setActivePopup] = useState(null);
     const [confirmModal, setConfirmModal] = useState({ show: false, onConfirm: null });
-    const [successModal, setSuccessModal] = useState({ show: false, message: '' });
+    const [successModal, setSuccessModal] = useState({ show: false, title: '', message: '', type: 'success', buttonText: 'Oke', onConfirm: null });
     const [appealModal, setAppealModal] = useState({ show: false, reason: '', loading: false });
     const { login } = useAuth();
     const navigate = useNavigate();
@@ -34,7 +34,16 @@ const Login = () => {
             if (err.response?.data?.is_rejected) {
                 setError({ type: 'rejected', message: err.response.data.message });
             } else if (err.response?.data?.is_suspended) {
-                setError({ type: 'suspended', message: err.response.data.message });
+                const data = err.response.data;
+                const appealStatus = data.appeal_status || data.appeal?.status || data.user?.appeal_status || data.latest_appeal?.status || data.user?.latest_appeal?.status;
+                const adminNotes = data.admin_notes || data.appeal?.admin_notes || data.user?.admin_notes || data.latest_appeal?.admin_notes || data.user?.latest_appeal?.admin_notes;
+                
+                setError({ 
+                    type: 'suspended', 
+                    message: data.message,
+                    appeal_status: appealStatus,
+                    admin_notes: adminNotes
+                });
             } else {
                 setError({ type: 'general', message: err.response?.data?.message || 'Login failed.' });
             }
@@ -52,11 +61,22 @@ const Login = () => {
                     setConfirmModal({ show: false, onConfirm: null });
                     setSuccessModal({ 
                         show: true, 
-                        message: res.data.message 
+                        title: 'Berhasil!',
+                        message: res.data.message,
+                        type: 'success',
+                        buttonText: 'Daftar Sekarang',
+                        onConfirm: () => navigate('/register/psikolog')
                     });
                     setError(null);
                 } catch (err) {
-                    alert(err.response?.data?.message || 'Gagal menghapus data lama');
+                    setSuccessModal({
+                        show: true,
+                        title: 'Gagal',
+                        message: err.response?.data?.message || 'Gagal menghapus data lama',
+                        type: 'error',
+                        buttonText: 'Tutup',
+                        onConfirm: null
+                    });
                 }
             }
         });
@@ -71,11 +91,25 @@ const Login = () => {
                 password, 
                 reason: appealModal.reason 
             });
-            alert(res.data.message);
+            setSuccessModal({
+                show: true,
+                title: 'Banding Terkirim',
+                message: res.data.message,
+                type: 'success',
+                buttonText: 'Mengerti',
+                onConfirm: null
+            });
             setAppealModal({ show: false, reason: '', loading: false });
             setError(null);
         } catch (err) {
-            alert(err.response?.data?.message || 'Gagal mengirim banding.');
+            setSuccessModal({
+                show: true,
+                title: 'Gagal',
+                message: err.response?.data?.message || 'Gagal mengirim banding.',
+                type: 'error',
+                buttonText: 'Tutup',
+                onConfirm: null
+            });
         } finally {
             setAppealModal(prev => ({ ...prev, loading: false }));
         }
@@ -156,23 +190,42 @@ const Login = () => {
                                         </button>
                                     )}
                                     {error.type === 'suspended' && (
-                                        <button 
-                                            type="button" 
-                                            onClick={() => setAppealModal({ ...appealModal, show: true })}
-                                            style={{
-                                                background: '#fff', 
-                                                color: '#f39c12', 
-                                                border: '1px solid #f39c12', 
-                                                padding: '8px 14px', 
-                                                borderRadius: '8px',
-                                                fontWeight: 600,
-                                                cursor: 'pointer',
-                                                alignSelf: 'flex-start',
-                                                fontSize: '13px'
-                                            }}
-                                        >
-                                            Ajukan Banding
-                                        </button>
+                                        <div style={{ marginTop: '5px' }}>
+                                            {error.appeal_status === 'pending' ? (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f59e0b', fontSize: '13px', fontWeight: 600, background: '#fffbeb', padding: '10px 14px', borderRadius: '10px', border: '1px solid #fef3c7' }}>
+                                                    <Clock size={16} />
+                                                    Banding sedang ditinjau admin...
+                                                </div>
+                                            ) : error.appeal_status === 'rejected' ? (
+                                                <div style={{ background: '#fef2f2', padding: '14px', borderRadius: '12px', border: '1px solid #fee2e2' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ef4444', fontWeight: 800, fontSize: '13px', marginBottom: '6px' }}>
+                                                        <XCircle size={16} />
+                                                        Banding Ditolak
+                                                    </div>
+                                                    <p style={{ color: '#7f1d1d', fontSize: '12px', lineHeight: '1.5', fontStyle: 'italic' }}>
+                                                        "{error.admin_notes || 'Maaf, permohonan banding Anda belum dapat kami setujui saat ini. Silakan patuhi pedoman komunitas kami.'}"
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => setAppealModal({ ...appealModal, show: true })}
+                                                    style={{
+                                                        background: '#fff', 
+                                                        color: '#f39c12', 
+                                                        border: '1px solid #f39c12', 
+                                                        padding: '8px 14px', 
+                                                        borderRadius: '8px',
+                                                        fontWeight: 600,
+                                                        cursor: 'pointer',
+                                                        alignSelf: 'flex-start',
+                                                        fontSize: '13px'
+                                                    }}
+                                                >
+                                                    Ajukan Banding
+                                                </button>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                             )}
@@ -390,42 +443,42 @@ const Login = () => {
 
             {successModal.show && (
                 <div className="login-popup-overlay" onClick={() => {
-                    setSuccessModal({ show: false, message: '' });
-                    navigate('/register/psikolog');
+                    if (successModal.onConfirm) successModal.onConfirm();
+                    setSuccessModal({ ...successModal, show: false });
                 }}>
                     <div className="login-popup-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px', textAlign: 'center' }}>
                         <div style={{ 
                             width: '64px', 
                             height: '64px', 
                             borderRadius: '50%', 
-                            background: '#ecfdf5', 
-                            color: '#10b981', 
+                            background: successModal.type === 'success' ? '#ecfdf5' : '#fef2f2', 
+                            color: successModal.type === 'success' ? '#10b981' : '#ef4444', 
                             display: 'flex', 
                             alignItems: 'center', 
                             justifyContent: 'center',
                             margin: '0 auto 20px'
                         }}>
-                            <ShieldCheck size={32} />
+                            {successModal.type === 'success' ? <ShieldCheck size={32} /> : <X size={32} />}
                         </div>
-                        <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#1e293b', marginBottom: '10px' }}>Berhasil!</h3>
+                        <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#1e293b', marginBottom: '10px' }}>{successModal.title}</h3>
                         <p style={{ color: '#64748b', lineHeight: '1.6', marginBottom: '25px' }}>{successModal.message}</p>
                         <button 
                             type="button" 
                             onClick={() => {
-                                setSuccessModal({ show: false, message: '' });
-                                navigate('/register/psikolog');
+                                if (successModal.onConfirm) successModal.onConfirm();
+                                setSuccessModal({ ...successModal, show: false });
                             }}
                             style={{ 
                                 width: '100%',
                                 padding: '14px', 
                                 borderRadius: '14px', 
-                                background: '#10b981', 
+                                background: successModal.type === 'success' ? '#10b981' : '#ef4444', 
                                 color: '#fff', 
                                 fontWeight: 700,
-                                boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.2)'
+                                boxShadow: successModal.type === 'success' ? '0 10px 15px -3px rgba(16, 185, 129, 0.2)' : '0 10px 15px -3px rgba(239, 68, 68, 0.2)'
                             }}
                         >
-                            Daftar Sekarang
+                            {successModal.buttonText}
                         </button>
                     </div>
                 </div>

@@ -22,6 +22,8 @@ const ConsultationSessions = () => {
     const [connectedPsychologists, setConnectedPsychologists] = useState([]);
     const [selectedPsychologist, setSelectedPsychologist] = useState(null);
     const [availableSlots, setAvailableSlots] = useState([]);
+    const [psychologistsLoading, setPsychologistsLoading] = useState(false);
+    const [bookingLoadingId, setBookingLoadingId] = useState(null);
     const [popup, setPopup] = useState({ 
         show: false, 
         title: '', 
@@ -32,11 +34,14 @@ const ConsultationSessions = () => {
 
 
     useEffect(() => {
-        fetchSessions();
-        markAsSeen();
-        if (!isPsychologist) {
-            fetchConnectedPsychologists();
-        }
+        const init = async () => {
+            await fetchSessions();
+            await markAsSeen();
+            if (!isPsychologist) {
+                await fetchConnectedPsychologists();
+            }
+        };
+        init();
     }, []);
 
     const markAsSeen = async () => {
@@ -62,6 +67,7 @@ const ConsultationSessions = () => {
     };
 
     const fetchConnectedPsychologists = async () => {
+        setPsychologistsLoading(true);
         try {
             const res = await api.get('/friend-statuses/psychologists');
             // This returns { statuses: { id: 'accepted' } }
@@ -71,6 +77,8 @@ const ConsultationSessions = () => {
             setConnectedPsychologists(connected);
         } catch (err) {
             console.error("Failed to fetch connected psychologists", err);
+        } finally {
+            setPsychologistsLoading(false);
         }
     };
 
@@ -157,6 +165,7 @@ const ConsultationSessions = () => {
     };
 
     const handleBookSlot = async (id) => {
+        setBookingLoadingId(id);
         try {
             await api.post(`/consultation-sessions/${id}/book`);
             showAlert("Berhasil", "Berhasil memesan sesi!");
@@ -164,6 +173,8 @@ const ConsultationSessions = () => {
             fetchSessions();
         } catch (err) {
             showAlert("Gagal", err.response?.data?.message || "Gagal memesan sesi");
+        } finally {
+            setBookingLoadingId(null);
         }
     };
 
@@ -249,7 +260,19 @@ const ConsultationSessions = () => {
                     <div className="find-sessions-section">
                         <h3>Pesan Sesi Baru</h3>
                         <div className="connected-psychologists">
-                            {connectedPsychologists.length === 0 ? (
+                            {psychologistsLoading ? (
+                                <div className="psychologist-list">
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} className="psychologist-item loading-skeleton">
+                                            <Skeleton width="48px" height="48px" radius="50%" />
+                                            <div className="p-info" style={{ flex: 1, marginLeft: '12px' }}>
+                                                <Skeleton width="60%" height="18px" className="mb-2" />
+                                                <Skeleton width="40%" height="14px" />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : connectedPsychologists.length === 0 ? (
                                 <p className="empty-msg">Anda belum terhubung dengan psikolog manapun. Pastikan permintaan konsultasi Anda sudah diterima.</p>
                             ) : (
                                 <div className="psychologist-list">
@@ -349,7 +372,17 @@ const ConsultationSessions = () => {
                                     {availableSlots.map(slot => (
                                         <div key={slot.id} className="slot-item">
                                             <span>{formatDateTime(slot.session_date, slot.session_time)}</span>
-                                            <button onClick={() => handleBookSlot(slot.id)}>Pesan</button>
+                                            <button 
+                                                onClick={() => handleBookSlot(slot.id)}
+                                                disabled={bookingLoadingId === slot.id}
+                                                className="book-slot-btn"
+                                            >
+                                                {bookingLoadingId === slot.id ? (
+                                                    <span className="btn-spinner"></span>
+                                                ) : (
+                                                    'Pesan'
+                                                )}
+                                            </button>
                                         </div>
                                     ))}
                                 </div>

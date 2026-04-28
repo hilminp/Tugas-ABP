@@ -19,6 +19,9 @@ class PostController extends Controller
                 'comments.user:id,name,role,profile_image,username,is_premium',
             ])
             ->withCount(['likes', 'comments'])
+            ->withExists(['likes as is_liked' => function ($query) use ($request) {
+                $query->where('user_id', $request->user()->id);
+            }])
             ->latest()
             ->get()
             ->map(function ($post) use ($request) {
@@ -30,8 +33,8 @@ class PostController extends Controller
 
                 $this->maskAnonymousUser($post->user);
                 
-                // Cek apakah user saat ini menyukai post ini
-                $post->is_liked = $post->likes()->where('user_id', $request->user()->id)->exists();
+                // is_liked sudah di-handle oleh withExists di query atas
+                // sehingga tidak perlu query ke database di dalam loop ini
 
                 if ($post->comments) {
                     $post->comments->each(function ($comment) {

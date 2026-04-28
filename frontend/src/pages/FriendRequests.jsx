@@ -17,8 +17,11 @@ const FriendRequests = () => {
     const isPsychologist = user?.role === 'psikolog';
 
     useEffect(() => {
-        fetchRequests();
-        markAsSeen();
+        const init = async () => {
+            await fetchRequests();
+            await markAsSeen();
+        };
+        init();
     }, []);
 
     const fetchRequests = async () => {
@@ -148,7 +151,12 @@ const FriendRequests = () => {
                     <div className="space-y-4">
                         {requests.map(r => {
                             const displayUser = isPsychologist ? r.requester : r.recipient;
-                            const statusLabel = r.status === 'pending' ? 'waiting' : (r.status === 'accepted' ? 'disetujui' : 'ditolak');
+                            let statusLabel = r.status === 'pending' ? 'waiting' : (r.status === 'accepted' ? 'disetujui' : 'ditolak');
+                            
+                            // Override status label if session is completed
+                            if (r.latest_session_status === 'completed') {
+                                statusLabel = 'jadwal telah selesai';
+                            }
                             
                             return (
                                 <div key={r.id} className="request-card group bg-white/90 backdrop-blur-xl border border-[rgba(255,182,193,0.6)] rounded-2xl p-6 shadow-[0_24px_48px_rgba(136,77,96,0.15)] hover:shadow-[0_30px_60px_rgba(136,77,96,0.2)] hover:-translate-y-1 transition-all duration-300">
@@ -179,7 +187,8 @@ const FriendRequests = () => {
 
                                         <div className="flex items-center gap-3">
                                             <div className={`mr-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider
-                                                ${r.status === 'pending' ? 'bg-amber-100 text-amber-600'
+                                                ${statusLabel === 'jadwal telah selesai' ? 'bg-blue-100 text-blue-600'
+                                                : r.status === 'pending' ? 'bg-amber-100 text-amber-600'
                                                 : r.status === 'accepted' ? 'bg-emerald-100 text-emerald-600'
                                                 : 'bg-red-100 text-red-600'}`}>
                                                 {statusLabel}
