@@ -159,4 +159,26 @@ class PostController extends Controller
             $user->username = 'anonim';
         }
     }
+
+    public function destroy(Request $request, $id)
+    {
+        $post = Post::find($id);
+
+        if (!$post) {
+            return response()->json(['message' => 'Post tidak ditemukan.'], 404);
+        }
+
+        // Pastikan hanya pembuat postingan yang bisa menghapus
+        if ($post->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Anda tidak memiliki akses untuk menghapus postingan ini.'], 403);
+        }
+
+        if ($post->image) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($post->image);
+        }
+
+        $post->delete();
+
+        return response()->json(['message' => 'Postingan berhasil dihapus.']);
+    }
 }
