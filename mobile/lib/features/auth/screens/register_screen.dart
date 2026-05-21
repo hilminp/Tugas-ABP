@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../providers/auth_provider.dart';
 import '../../../core/theme/colors.dart';
 
@@ -111,7 +112,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           barrierDismissible: false,
           builder: (ctx) => AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: const Text('Registrasi Berhasil!', style: TextStyle(fontWeight: FontWeight.bold)),
+            title: Text('Registrasi Berhasil!', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
             content: Text(result['message']),
             actions: [
               ElevatedButton(
@@ -138,7 +139,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final isLoading = Provider.of<AuthProvider>(context).isLoading;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -147,19 +148,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFFFAECE9),
+              Color(0xFFEED4D4),
+              Color(0xFFCCA2A7),
+              Color(0xFFDCAAB2),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Buat Akun Baru',
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textDark,
-              ),
-            ),
+             Text(
+               'Buat Akun Baru',
+               style: GoogleFonts.plusJakartaSans(
+                 fontSize: 26,
+                 fontWeight: FontWeight.bold,
+                 color: AppColors.textDark,
+               ),
+             ),
             const SizedBox(height: 6),
             const Text(
               'Silakan pilih tipe akun dan lengkapi data Anda.',
@@ -304,10 +321,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 24),
                     const Divider(),
                     const SizedBox(height: 12),
-                    const Text(
-                      'Informasi Profesional & Legal',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark),
-                    ),
+                     Text(
+                       'Informasi Profesional & Legal',
+                       style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                     ),
                     const SizedBox(height: 16),
 
                     // Spesialisasi
@@ -440,6 +457,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  ),
+);
+}
 }

@@ -46,13 +46,13 @@ class MyApp extends StatelessWidget {
             surface: Colors.white,
             error: AppColors.error,
           ),
-          textTheme: GoogleFonts.outfitTextTheme(
+          textTheme: GoogleFonts.manropeTextTheme(
             ThemeData.light().textTheme,
           ),
           appBarTheme: AppBarTheme(
             backgroundColor: Colors.white,
             elevation: 0.5,
-            titleTextStyle: GoogleFonts.outfit(
+            titleTextStyle: GoogleFonts.plusJakartaSans(
               color: AppColors.textDark,
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -192,7 +192,7 @@ class _LoadingScreenState extends State<LoadingScreen> with SingleTickerProvider
             const SizedBox(height: 24),
             Text(
               'Curhatin',
-              style: GoogleFonts.outfit(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textDark,
@@ -202,7 +202,7 @@ class _LoadingScreenState extends State<LoadingScreen> with SingleTickerProvider
             const SizedBox(height: 8),
             Text(
               'Memuat ruang aman Anda...',
-              style: GoogleFonts.outfit(
+              style: GoogleFonts.manrope(
                 fontSize: 14,
                 color: AppColors.textMedium,
               ),
