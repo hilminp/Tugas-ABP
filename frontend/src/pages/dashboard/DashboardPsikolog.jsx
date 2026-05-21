@@ -47,6 +47,33 @@ const DashboardPsikolog = () => {
         setHiddenPostIds(prev => [...prev, postId]);
     };
 
+    const handleDeleteMyPost = async (postId) => {
+        setConfirmModal({
+            isOpen: true,
+            type: 'warning',
+            message: 'Apakah Anda yakin ingin menghapus postingan ini?',
+            action: async () => {
+                try {
+                    await api.delete(`/posts/${postId}`);
+                    setPosts(prev => prev.filter(p => p.id !== postId));
+                    setStatusModal({ 
+                        isOpen: true, 
+                        type: 'success', 
+                        title: 'Berhasil',
+                        message: 'Postingan Anda berhasil dihapus.' 
+                    });
+                } catch (err) {
+                    setStatusModal({ 
+                        isOpen: true, 
+                        type: 'error', 
+                        title: 'Gagal',
+                        message: err.response?.data?.message || 'Gagal menghapus postingan.' 
+                    });
+                }
+            }
+        });
+    };
+
     const handlePermanentDeletePost = (postId) => {
         setConfirmModal({
             isOpen: true,
@@ -504,9 +531,9 @@ const DashboardPsikolog = () => {
                                                             </button>
                                                             {(user?.is_admin || user?.id === post.user?.id) && (
                                                                 <button
-                                                                    onClick={() => handlePermanentDeletePost(post.id)}
+                                                                    onClick={() => user?.is_admin ? handlePermanentDeletePost(post.id) : handleDeleteMyPost(post.id)}
                                                                     className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                                                                    title="Hapus Permanen"
+                                                                    title="Hapus"
                                                                 >
                                                                     <span className="material-symbols-outlined text-lg">delete_forever</span>
                                                                 </button>

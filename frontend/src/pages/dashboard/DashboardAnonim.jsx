@@ -177,6 +177,38 @@ const DashboardAnonim = () => {
         setHiddenPostIds(prev => [...prev, postId]);
     };
 
+    const handleDeleteMyPost = async (postId) => {
+        setAdminConfirmModal({
+            isOpen: true,
+            title: 'Hapus Postingan',
+            message: 'Apakah Anda yakin ingin menghapus postingan ini?',
+            icon: 'delete',
+            color: 'red',
+            showInput: false,
+            onConfirm: async () => {
+                setAdminActionLoading(true);
+                try {
+                    await api.delete(`/posts/${postId}`);
+                    setPosts(prev => prev.filter(p => p.id !== postId));
+                    setAdminConfirmModal(m => ({ ...m, isOpen: false }));
+                    setStatusModal({ 
+                        isOpen: true, 
+                        type: 'success', 
+                        message: 'Postingan Anda berhasil dihapus.' 
+                    });
+                } catch (err) {
+                    setStatusModal({ 
+                        isOpen: true, 
+                        type: 'error', 
+                        message: err.response?.data?.message || 'Gagal menghapus postingan.' 
+                    });
+                } finally {
+                    setAdminActionLoading(false);
+                }
+            }
+        });
+    };
+
     const handlePermanentDeletePost = (postId) => {
         setAdminConfirmModal({
             isOpen: true,
@@ -906,26 +938,37 @@ const DashboardAnonim = () => {
                                                         </div>
                                                     </div>
 
-                                                    {user?.is_admin && !isModerated && (
-                                                        <div className="flex gap-1">
-                                                            <button
-                                                                onClick={() => handleAdminDeletePost(post.id)}
-                                                                className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                                                                title="Moderasi Post"
-                                                            >
-                                                                <span className="material-symbols-outlined text-lg">gavel</span>
-                                                            </button>
-                                                            {post.user?.id && (
+                                                    <div className="flex gap-1">
+                                                        {user?.is_admin && !isModerated && (
+                                                            <>
                                                                 <button
-                                                                    onClick={() => handleAdminBanUser(post.user.id, post.user.name)}
-                                                                    className="p-1.5 text-orange-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all"
-                                                                    title="Ban User"
+                                                                    onClick={() => handleAdminDeletePost(post.id)}
+                                                                    className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                                                    title="Moderasi Post"
                                                                 >
-                                                                    <span className="material-symbols-outlined text-lg">block</span>
+                                                                    <span className="material-symbols-outlined text-lg">gavel</span>
                                                                 </button>
-                                                            )}
-                                                        </div>
-                                                    )}
+                                                                {post.user?.id && (
+                                                                    <button
+                                                                        onClick={() => handleAdminBanUser(post.user.id, post.user.name)}
+                                                                        className="p-1.5 text-orange-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all"
+                                                                        title="Ban User"
+                                                                    >
+                                                                        <span className="material-symbols-outlined text-lg">block</span>
+                                                                    </button>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                        {user?.id === post.user?.id && !isModerated && (
+                                                            <button
+                                                                onClick={() => handleDeleteMyPost(post.id)}
+                                                                className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                                                title="Hapus Postingan Saya"
+                                                            >
+                                                                <span className="material-symbols-outlined text-lg">delete</span>
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                     {isModerated && (
                                                         <div className="flex gap-1">
                                                             <button
