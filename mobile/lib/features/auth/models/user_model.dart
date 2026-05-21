@@ -33,17 +33,21 @@ class UserModel {
     }
 
     return UserModel(
-      id: json['id'] as int,
+      id: json['id'] is int 
+          ? json['id'] as int 
+          : int.tryParse(json['id']?.toString() ?? '') ?? 0,
       name: json['name'] as String? ?? 'User',
       username: json['username'] as String?,
       email: json['email'] as String?,
       role: json['role'] as String? ?? 'anonim',
-      isPremium: json['is_premium'] == 1 || json['is_premium'] == true,
-      isVerified: json['is_verified'] == 1 || json['is_verified'] == true,
+      isPremium: json['is_premium'] == 1 || json['is_premium'] == true || json['is_premium'] == '1',
+      isVerified: json['is_verified'] == 1 || json['is_verified'] == true || json['is_verified'] == '1',
       profileImage: json['profile_image'] as String?,
       spesialisasi: json['spesialisasi'] as String?,
       reviewsAvgRating: rating,
-      reviewsCount: json['reviews_count'] as int?,
+      reviewsCount: json['reviews_count'] is int 
+          ? json['reviews_count'] as int 
+          : int.tryParse(json['reviews_count']?.toString() ?? ''),
     );
   }
 

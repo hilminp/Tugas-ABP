@@ -44,7 +44,8 @@ class FeedProvider with ChangeNotifier {
       final msg = e.response?.data['message'] ?? 'Gagal membuat postingan.';
       return {'success': false, 'message': msg};
     } catch (e) {
-      return {'success': false, 'message': 'Terjadi kesalahan sistem.'};
+      debugPrint('FeedProvider.createPost Error: $e');
+      return {'success': false, 'message': 'Terjadi kesalahan sistem: $e'};
     } finally {
       _isLoading = false;
       notifyListeners();

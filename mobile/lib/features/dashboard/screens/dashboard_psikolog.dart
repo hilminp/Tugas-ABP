@@ -7,7 +7,8 @@ import '../../chat/screens/chat_room_screen.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/network/api_client.dart';
 import 'edit_profile_screen.dart';
-import 'notification_tab.dart';
+import '../../feed/screens/feed_tab.dart';
+import '../../feed/providers/feed_provider.dart';
 
 class DashboardPsikolog extends StatefulWidget {
   const DashboardPsikolog({super.key});
@@ -28,6 +29,7 @@ class _DashboardPsikologState extends State<DashboardPsikolog> {
   }
 
   void _loadData() {
+    Provider.of<FeedProvider>(context, listen: false).fetchPosts();
     Provider.of<ConsultationProvider>(context, listen: false).fetchIncomingRequests();
     Provider.of<ConsultationProvider>(context, listen: false).fetchPsychologistSessions();
     Provider.of<ChatProvider>(context, listen: false).fetchChats();
@@ -40,6 +42,7 @@ class _DashboardPsikologState extends State<DashboardPsikolog> {
     final user = Provider.of<AuthProvider>(context).user;
 
     final tabs = [
+      const FeedTab(showCreatePostHeader: false),
       const IncomingRequestsTab(),
       const ScheduleManagementTab(),
       const PsychologistChatsTab(),
@@ -112,8 +115,9 @@ class _DashboardPsikologState extends State<DashboardPsikolog> {
               setState(() {
                 _currentIndex = index;
               });
-              if (index == 3) {
+              if (index == 1) {
                 Provider.of<ConsultationProvider>(context, listen: false).markFriendNotificationsAsSeen();
+              } else if (index == 2) {
                 Provider.of<ConsultationProvider>(context, listen: false).markSessionNotificationsAsSeen();
               }
             },
@@ -126,8 +130,23 @@ class _DashboardPsikologState extends State<DashboardPsikolog> {
             unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
             items: [
               const BottomNavigationBarItem(
-                icon: Icon(Icons.people_outline),
-                activeIcon: Icon(Icons.people),
+                icon: Icon(Icons.forum_outlined),
+                activeIcon: Icon(Icons.forum),
+                label: 'Feed',
+              ),
+              BottomNavigationBarItem(
+                icon: friendNotifs > 0
+                    ? Badge(
+                        label: Text('$friendNotifs'),
+                        child: const Icon(Icons.people_outline),
+                      )
+                    : const Icon(Icons.people_outline),
+                activeIcon: friendNotifs > 0
+                    ? Badge(
+                        label: Text('$friendNotifs'),
+                        child: const Icon(Icons.people),
+                      )
+                    : const Icon(Icons.people),
                 label: 'Permintaan',
               ),
               const BottomNavigationBarItem(

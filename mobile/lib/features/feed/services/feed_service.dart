@@ -22,7 +22,7 @@ class FeedService {
     try {
       dynamic data;
       if (imageFile != null) {
-        String fileName = imageFile.path.split('/').last;
+        String fileName = imageFile.path.split(RegExp(r'[/\\]')).last;
         data = FormData.fromMap({
           'body': body,
           'image': await MultipartFile.fromFile(imageFile.path, filename: fileName),
