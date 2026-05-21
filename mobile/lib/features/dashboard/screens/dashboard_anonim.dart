@@ -13,6 +13,7 @@ import '../../payment/providers/payment_provider.dart';
 import '../../payment/screens/midtrans_payment_screen.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/network/api_client.dart';
+import 'notification_tab.dart';
 
 class DashboardAnonim extends StatefulWidget {
   const DashboardAnonim({super.key});
@@ -116,7 +117,7 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
             const SizedBox(width: 8),
             const Text(
               'Curhatin',
-              style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold, fontSize: 20),
+              style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w800, fontSize: 22, letterSpacing: -0.5),
             ),
             if (user?.isPremium == true) ...[
               const SizedBox(width: 8),
@@ -134,10 +135,9 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
             ]
           ],
         ),
-        backgroundColor: Colors.white,
-        elevation: 0.5,
+        backgroundColor: AppColors.background,
+        elevation: 0,
         actions: [
-          // Quick stats
           Padding(
             padding: const EdgeInsets.only(right: 12.0),
             child: CircleAvatar(
@@ -149,7 +149,26 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
                 onPressed: _loadInitialData,
               ),
             ),
-          )
+          ),
+          Consumer<ConsultationProvider>(
+            builder: (context, consProvider, child) {
+              final totalNotifs = consProvider.friendNotificationsCount + consProvider.sessionNotificationsCount;
+              return IconButton(
+                icon: totalNotifs > 0
+                    ? Badge(
+                        backgroundColor: Colors.red,
+                        label: Text('$totalNotifs', style: const TextStyle(color: Colors.white, fontSize: 10)),
+                        child: const Icon(Icons.notifications_none, color: AppColors.primary),
+                      )
+                    : const Icon(Icons.notifications_none, color: AppColors.primary),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationTab()));
+                  Provider.of<ConsultationProvider>(context, listen: false).markFriendNotificationsAsSeen();
+                  Provider.of<ConsultationProvider>(context, listen: false).markSessionNotificationsAsSeen();
+                },
+              );
+            },
+          ),
         ],
       ),
       body: IndexedStack(
@@ -172,6 +191,7 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
         builder: (context, consProvider, child) {
           final friendNotifs = consProvider.friendNotificationsCount;
           final sessionNotifs = consProvider.sessionNotificationsCount;
+          final totalNotifs = friendNotifs + sessionNotifs;
 
           return BottomNavigationBar(
             currentIndex: _currentIndex,
@@ -179,35 +199,23 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
               setState(() {
                 _currentIndex = index;
               });
-              if (index == 1) {
-                Provider.of<ConsultationProvider>(context, listen: false).markFriendNotificationsAsSeen();
-              } else if (index == 3) {
-                Provider.of<ConsultationProvider>(context, listen: false).markSessionNotificationsAsSeen();
-              }
             },
             type: BottomNavigationBarType.fixed,
             selectedItemColor: AppColors.primary,
             unselectedItemColor: AppColors.textLight,
             backgroundColor: Colors.white,
+            elevation: 20,
+            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
             items: [
               const BottomNavigationBarItem(
                 icon: Icon(Icons.forum_outlined),
                 activeIcon: Icon(Icons.forum),
                 label: 'Feed',
               ),
-              BottomNavigationBarItem(
-                icon: friendNotifs > 0
-                    ? Badge(
-                        label: Text('$friendNotifs'),
-                        child: const Icon(Icons.search_outlined),
-                      )
-                    : const Icon(Icons.search_outlined),
-                activeIcon: friendNotifs > 0
-                    ? Badge(
-                        label: Text('$friendNotifs'),
-                        child: const Icon(Icons.search),
-                      )
-                    : const Icon(Icons.search),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.search_outlined),
+                activeIcon: Icon(Icons.search),
                 label: 'Cari Psikolog',
               ),
               const BottomNavigationBarItem(
@@ -215,19 +223,10 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
                 activeIcon: Icon(Icons.mail),
                 label: 'Pesan',
               ),
-              BottomNavigationBarItem(
-                icon: sessionNotifs > 0
-                    ? Badge(
-                        label: Text('$sessionNotifs'),
-                        child: const Icon(Icons.person_outline),
-                      )
-                    : const Icon(Icons.person_outline),
-                activeIcon: sessionNotifs > 0
-                    ? Badge(
-                        label: Text('$sessionNotifs'),
-                        child: const Icon(Icons.person),
-                      )
-                    : const Icon(Icons.person),
+
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline),
+                activeIcon: Icon(Icons.person),
                 label: 'Profil',
               ),
             ],
@@ -252,6 +251,71 @@ class _FeedTabState extends State<FeedTab> {
   final _postController = TextEditingController();
   File? _selectedPostImage;
 
+  Widget _buildHeroBanner(BuildContext context, UserModel? user) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
+          colors: [Color(0xFFDB7391), Color(0xFF9F4F72)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFDB7391).withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Bagaimana perasaanmu hari ini?',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Ruang aman untuk berbagi beban pikiran tanpa takut dihakimi. Mulai percakapan pertamamu secara anonim.',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 13,
+              height: 1.4,
+            ),
+          ),
+          if (user?.isPremium != true) ...[
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                final state = context.findAncestorStateOfType<_DashboardAnonimState>();
+                state?._triggerPremiumUpgrade();
+              },
+              icon: const Icon(Icons.star, color: Color(0xFF8B6508), size: 18),
+              label: const Text(
+                'Upgrade Premium',
+                style: TextStyle(color: Color(0xFF8B6508), fontWeight: FontWeight.bold),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFD700),
+                foregroundColor: const Color(0xFF8B6508),
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildCreatePostHeader(BuildContext context, UserModel? user) {
     final avatarImage = user?.profileImage != null && user!.profileImage!.isNotEmpty
         ? NetworkImage(user.profileImage!.startsWith('http')
@@ -261,10 +325,11 @@ class _FeedTabState extends State<FeedTab> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 0.5,
+      elevation: 2,
+      shadowColor: Colors.black.withValues(alpha: 0.05),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: Colors.grey[200]!, width: 1),
+        side: BorderSide(color: Colors.grey.shade100, width: 1),
       ),
       color: Colors.white,
       child: InkWell(
@@ -285,19 +350,26 @@ class _FeedTabState extends State<FeedTab> {
               const SizedBox(width: 12),
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: AppColors.background,
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: const Text(
-                    'Apa yang sedang kamu pikirkan? Curhat di sini...',
-                    style: TextStyle(color: AppColors.textMedium, fontSize: 13),
+                    'Apa yang sedang kamu pikirkan?',
+                    style: TextStyle(color: AppColors.textMedium, fontSize: 14, fontWeight: FontWeight.w500),
                   ),
                 ),
               ),
               const SizedBox(width: 12),
-              const Icon(Icons.image_outlined, color: AppColors.primary, size: 24),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.05),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.image_outlined, color: AppColors.primary, size: 22),
+              ),
             ],
           ),
         ),
@@ -614,9 +686,12 @@ class _FeedTabState extends State<FeedTab> {
             ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
             : ListView.builder(
                 padding: const EdgeInsets.all(16),
-                itemCount: feedProvider.posts.isEmpty ? 2 : feedProvider.posts.length + 1,
+                itemCount: feedProvider.posts.isEmpty ? 3 : feedProvider.posts.length + 2,
                 itemBuilder: (ctx, index) {
                   if (index == 0) {
+                    return _buildHeroBanner(context, myUser);
+                  }
+                  if (index == 1) {
                     return _buildCreatePostHeader(context, myUser);
                   }
 
@@ -632,13 +707,17 @@ class _FeedTabState extends State<FeedTab> {
                     );
                   }
 
-                  final post = feedProvider.posts[index - 1];
+                  final post = feedProvider.posts[index - 2];
                   final isOwnPost = post.user.id == myUser?.id;
 
                   return Card(
                     margin: const EdgeInsets.only(bottom: 16),
-                        elevation: 1,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                        elevation: 3,
+                        shadowColor: Colors.black.withValues(alpha: 0.04),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          side: BorderSide(color: Colors.grey.shade100, width: 1),
+                        ),
                         color: Colors.white,
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
@@ -659,11 +738,12 @@ class _FeedTabState extends State<FeedTab> {
                                       children: [
                                         Text(
                                           post.user.name,
-                                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 14),
+                                          style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.textDark, fontSize: 15, letterSpacing: -0.3),
                                         ),
+                                        const SizedBox(height: 2),
                                         Text(
                                           post.user.role.toUpperCase(),
-                                          style: const TextStyle(fontSize: 10, color: AppColors.textLight, fontWeight: FontWeight.bold),
+                                          style: const TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.w800, letterSpacing: 0.5),
                                         ),
                                       ],
                                     ),
@@ -687,7 +767,7 @@ class _FeedTabState extends State<FeedTab> {
                               // Post content body
                               Text(
                                 post.body,
-                                style: const TextStyle(fontSize: 14, color: AppColors.textDark, height: 1.4),
+                                style: const TextStyle(fontSize: 14, color: AppColors.textDark, height: 1.5, letterSpacing: -0.2),
                               ),
                               
                               // Post image (if exists)
@@ -711,44 +791,65 @@ class _FeedTabState extends State<FeedTab> {
                                 ),
                               ],
                               
+                              const SizedBox(height: 16),
+                              Divider(color: Colors.grey.shade100, thickness: 1, height: 1),
                               const SizedBox(height: 12),
-                              const Divider(),
                               
                               // Action bar: Likes & Comments counts
                               Row(
                                 children: [
                                   InkWell(
                                     onTap: () => feedProvider.toggleLike(post.id),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 6.0),
+                                      decoration: BoxDecoration(
+                                        color: post.isLiked ? const Color(0xFFFFF0F0) : Colors.transparent,
+                                        border: Border.all(color: post.isLiked ? const Color(0xFFF87171) : Colors.grey.shade300),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
                                       child: Row(
                                         children: [
                                           Icon(
                                             post.isLiked ? Icons.favorite : Icons.favorite_border,
-                                            color: post.isLiked ? AppColors.accent : AppColors.textMedium,
-                                            size: 20,
+                                            color: post.isLiked ? const Color(0xFFE53E3E) : AppColors.textMedium,
+                                            size: 16,
                                           ),
                                           const SizedBox(width: 6),
                                           Text(
                                             '${post.likesCount}',
-                                            style: const TextStyle(fontSize: 13, color: AppColors.textMedium),
+                                            style: TextStyle(
+                                              fontSize: 13, 
+                                              color: post.isLiked ? const Color(0xFFE53E3E) : AppColors.textMedium,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
                                         ],
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 24),
+                                  const SizedBox(width: 12),
                                   InkWell(
                                     onTap: () => _showCommentsBottomSheet(context, post.id),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 6.0),
+                                      decoration: BoxDecoration(
+                                        color: Colors.transparent,
+                                        border: Border.all(color: Colors.grey.shade300),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
                                       child: Row(
                                         children: [
-                                          const Icon(Icons.mode_comment_outlined, color: AppColors.textMedium, size: 20),
+                                          const Icon(Icons.mode_comment_outlined, color: AppColors.textMedium, size: 16),
                                           const SizedBox(width: 6),
                                           Text(
                                             '${post.commentsCount}',
-                                            style: const TextStyle(fontSize: 13, color: AppColors.textMedium),
+                                            style: const TextStyle(
+                                              fontSize: 13, 
+                                              color: AppColors.textMedium,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
                                         ],
                                       ),
