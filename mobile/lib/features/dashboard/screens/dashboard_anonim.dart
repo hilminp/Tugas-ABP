@@ -167,6 +167,7 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
         },
         child: const Icon(Icons.spa, color: Colors.white, size: 28),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       bottomNavigationBar: Consumer<ConsultationProvider>(
         builder: (context, consProvider, child) {
           final friendNotifs = consProvider.friendNotificationsCount;
@@ -250,6 +251,59 @@ class FeedTab extends StatefulWidget {
 class _FeedTabState extends State<FeedTab> {
   final _postController = TextEditingController();
   File? _selectedPostImage;
+
+  Widget _buildCreatePostHeader(BuildContext context, UserModel? user) {
+    final avatarImage = user?.profileImage != null && user!.profileImage!.isNotEmpty
+        ? NetworkImage(user.profileImage!.startsWith('http')
+            ? user.profileImage!
+            : '${ApiClient.defaultStorageUrl}/${user.profileImage}')
+        : null;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 0.5,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: Colors.grey[200]!, width: 1),
+      ),
+      color: Colors.white,
+      child: InkWell(
+        onTap: () => _triggerCreatePost(context),
+        borderRadius: BorderRadius.circular(18),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                backgroundImage: avatarImage,
+                child: avatarImage == null
+                    ? const Icon(Icons.person, size: 20, color: AppColors.primary)
+                    : null,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: const Text(
+                    'Apa yang sedang kamu pikirkan? Curhat di sini...',
+                    style: TextStyle(color: AppColors.textMedium, fontSize: 13),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Icon(Icons.image_outlined, color: AppColors.primary, size: 24),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   void _triggerCreatePost(BuildContext context) {
     final user = Provider.of<AuthProvider>(context, listen: false).user;
@@ -553,27 +607,36 @@ class _FeedTabState extends State<FeedTab> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _triggerCreatePost(context),
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.edit_note, color: Colors.white, size: 28),
-      ),
       body: RefreshIndicator(
         onRefresh: () async => feedProvider.fetchPosts(),
         color: AppColors.primary,
         child: feedProvider.isLoading && feedProvider.posts.isEmpty
             ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-            : feedProvider.posts.isEmpty
-                ? const Center(child: Text('Belum ada postingan.', style: TextStyle(color: AppColors.textMedium)))
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: feedProvider.posts.length,
-                    itemBuilder: (ctx, index) {
-                      final post = feedProvider.posts[index];
-                      final isOwnPost = post.user.id == myUser?.id;
+            : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: feedProvider.posts.isEmpty ? 2 : feedProvider.posts.length + 1,
+                itemBuilder: (ctx, index) {
+                  if (index == 0) {
+                    return _buildCreatePostHeader(context, myUser);
+                  }
 
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 16),
+                  if (feedProvider.posts.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: Center(
+                        child: Text(
+                          'Belum ada postingan.',
+                          style: TextStyle(color: AppColors.textMedium),
+                        ),
+                      ),
+                    );
+                  }
+
+                  final post = feedProvider.posts[index - 1];
+                  final isOwnPost = post.user.id == myUser?.id;
+
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 16),
                         elevation: 1,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                         color: Colors.white,

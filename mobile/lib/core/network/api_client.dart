@@ -9,8 +9,8 @@ class ApiClient {
   factory ApiClient() => _instance;
   
   // Default API Base URL (Configured for laptop's local IP on Wi-Fi)
-  static const String defaultBaseUrl = 'http://172.168.100.61:8000/api';
-  static const String defaultStorageUrl = 'http://172.168.100.61:8000/storage';
+  static const String defaultBaseUrl = 'http://10.0.2.2:8000/api';
+  static const String defaultStorageUrl = 'http://10.0.2.2:8000/storage';
 
   ApiClient._internal() {
     _dio = Dio(
