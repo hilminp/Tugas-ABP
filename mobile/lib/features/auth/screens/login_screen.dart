@@ -58,7 +58,9 @@ class _LoginScreenState extends State<LoginScreen> {
         _adminNotes = result['admin_notes'];
       });
     } else {
-      // Navigation is handled at main.dart based on auth state
+      if (mounted) {
+        Navigator.pop(context);
+      }
     }
   }
 
