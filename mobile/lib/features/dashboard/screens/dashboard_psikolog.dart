@@ -46,6 +46,7 @@ class _DashboardPsikologState extends State<DashboardPsikolog> {
       const IncomingRequestsTab(),
       const ScheduleManagementTab(),
       const PsychologistChatsTab(),
+      const NotificationTab(),
       const PsychologistProfileTab(),
     ];
 
@@ -58,7 +59,7 @@ class _DashboardPsikologState extends State<DashboardPsikolog> {
             const SizedBox(width: 8),
             const Text(
               'Panel Psikolog',
-              style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold, fontSize: 18),
+              style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w800, fontSize: 22, letterSpacing: -0.5),
             ),
             const SizedBox(width: 8),
             if (user?.isVerified == true)
@@ -87,14 +88,16 @@ class _DashboardPsikologState extends State<DashboardPsikolog> {
               ),
           ],
         ),
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: AppColors.primary),
-            onPressed: _loadData,
-          )
-        ],
+        backgroundColor: AppColors.background,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 12.0),
+              child: IconButton(
+                icon: const Icon(Icons.refresh, color: AppColors.primary),
+                onPressed: _loadData,
+              ),
+            ),
+          ],
       ),
       body: IndexedStack(
         index: _currentIndex,
@@ -104,6 +107,7 @@ class _DashboardPsikologState extends State<DashboardPsikolog> {
         builder: (context, consProvider, child) {
           final friendNotifs = consProvider.friendNotificationsCount;
           final sessionNotifs = consProvider.sessionNotificationsCount;
+          final totalNotifs = friendNotifs + sessionNotifs;
 
           return BottomNavigationBar(
             currentIndex: _currentIndex,
@@ -121,6 +125,9 @@ class _DashboardPsikologState extends State<DashboardPsikolog> {
             selectedItemColor: AppColors.primary,
             unselectedItemColor: AppColors.textLight,
             backgroundColor: Colors.white,
+            elevation: 20,
+            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
             items: [
               const BottomNavigationBarItem(
                 icon: Icon(Icons.forum_outlined),
@@ -142,25 +149,32 @@ class _DashboardPsikologState extends State<DashboardPsikolog> {
                     : const Icon(Icons.people),
                 label: 'Permintaan',
               ),
-              BottomNavigationBarItem(
-                icon: sessionNotifs > 0
-                    ? Badge(
-                        label: Text('$sessionNotifs'),
-                        child: const Icon(Icons.calendar_month_outlined),
-                      )
-                    : const Icon(Icons.calendar_month_outlined),
-                activeIcon: sessionNotifs > 0
-                    ? Badge(
-                        label: Text('$sessionNotifs'),
-                        child: const Icon(Icons.calendar_month),
-                      )
-                    : const Icon(Icons.calendar_month),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.calendar_month_outlined),
+                activeIcon: Icon(Icons.calendar_month),
                 label: 'Jadwal Sesi',
               ),
               const BottomNavigationBarItem(
                 icon: Icon(Icons.chat_bubble_outline),
                 activeIcon: Icon(Icons.chat_bubble),
                 label: 'Konsultasi',
+              ),
+              BottomNavigationBarItem(
+                icon: totalNotifs > 0
+                    ? Badge(
+                        backgroundColor: Colors.red,
+                        label: Text('$totalNotifs', style: const TextStyle(color: Colors.white, fontSize: 10)),
+                        child: const Icon(Icons.notifications_none, color: AppColors.primary),
+                      )
+                    : const Icon(Icons.notifications_none, color: AppColors.primary),
+                activeIcon: totalNotifs > 0
+                    ? Badge(
+                        backgroundColor: Colors.red,
+                        label: Text('$totalNotifs', style: const TextStyle(color: Colors.white, fontSize: 10)),
+                        child: const Icon(Icons.notifications, color: AppColors.primary),
+                      )
+                    : const Icon(Icons.notifications, color: AppColors.primary),
+                label: 'Notifikasi',
               ),
               const BottomNavigationBarItem(
                 icon: Icon(Icons.person_outline),

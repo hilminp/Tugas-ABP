@@ -13,6 +13,7 @@ import '../../payment/providers/payment_provider.dart';
 import '../../payment/screens/midtrans_payment_screen.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/network/api_client.dart';
+import 'notification_tab.dart';
 
 class DashboardAnonim extends StatefulWidget {
   const DashboardAnonim({super.key});
@@ -101,7 +102,7 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
     final user = Provider.of<AuthProvider>(context).user;
 
     final tabs = [
-      const FeedTab(),
+      FeedTab(onUpgradePressed: _triggerPremiumUpgrade),
       const SearchPsikologTab(),
       const MessagesTab(),
       ProfileTab(onUpgradePressed: _triggerPremiumUpgrade),
@@ -116,7 +117,7 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
             const SizedBox(width: 8),
             const Text(
               'Curhatin',
-              style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold, fontSize: 20),
+              style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w800, fontSize: 22, letterSpacing: -0.5),
             ),
             if (user?.isPremium == true) ...[
               const SizedBox(width: 8),
@@ -134,10 +135,9 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
             ]
           ],
         ),
-        backgroundColor: Colors.white,
-        elevation: 0.5,
+        backgroundColor: AppColors.background,
+        elevation: 0,
         actions: [
-          // Quick stats
           Padding(
             padding: const EdgeInsets.only(right: 12.0),
             child: CircleAvatar(
@@ -149,7 +149,26 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
                 onPressed: _loadInitialData,
               ),
             ),
-          )
+          ),
+          Consumer<ConsultationProvider>(
+            builder: (context, consProvider, child) {
+              final totalNotifs = consProvider.friendNotificationsCount + consProvider.sessionNotificationsCount;
+              return IconButton(
+                icon: totalNotifs > 0
+                    ? Badge(
+                        backgroundColor: Colors.red,
+                        label: Text('$totalNotifs', style: const TextStyle(color: Colors.white, fontSize: 10)),
+                        child: const Icon(Icons.notifications_none, color: AppColors.primary),
+                      )
+                    : const Icon(Icons.notifications_none, color: AppColors.primary),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationTab()));
+                  Provider.of<ConsultationProvider>(context, listen: false).markFriendNotificationsAsSeen();
+                  Provider.of<ConsultationProvider>(context, listen: false).markSessionNotificationsAsSeen();
+                },
+              );
+            },
+          ),
         ],
       ),
       body: IndexedStack(
@@ -172,6 +191,7 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
         builder: (context, consProvider, child) {
           final friendNotifs = consProvider.friendNotificationsCount;
           final sessionNotifs = consProvider.sessionNotificationsCount;
+          final totalNotifs = friendNotifs + sessionNotifs;
 
           return BottomNavigationBar(
             currentIndex: _currentIndex,
@@ -179,35 +199,23 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
               setState(() {
                 _currentIndex = index;
               });
-              if (index == 1) {
-                Provider.of<ConsultationProvider>(context, listen: false).markFriendNotificationsAsSeen();
-              } else if (index == 3) {
-                Provider.of<ConsultationProvider>(context, listen: false).markSessionNotificationsAsSeen();
-              }
             },
             type: BottomNavigationBarType.fixed,
             selectedItemColor: AppColors.primary,
             unselectedItemColor: AppColors.textLight,
             backgroundColor: Colors.white,
+            elevation: 20,
+            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
             items: [
               const BottomNavigationBarItem(
                 icon: Icon(Icons.forum_outlined),
                 activeIcon: Icon(Icons.forum),
                 label: 'Feed',
               ),
-              BottomNavigationBarItem(
-                icon: friendNotifs > 0
-                    ? Badge(
-                        label: Text('$friendNotifs'),
-                        child: const Icon(Icons.search_outlined),
-                      )
-                    : const Icon(Icons.search_outlined),
-                activeIcon: friendNotifs > 0
-                    ? Badge(
-                        label: Text('$friendNotifs'),
-                        child: const Icon(Icons.search),
-                      )
-                    : const Icon(Icons.search),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.search_outlined),
+                activeIcon: Icon(Icons.search),
                 label: 'Cari Psikolog',
               ),
               const BottomNavigationBarItem(
@@ -215,19 +223,10 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
                 activeIcon: Icon(Icons.mail),
                 label: 'Pesan',
               ),
-              BottomNavigationBarItem(
-                icon: sessionNotifs > 0
-                    ? Badge(
-                        label: Text('$sessionNotifs'),
-                        child: const Icon(Icons.person_outline),
-                      )
-                    : const Icon(Icons.person_outline),
-                activeIcon: sessionNotifs > 0
-                    ? Badge(
-                        label: Text('$sessionNotifs'),
-                        child: const Icon(Icons.person),
-                      )
-                    : const Icon(Icons.person),
+
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline),
+                activeIcon: Icon(Icons.person),
                 label: 'Profil',
               ),
             ],
