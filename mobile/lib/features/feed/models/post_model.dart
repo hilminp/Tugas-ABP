@@ -30,14 +30,22 @@ class PostModel {
         .toList();
 
     return PostModel(
-      id: json['id'] as int,
+      id: json['id'] is int 
+          ? json['id'] as int 
+          : int.tryParse(json['id']?.toString() ?? '') ?? 0,
       body: json['body'] as String? ?? '',
       image: json['image'] as String?,
-      user: UserModel.fromJson(json['user'] as Map<String, dynamic>),
-      likesCount: json['likes_count'] as int? ?? 0,
-      commentsCount: json['comments_count'] as int? ?? 0,
-      isLiked: json['is_liked'] == true || json['is_liked'] == 1,
-      createdAt: json['created_at'] as String? ?? '',
+      user: json['user'] != null 
+          ? UserModel.fromJson(json['user'] as Map<String, dynamic>)
+          : UserModel(id: 0, name: 'Unknown User', role: 'anonim'),
+      likesCount: json['likes_count'] is int 
+          ? json['likes_count'] as int 
+          : int.tryParse(json['likes_count']?.toString() ?? '') ?? 0,
+      commentsCount: json['comments_count'] is int 
+          ? json['comments_count'] as int 
+          : int.tryParse(json['comments_count']?.toString() ?? '') ?? 0,
+      isLiked: json['is_liked'] == true || json['is_liked'] == 1 || json['is_liked'] == '1',
+      createdAt: json['created_at']?.toString() ?? '',
       comments: parsedComments,
     );
   }
@@ -58,10 +66,14 @@ class PostCommentModel {
 
   factory PostCommentModel.fromJson(Map<String, dynamic> json) {
     return PostCommentModel(
-      id: json['id'] as int,
+      id: json['id'] is int 
+          ? json['id'] as int 
+          : int.tryParse(json['id']?.toString() ?? '') ?? 0,
       content: json['content'] as String? ?? '',
-      user: UserModel.fromJson(json['user'] as Map<String, dynamic>),
-      createdAt: json['created_at'] as String? ?? '',
+      user: json['user'] != null 
+          ? UserModel.fromJson(json['user'] as Map<String, dynamic>)
+          : UserModel(id: 0, name: 'Unknown User', role: 'anonim'),
+      createdAt: json['created_at']?.toString() ?? '',
     );
   }
 }
