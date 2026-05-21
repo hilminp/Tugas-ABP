@@ -50,10 +50,6 @@ class PostController extends Controller
 
     public function store(Request $request)
     {
-        if ($request->user()->role === 'anonim' && !$request->user()->is_premium) {
-            return response()->json(['message' => 'Silakan upgrade akun ke Premium untuk mempublikasikan curhatan Anda.'], 403);
-        }
-
         $request->validate([
             'body' => 'required|string',
             'image' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:10240',

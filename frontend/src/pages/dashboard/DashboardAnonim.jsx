@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '../../components/Sidebar';
 import { useAuth } from '../../hooks/useAuth';
+import { useMidtrans } from '../../hooks/useMidtrans';
 import { api, STORAGE_BASE_URL } from '../../lib/api';
 import { PSYCHOLOGIST_CATEGORIES } from '../../constants/psychologistCategories';
 import '../Home.css';
@@ -152,6 +153,9 @@ const DashboardAnonim = () => {
     const [likingPostId, setLikingPostId] = useState(null);
     const [submittingCommentId, setSubmittingCommentId] = useState(null);
     const [isPaying, setIsPaying] = useState(false);
+    const [paymentStatusText, setPaymentStatusText] = useState('');
+    const snapPaymentOpenRef = useRef(false);
+    const { openSnap } = useMidtrans();
     const [statusModal, setStatusModal] = useState({ isOpen: false, type: '', message: '' });
     const [selectedCategory, setSelectedCategory] = useState('');
     const [psychologists, setPsychologists] = useState([]);
@@ -529,31 +533,79 @@ const DashboardAnonim = () => {
     };
 
     const handleUpgradePremium = async () => {
-        if (isPaying) return;
+        if (isPaying || snapPaymentOpenRef.current) return;
+        snapPaymentOpenRef.current = true;
         setIsPaying(true);
+
+        const finishPaymentFlow = () => {
+            snapPaymentOpenRef.current = false;
+            setIsPaying(false);
+            setPaymentStatusText('');
+        };
+
+        const resetSnapPopup = async () => {
+            try {
+                if (typeof window.snap?.hide === 'function') {
+                    window.snap.hide();
+                    await new Promise((resolve) => setTimeout(resolve, 350));
+                }
+            } catch (error) {
+                console.warn('Gagal reset popup Midtrans:', error);
+            }
+        };
+
         try {
-            const res = await api.post('/payment/token', { amount: 15000 });
-            if (window.snap) {
-                window.snap.pay(res.data.snap_token, {
+            setPaymentStatusText('Menyiapkan pembayaran...');
+            const res = await api.post('/payment/token', { amount: 15000 }, { timeout: 20000 });
+            if (res.data?.snap_token) {
+                setPaymentStatusText('Membuka pembayaran...');
+                const snapCallbacks = {
                     onSuccess: async function (result) {
                         setStatusModal({ isOpen: true, type: 'success', message: 'Pembayaran sukses! Akun Anda kini Premium.' });
                         try {
                             const successRes = await api.post('/payment/success');
                             if (successRes.data.user) updateUser(successRes.data.user);
                         } catch (e) { console.error('Gagal update status premium', e); }
-                        setIsPaying(false);
+                        finishPaymentFlow();
                     },
-                    onPending: function () { setStatusModal({ isOpen: true, type: 'warning', message: 'Menunggu konfirmasi pembayaran.' }); setIsPaying(false); },
-                    onError: function () { setStatusModal({ isOpen: true, type: 'error', message: 'Transaksi pembayaran Anda gagal diproses.' }); setIsPaying(false); },
-                    onClose: function () { setStatusModal({ isOpen: true, type: 'info', message: 'Anda menutup jendela pembayaran tanpa menyelesaikan transaksi.' }); setIsPaying(false); },
-                });
+                    onPending: function () { setStatusModal({ isOpen: true, type: 'warning', message: 'Menunggu konfirmasi pembayaran.' }); finishPaymentFlow(); },
+                    onError: function () { setStatusModal({ isOpen: true, type: 'error', message: 'Transaksi pembayaran Anda gagal diproses.' }); finishPaymentFlow(); },
+                    onClose: function () { setStatusModal({ isOpen: true, type: 'info', message: 'Anda menutup jendela pembayaran tanpa menyelesaikan transaksi.' }); finishPaymentFlow(); },
+                };
+
+                try {
+                    await resetSnapPopup();
+                    await openSnap(res.data.snap_token, snapCallbacks);
+                } catch (snapError) {
+                    const isPopupAlreadyOpen = snapError.message?.includes('PopupInView');
+                    if (isPopupAlreadyOpen) {
+                        await resetSnapPopup();
+                        try {
+                            await openSnap(res.data.snap_token, snapCallbacks);
+                            return;
+                        } catch (retryError) {
+                            setStatusModal({ isOpen: true, type: 'info', message: 'Popup pembayaran sebelumnya masih aktif. Tutup popup Midtrans atau refresh halaman, lalu coba lagi.' });
+                            finishPaymentFlow();
+                            return;
+                        }
+                    }
+                    setStatusModal({ isOpen: true, type: 'error', message: 'Gagal membuka popup pembayaran: ' + snapError.message });
+                    finishPaymentFlow();
+                }
             } else {
-                setStatusModal({ isOpen: true, type: 'error', message: 'Sistem pembayaran belum termuat sempurna. Coba lagi.' });
-                setIsPaying(false);
+                setStatusModal({ isOpen: true, type: 'error', message: 'Token pembayaran tidak tersedia. Coba lagi.' });
+                finishPaymentFlow();
             }
         } catch (err) {
-            setStatusModal({ isOpen: true, type: 'error', message: 'Gagal memanggil sistem pembayaran: ' + (err.response?.data?.message || err.message) });
-            setIsPaying(false);
+            const isTimeout = err.code === 'ECONNABORTED' || err.message?.toLowerCase().includes('timeout');
+            setStatusModal({
+                isOpen: true,
+                type: 'error',
+                message: isTimeout
+                    ? 'Midtrans sedang lambat merespons. Coba lagi beberapa saat lagi.'
+                    : 'Gagal memanggil sistem pembayaran: ' + (err.response?.data?.message || err.message)
+            });
+            finishPaymentFlow();
         }
     };
 
@@ -683,7 +735,7 @@ const DashboardAnonim = () => {
                                                 style={{ padding: '12px 24px', borderRadius: '30px', background: isPaying ? '#ccc' : '#ffd700', color: '#8b6508', border: 'none', fontWeight: 'bold', cursor: isPaying ? 'wait' : 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
                                                 className="hover:-translate-y-1 transition-transform"
                                             >
-                                                {isPaying ? 'Memproses...' : '⭐ Upgrade Premium (Rp 15.000)'}
+                                                {isPaying ? (paymentStatusText || 'Memproses...') : '⭐ Upgrade Premium (Rp 15.000)'}
                                             </button>
                                         )}
                                     </div>
@@ -811,19 +863,7 @@ const DashboardAnonim = () => {
                                 )}
                             </div>
 
-                            {!hasAccess ? (
-                                <div className="post-create" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '40px 20px', background: '#fff', border: '2px dashed #fbd8e1', borderRadius: '16px' }}>
-                                    <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#db7391', marginBottom: '10px' }}>lock</span>
-                                    <h3 style={{ fontSize: '18px', margin: '0 0 10px', color: '#1a3635' }}>Fitur Ekslusif Premium</h3>
-                                    <p style={{ margin: '0 0 20px', color: '#666', fontSize: '14px', maxWidth: '400px' }}>
-                                        Anda harus menjadi pengguna Premium untuk mempublikasikan curhatan secara publik.
-                                    </p>
-                                    <button onClick={handleUpgradePremium} style={{ padding: '12px 24px', borderRadius: '30px', background: '#ffd700', color: '#8b6508', border: 'none', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
-                                        ⭐ Upgrade Sekarang
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="post-create-card group">
+                            <div className="post-create-card group">
                                     <div className="flex gap-4 p-5">
                                         <div className="shrink-0">
                                             {user?.profile_image ? (
@@ -891,8 +931,7 @@ const DashboardAnonim = () => {
                                             </div>
                                         </div>
                                     )}
-                                </div>
-                            )}
+                            </div>
 
                             {/* ─── POST LIST ─── */}
                             <div className="post-list">

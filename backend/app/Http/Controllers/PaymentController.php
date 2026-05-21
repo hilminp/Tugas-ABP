@@ -18,6 +18,11 @@ class PaymentController extends Controller
         Config::$isSanitized = true;
         // Set 3DS transaction for credit card to true
         Config::$is3ds = true;
+        Config::$curlOptions = [
+            CURLOPT_HTTPHEADER => [],
+            CURLOPT_CONNECTTIMEOUT => 8,
+            CURLOPT_TIMEOUT => 20,
+        ];
     }
 
     public function getToken(Request $request)
@@ -29,6 +34,9 @@ class PaymentController extends Controller
 
         $orderId = $request->order_id ?? 'ORDER-' . time() . '-' . uniqid();
 
+        $origin = $request->header('origin') ?: config('app.url');
+        $finishUrl = rtrim($origin, '/') . '/dashboard';
+
         $params = [
             'transaction_details' => [
                 'order_id' => $orderId,
@@ -39,7 +47,7 @@ class PaymentController extends Controller
                 'email' => $request->user()->email ?? 'user@example.com',
             ],
             'callbacks' => [
-                'finish' => $request->header('origin') . '/dashboard',
+                'finish' => $finishUrl,
             ],
         ];
 
