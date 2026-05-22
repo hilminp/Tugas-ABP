@@ -46,7 +46,6 @@ class _DashboardPsikologState extends State<DashboardPsikolog> {
       const IncomingRequestsTab(),
       const ScheduleManagementTab(),
       const PsychologistChatsTab(),
-      const NotificationTab(),
       const PsychologistProfileTab(),
     ];
 
@@ -158,23 +157,6 @@ class _DashboardPsikologState extends State<DashboardPsikolog> {
                 icon: Icon(Icons.chat_bubble_outline),
                 activeIcon: Icon(Icons.chat_bubble),
                 label: 'Konsultasi',
-              ),
-              BottomNavigationBarItem(
-                icon: totalNotifs > 0
-                    ? Badge(
-                        backgroundColor: Colors.red,
-                        label: Text('$totalNotifs', style: const TextStyle(color: Colors.white, fontSize: 10)),
-                        child: const Icon(Icons.notifications_none, color: AppColors.primary),
-                      )
-                    : const Icon(Icons.notifications_none, color: AppColors.primary),
-                activeIcon: totalNotifs > 0
-                    ? Badge(
-                        backgroundColor: Colors.red,
-                        label: Text('$totalNotifs', style: const TextStyle(color: Colors.white, fontSize: 10)),
-                        child: const Icon(Icons.notifications, color: AppColors.primary),
-                      )
-                    : const Icon(Icons.notifications, color: AppColors.primary),
-                label: 'Notifikasi',
               ),
               const BottomNavigationBarItem(
                 icon: Icon(Icons.person_outline),
