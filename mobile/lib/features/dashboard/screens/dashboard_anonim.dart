@@ -102,7 +102,7 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
     final user = Provider.of<AuthProvider>(context).user;
 
     final tabs = [
-      FeedTab(onUpgradePressed: _triggerPremiumUpgrade),
+      FeedTab(),
       const SearchPsikologTab(),
       const MessagesTab(),
       ProfileTab(onUpgradePressed: _triggerPremiumUpgrade),
