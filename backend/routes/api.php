@@ -14,6 +14,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ConsultationSessionController;
+use App\Http\Controllers\GoogleAuthController;
 use Illuminate\Http\Request;
 
 Route::get('/status', function () {
@@ -29,6 +30,8 @@ Route::post('/login', [SessionController::class, 'login']);
 Route::post('/reapply', [SessionController::class, 'reapply']);
 Route::post('/register/psikolog', [RegistrationController::class, 'storePsikolog']);
 Route::post('/register/anonim', [RegistrationController::class, 'storeAnonim']);
+Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirectToGoogle']);
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
 
 
 // Protected Routes

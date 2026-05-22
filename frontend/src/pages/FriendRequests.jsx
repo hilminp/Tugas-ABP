@@ -163,11 +163,11 @@ const FriendRequests = () => {
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                                         <div className="flex items-center gap-4">
                                             <div className="w-14 h-14 rounded-full bg-[#A46477]/10 flex items-center justify-center text-[#A46477] font-black text-xl border-2 border-[#A46477]/20">
-                                                {displayUser?.name?.charAt(0).toUpperCase() || 'P'}
+                                                {(displayUser?.username || displayUser?.name || 'P').charAt(0).toUpperCase()}
                                             </div>
                                             <div>
                                                 <div className="flex items-center gap-2">
-                                                    <h3 className="font-bold text-lg text-slate-800">{displayUser?.name}</h3>
+                                                    <h3 className="font-bold text-lg text-slate-800">{displayUser?.username || displayUser?.name}</h3>
                                                     <span className="px-2 py-0.5 bg-stone-100 text-stone-500 text-[10px] font-bold rounded uppercase">
                                                         {isPsychologist ? 'Anonim' : 'Psikolog'}
                                                     </span>

@@ -164,11 +164,19 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Helper: cek apakah index sudah ada (agar migration aman dijalankan ulang).
-     */
     private function hasIndex(string $table, string $indexName): bool
     {
+        $conn = \Illuminate\Support\Facades\DB::connection();
+        if ($conn->getDriverName() === 'sqlite') {
+            $indexes = $conn->select("PRAGMA index_list(`{$table}`)");
+            foreach ($indexes as $index) {
+                if ($index->name === $indexName) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         $indexes = \Illuminate\Support\Facades\DB::select(
             "SHOW INDEX FROM `{$table}` WHERE Key_name = ?",
             [$indexName]

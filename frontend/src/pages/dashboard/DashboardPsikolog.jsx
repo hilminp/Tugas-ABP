@@ -25,6 +25,7 @@ const DashboardPsikolog = () => {
     const [reviewsLoading, setReviewsLoading] = useState(true);
     const [sessions, setSessions] = useState([]);
     const [sessionsLoading, setSessionsLoading] = useState(true);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [hiddenPostIds, setHiddenPostIds] = useState(() => {
         try {
             const saved = localStorage.getItem('hidden_posts');
@@ -100,10 +101,10 @@ const DashboardPsikolog = () => {
         });
     };
 
-    const psychologistName = user?.name || user?.username || 'Psikolog';
+    const psychologistName = user?.username || user?.name || 'Psikolog';
     const psychologistSpecialty = user?.spesialisasi || 'Spesialis Klinis';
     const profileImageUrl = user?.profile_image
-        ? `${STORAGE_BASE_URL}/${user.profile_image}`
+        ? (user.profile_image.startsWith('http') ? user.profile_image : `${STORAGE_BASE_URL}/${user.profile_image}`)
         : 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
     useEffect(() => {
@@ -388,13 +389,16 @@ const DashboardPsikolog = () => {
     };
 
     const handleLogout = async () => {
+        setIsLoggingOut(true);
         try {
             await api.post('/logout');
         } catch (error) {
             console.error('Logout failed:', error);
         } finally {
-            logout();
-            navigate('/login');
+            setTimeout(() => {
+                logout();
+                navigate('/login');
+            }, 1500);
         }
     };
 
@@ -447,14 +451,13 @@ const DashboardPsikolog = () => {
                     </Link>
                 </nav>
                 <div className="mt-auto">
-
                     <button
                         type="button"
                         onClick={handleLogout}
-                        className="w-full mt-3 py-3 bg-white text-[#A46477] border border-[#e7c6d1] rounded-xl font-semibold hover:bg-[#fff3f7] transition-colors flex items-center justify-center gap-2"
+                        className="logout-btn w-full"
                     >
                         <span className="material-symbols-outlined">logout</span>
-                        Keluar
+                        <span>Keluar</span>
                     </button>
                 </div>
             </aside>
@@ -652,11 +655,11 @@ const DashboardPsikolog = () => {
                                                 <div className="flex items-start justify-between mb-3">
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-10 h-10 rounded-full bg-[#A46477]/10 flex items-center justify-center text-[#A46477] font-bold border border-[#A46477]/20">
-                                                            {request.requester?.name?.charAt(0).toUpperCase() || 'P'}
+                                                            {(request.requester?.username || request.requester?.name || 'P').charAt(0).toUpperCase()}
                                                         </div>
                                                         <div>
                                                             <p className="text-sm font-bold text-[#3f2f38]">
-                                                                {request.requester?.name || 'Anonim'}
+                                                                {request.requester?.username || request.requester?.name || 'Anonim'}
                                                                 <span className="ml-2 text-[10px] px-1.5 py-0.5 bg-stone-100 text-stone-500 rounded uppercase tracking-tighter">Anonim</span>
                                                             </p>
                                                             <div className="flex items-center gap-2 mt-0.5">
@@ -849,7 +852,7 @@ const DashboardPsikolog = () => {
                                                     <span className="text-[10px] uppercase">{new Date(session.session_date).toLocaleString('id-ID', { month: 'short' })}</span>
                                                 </div>
                                                 <div className="flex-1">
-                                                    <p className="text-sm font-bold text-[#2a2651] leading-none">Konsultasi {session.user?.name || 'Teman Curhat'}</p>
+                                                    <p className="text-sm font-bold text-[#2a2651] leading-none">Konsultasi {session.user?.username || session.user?.name || 'Teman Curhat'}</p>
                                                     <p className="text-xs text-[#6b6699] mt-1">{session.session_time.substring(0, 5)} • {session.status === 'pending_approval' ? 'MENUNGGU' : 'TERJADWAL'}</p>
                                                     {session.status === 'pending_approval' && (
                                                         <Link to="/sessions" className="text-[10px] font-black text-amber-600 underline mt-1 block">KONFIRMASI SEKARANG</Link>
@@ -938,6 +941,21 @@ const DashboardPsikolog = () => {
                             >
                                 Ya, Lanjutkan
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isLoggingOut && (
+                <div className="logging-out-overlay">
+                    <div className="logging-out-content">
+                        <div className="logging-out-icon-container">
+                            <span className="material-symbols-outlined animated-logout-icon">logout</span>
+                        </div>
+                        <h3>Mengamankan Sesi Anda...</h3>
+                        <p>Sampai jumpa kembali di Curhatin Safe Space</p>
+                        <div className="logout-progress-bar">
+                            <div className="logout-progress-line"></div>
                         </div>
                     </div>
                 </div>

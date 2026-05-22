@@ -11,6 +11,7 @@ import Login from './pages/auth/login/Login';
 import RegisterRoleSelect from './pages/auth/register/RegisterRoleSelect';
 import RegisterAnonim from './pages/auth/register/RegisterAnonim';
 import RegisterPsikolog from './pages/auth/register/RegisterPsikolog';
+import GoogleCallback from './pages/auth/GoogleCallback';
 import HomeComponentSwitcher from './pages/dashboard/HomeComponentSwitcher';
 import Profile from './pages/Profile';
 import FriendRequests from './pages/FriendRequests';
@@ -48,6 +49,7 @@ function AppRoutes() {
             <Route path="/register" element={<RegisterRoleSelect />} />
             <Route path="/register/anonim" element={<RegisterAnonim />} />
             <Route path="/register/psikolog" element={<RegisterPsikolog />} />
+            <Route path="/auth/google/callback" element={<GoogleCallback />} />
 
             {/* Protected User Routes */}
             <Route path="/home" element={<ProtectedRoute><HomeComponentSwitcher /></ProtectedRoute>} />
