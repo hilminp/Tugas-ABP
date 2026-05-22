@@ -27,7 +27,13 @@ class ProfileController extends Controller
 
         // Update username jika ada
         if ($request->filled('username')) {
-            $user->username = $validated['username'];
+            $oldUsername = $user->username;
+            $newUsername = $validated['username'];
+            $user->username = $newUsername;
+
+            if ($user->role === 'anonim' || $user->name === $oldUsername) {
+                $user->name = $newUsername;
+            }
         }
 
         // Update foto jika ada

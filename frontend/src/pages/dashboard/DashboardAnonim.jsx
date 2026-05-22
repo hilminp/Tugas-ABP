@@ -867,10 +867,10 @@ const DashboardAnonim = () => {
                                     <div className="flex gap-4 p-5">
                                         <div className="shrink-0">
                                             {user?.profile_image ? (
-                                                <img src={`${STORAGE_BASE_URL}/${user.profile_image}`} alt={user.name} className="w-11 h-11 rounded-2xl object-cover shadow-sm" />
+                                                <img src={user.profile_image.startsWith('http') ? user.profile_image : `${STORAGE_BASE_URL}/${user.profile_image}`} alt={user.username || user.name} className="w-11 h-11 rounded-2xl object-cover shadow-sm" />
                                             ) : (
                                                 <div className="w-11 h-11 rounded-2xl bg-[#f0dde7] text-[#81556a] font-black flex items-center justify-center shadow-sm">
-                                                    {user?.name?.charAt(0).toUpperCase()}
+                                                    {(user?.username || user?.name || 'U').charAt(0).toUpperCase()}
                                                 </div>
                                             )}
                                         </div>
@@ -1141,7 +1141,7 @@ const DashboardAnonim = () => {
                                                 <span className="material-symbols-outlined text-[20px] opacity-70">event_upcoming</span>
                                                 <div>
                                                     <small className="capitalize">{session.status === 'booked' ? 'Mendatang' : session.status.replace('_', ' ')}</small>
-                                                    <strong>{user?.role === 'psikolog' ? session.user?.name : session.psychologist?.name}</strong>
+                                                    <strong>{user?.role === 'psikolog' ? (session.user?.username || session.user?.name) : (session.psychologist?.username || session.psychologist?.name)}</strong>
                                                     <span>{new Date(session.session_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} • {session.session_time.substring(0, 5)}</span>
                                                 </div>
                                             </div>

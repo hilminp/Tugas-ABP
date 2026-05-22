@@ -588,3 +588,58 @@
     padding: 24px 18px;
   }
 }
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+  color: #6b5b5f;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(136, 77, 96, 0.15);
+}
+
+.auth-divider span {
+  padding: 0 10px;
+}
+
+.login-google-btn {
+  width: 100%;
+  border: 1px solid rgba(136, 77, 96, 0.2);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #3c2f32;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.login-google-btn:hover {
+  background: rgba(188, 143, 155, 0.05);
+  border-color: #884d60;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(170, 109, 130, 0.15);
+}
+
+.login-google-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.google-icon {
+  display: block;
+}

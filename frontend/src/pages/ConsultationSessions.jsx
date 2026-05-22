@@ -278,9 +278,17 @@ const ConsultationSessions = () => {
                                 <div className="psychologist-list">
                                     {connectedPsychologists.map(p => (
                                         <div key={p.id} className="psychologist-item" onClick={() => handleViewSlots(p)}>
-                                            <div className="p-avatar">{p.name.charAt(0)}</div>
+                                            {p.profile_image ? (
+                                                <img 
+                                                    src={p.profile_image.startsWith('http') ? p.profile_image : `${STORAGE_BASE_URL}/${p.profile_image}`} 
+                                                    alt={p.username || p.name} 
+                                                    style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(164,100,119,0.1)' }} 
+                                                />
+                                            ) : (
+                                                <div className="p-avatar">{(p.username || p.name || 'P').charAt(0).toUpperCase()}</div>
+                                            )}
                                             <div className="p-info">
-                                                <h4>{p.name}</h4>
+                                                <h4>{p.username || p.name}</h4>
                                                 <span>{p.spesialisasi || 'Psikolog'}</span>
                                             </div>
                                             <span className="material-symbols-outlined">event_available</span>
@@ -318,7 +326,7 @@ const ConsultationSessions = () => {
                                             <div className="session-status">
                                                 {s.status === 'booked' ? (
                                                     <div className="booked-status">
-                                                        <span>Dipesan oleh: <strong>{isPsychologist ? s.user?.name : s.psychologist?.name}</strong></span>
+                                                        <span>Dipesan oleh: <strong>{isPsychologist ? (s.user?.username || s.user?.name) : (s.psychologist?.username || s.psychologist?.name)}</strong></span>
                                                         {isPsychologist && (
                                                             <div className="booked-actions">
                                                                 <button className="chat-now-btn" onClick={() => handleStartSession(s)}>
@@ -334,7 +342,7 @@ const ConsultationSessions = () => {
                                                     </div>
                                                 ) : s.status === 'pending_approval' ? (
                                                     <div className="pending-status">
-                                                        <span>Menunggu Persetujuan {isPsychologist ? `dari ${s.user?.name}` : ''}</span>
+                                                        <span>Menunggu Persetujuan {isPsychologist ? `dari ${s.user?.username || s.user?.name}` : ''}</span>
                                                         {isPsychologist && (
                                                             <button className="approve-btn" onClick={() => handleApproveSession(s.id)}>Setujui</button>
                                                         )}

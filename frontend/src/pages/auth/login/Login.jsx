@@ -15,6 +15,7 @@ const Login = () => {
     const [confirmModal, setConfirmModal] = useState({ show: false, onConfirm: null });
     const [successModal, setSuccessModal] = useState({ show: false, title: '', message: '', type: 'success', buttonText: 'Oke', onConfirm: null });
     const [appealModal, setAppealModal] = useState({ show: false, reason: '', loading: false });
+    const [googleLoading, setGoogleLoading] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -47,6 +48,22 @@ const Login = () => {
             } else {
                 setError({ type: 'general', message: err.response?.data?.message || 'Login failed.' });
             }
+        }
+    };
+
+    const handleGoogleLogin = async () => {
+        setGoogleLoading(true);
+        setError(null);
+        try {
+            const res = await api.get('/auth/google/redirect');
+            if (res.data.url) {
+                window.location.href = res.data.url;
+            } else {
+                throw new Error('Google redirect URL not found.');
+            }
+        } catch (err) {
+            setGoogleLoading(false);
+            setError({ type: 'general', message: err.response?.data?.message || err.message || 'Gagal memulai login Google.' });
         }
     };
 
@@ -279,6 +296,25 @@ const Login = () => {
                                     Masuk
                                 </button>
                             </form>
+
+                            <div className="auth-divider">
+                                <span>atau</span>
+                            </div>
+
+                            <button 
+                                type="button" 
+                                className="login-google-btn" 
+                                onClick={handleGoogleLogin}
+                                disabled={googleLoading}
+                            >
+                                <svg className="google-icon" viewBox="0 0 24 24" width="18" height="18">
+                                    <path fill="#EA4335" d="M12 5.04c1.67 0 3.17.58 4.35 1.71l3.25-3.25C17.62 1.51 15.01 0 12 0 7.35 0 3.39 2.67 1.39 6.56l3.86 3c.92-2.76 3.51-4.52 6.75-4.52z"/>
+                                    <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.34H12v4.43h6.45c-.28 1.48-1.12 2.74-2.38 3.58l3.69 2.87c2.16-1.99 3.43-4.92 3.43-8.54z"/>
+                                    <path fill="#FBBC05" d="M5.25 14.44c-.24-.72-.38-1.5-.38-2.31s.14-1.59.38-2.31L1.39 6.82C.5 8.62 0 10.63 0 12.75s.5 4.13 1.39 5.93l3.86-3z"/>
+                                    <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.92l-3.69-2.87c-1.12.75-2.54 1.21-4.27 1.21-3.24 0-5.83-1.76-6.75-4.52L1.39 16.92C3.39 20.81 7.35 23 12 23z"/>
+                                </svg>
+                                <span>{googleLoading ? 'Menghubungkan...' : 'Lanjutkan dengan Google'}</span>
+                            </button>
 
                             <div className="login-modern-bottom">
                                 <p>

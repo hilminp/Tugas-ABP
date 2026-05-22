@@ -155,17 +155,17 @@ const MessagesContainer = () => {
                                 <img 
                                     alt="User profile" 
                                     className="w-10 h-10 rounded-xl object-cover ring-2 ring-white shadow-md transition-all group-hover:ring-primary/20" 
-                                    src={`${STORAGE_BASE_URL}/${user.profile_image}`} 
+                                    src={user.profile_image.startsWith('http') ? user.profile_image : `${STORAGE_BASE_URL}/${user.profile_image}`} 
                                 />
                             ) : (
                                 <div className="w-10 h-10 rounded-xl bg-white ring-2 ring-white shadow-md flex items-center justify-center text-primary font-black text-sm">
-                                    {user?.name?.charAt(0).toUpperCase() || 'U'}
+                                    {(user?.username || user?.name || 'U').charAt(0).toUpperCase()}
                                 </div>
                             )}
                             <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-4 border-surface-container-lowest rounded-full shadow-sm"></div>
                         </div>
                         <div className="flex-1 overflow-hidden">
-                            <p className="text-on-surface font-black font-headline leading-tight truncate">{user?.name}</p>
+                            <p className="text-on-surface font-black font-headline leading-tight truncate">{user?.username || user?.name}</p>
                             <div className="flex items-center gap-1.5 mt-1">
                                 <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
                                 <p className="text-[9px] text-primary/60 uppercase tracking-[0.2em] font-black">Private Sanctuary</p>
@@ -211,20 +211,20 @@ const MessagesContainer = () => {
                                 <div className="relative shrink-0">
                                     {f.profile_image ? (
                                         <img 
-                                            src={`${STORAGE_BASE_URL}/${f.profile_image}`} 
+                                            src={f.profile_image.startsWith('http') ? f.profile_image : `${STORAGE_BASE_URL}/${f.profile_image}`} 
                                             className="w-10 h-10 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform duration-500 ring-2 ring-white" 
-                                            alt={f.name} 
+                                            alt={f.username || f.name} 
                                         />
                                     ) : (
                                         <div className="w-10 h-10 rounded-xl bg-white shadow-sm ring-2 ring-white flex items-center justify-center text-primary font-bold text-sm">
-                                            {f.name?.charAt(0).toUpperCase() || 'U'}
+                                            {(f.username || f.name || 'U').charAt(0).toUpperCase()}
                                         </div>
                                     )}
                                     <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full shadow-sm"></div>
                                 </div>
                                 <div className="flex-1 text-left overflow-hidden">
                                     <div className="flex justify-between items-center">
-                                        <p className={`font-headline font-bold truncate text-sm transition-colors duration-300 ${friendId == f.id ? 'text-primary' : 'text-on-surface'}`}>{f.name}</p>
+                                        <p className={`font-headline font-bold truncate text-sm transition-colors duration-300 ${friendId == f.id ? 'text-primary' : 'text-on-surface'}`}>{f.username || f.name}</p>
                                         <span className={`text-[8px] font-bold uppercase tracking-tighter ${friendId == f.id ? 'text-primary/60' : 'text-primary/30'}`}>10:45 AM</span>
                                     </div>
                                     <p className={`text-[11px] truncate mt-0.5 font-medium transition-colors ${friendId == f.id ? 'text-primary/40' : 'text-on-surface-variant/40'}`}>Bagikan ceritamu...</p>
@@ -268,19 +268,19 @@ const MessagesContainer = () => {
                                 <div className="relative group cursor-pointer">
                                     {activeFriend?.profile_image ? (
                                         <img 
-                                            alt={activeFriend?.name} 
+                                            alt={activeFriend?.username || activeFriend?.name} 
                                             className="w-10 h-10 rounded-xl object-cover ring-4 ring-white shadow-xl transition-all group-hover:scale-105" 
-                                            src={`${STORAGE_BASE_URL}/${activeFriend.profile_image}`} 
+                                            src={activeFriend.profile_image.startsWith('http') ? activeFriend.profile_image : `${STORAGE_BASE_URL}/${activeFriend.profile_image}`} 
                                         />
                                     ) : (
                                         <div className="w-10 h-10 rounded-xl bg-white ring-4 ring-white shadow-xl flex items-center justify-center text-primary font-black text-lg">
-                                            {activeFriend?.name?.charAt(0).toUpperCase() || 'U'}
+                                            {(activeFriend?.username || activeFriend?.name || 'U').charAt(0).toUpperCase()}
                                         </div>
                                     )}
                                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-4 border-white rounded-full shadow-md animate-pulse"></div>
                                 </div>
                                 <div>
-                                    <p className="font-headline font-black text-on-surface text-xl leading-none tracking-tighter hover:text-primary transition-colors cursor-default">{activeFriend?.name || "Memuat..."}</p>
+                                    <p className="font-headline font-black text-on-surface text-xl leading-none tracking-tighter hover:text-primary transition-colors cursor-default">{activeFriend?.username || activeFriend?.name || "Memuat..."}</p>
                                     <div className="flex items-center gap-2.5 mt-2">
                                         <span className="relative flex h-2 w-2">
                                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
