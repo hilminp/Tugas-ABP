@@ -17,7 +17,9 @@ class GoogleAuthController extends Controller
      */
     public function redirectToGoogle()
     {
-        $url = Socialite::driver('google')
+        /** @var \Laravel\Socialite\Two\GoogleProvider $driver */
+        $driver = Socialite::driver('google');
+        $url = $driver
             ->stateless()
             ->with(['prompt' => 'select_account'])
             ->redirect()
@@ -41,7 +43,9 @@ class GoogleAuthController extends Controller
         }
 
         try {
-            $googleUser = Socialite::driver('google')->stateless()->user();
+            /** @var \Laravel\Socialite\Two\GoogleProvider $driver */
+            $driver = Socialite::driver('google');
+            $googleUser = $driver->stateless()->user();
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Google Auth callback exception: ' . $e->getMessage(), [
                 'exception' => $e,

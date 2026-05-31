@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { api } from '../lib/api';
+import { api, STORAGE_BASE_URL } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import Skeleton from '../components/ui/Skeleton';
 import Flatpickr from "react-flatpickr";
