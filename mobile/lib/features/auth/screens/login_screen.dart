@@ -479,6 +479,42 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 ),
                                         ),
                                       ),
+                                      const SizedBox(height: 16),
+                                      
+                                      // Google Login Button
+                                      SizedBox(
+                                        height: 52,
+                                        child: OutlinedButton.icon(
+                                          style: OutlinedButton.styleFrom(
+                                            side: BorderSide(color: Colors.grey.shade300),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                            backgroundColor: Colors.white,
+                                          ),
+                                          onPressed: isLoading ? null : () async {
+                                            final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                                            final result = await authProvider.loginWithGoogle();
+                                            if (!result['success']) {
+                                              if (mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(content: Text(result['message'] ?? 'Login Google gagal'), backgroundColor: AppColors.error),
+                                                );
+                                              }
+                                            } else {
+                                              if (mounted) Navigator.pop(context);
+                                            }
+                                          },
+                                          icon: Container(
+                                            width: 24,
+                                            height: 24,
+                                            decoration: const BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.blue,
+                                            ),
+                                            child: const Center(child: Text('G', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                                          ),
+                                          label: const Text('Lanjutkan dengan Google', style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w600)),
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),

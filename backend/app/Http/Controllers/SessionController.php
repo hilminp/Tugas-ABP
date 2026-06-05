@@ -50,8 +50,12 @@ class SessionController extends Controller
                 'user' => [
                     'id' => $user->id,
                     'name' => $user->name,
+                    'username' => $user->username,
+                    'email' => $user->email,
                     'role' => $user->role,
                     'is_admin' => $user->is_admin,
+                    'is_premium' => $user->is_premium,
+                    'profile_image' => $user->profile_image,
                 ]
             ]);
         }

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../../../core/network/api_client.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthProvider with ChangeNotifier {
   UserModel? _user;
@@ -65,6 +66,59 @@ class AuthProvider with ChangeNotifier {
     return result;
   }
 
+  // Google Login
+  Future<Map<String, dynamic>> loginWithGoogle() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile'],
+      );
+
+      // Trigger the authentication flow
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+      if (googleUser == null) {
+        // User canceled the sign-in flow
+        _isLoading = false;
+        notifyListeners();
+        return {'success': false, 'message': 'Google sign-in dibatalkan.'};
+      }
+
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final String? accessToken = googleAuth.accessToken;
+
+      if (accessToken == null) {
+         _isLoading = false;
+         notifyListeners();
+         return {'success': false, 'message': 'Gagal mendapatkan akses token dari Google.'};
+      }
+
+      final result = await _authService.loginWithGoogleBackend(accessToken);
+
+      if (result['success']) {
+        final token = result['data']['access_token'];
+        final userData = result['data']['user'];
+        
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('access_token', token);
+        
+        _user = UserModel.fromJson(userData);
+      }
+
+      _isLoading = false;
+      notifyListeners();
+      return result;
+      
+    } catch (e) {
+      _isLoading = false;
+      notifyListeners();
+      return {'success': false, 'message': 'Terjadi kesalahan saat login Google: ${e.toString()}'};
+    }
+  }
+
   // Register Anonim
   Future<Map<String, dynamic>> registerAnonim(
     String email,
@@ -91,6 +145,8 @@ class AuthProvider with ChangeNotifier {
     required String namaBank,
     required dynamic strFile, // Can be File
     required dynamic ijazahFile, // Can be File
+    String? strFileName,
+    String? ijazahFileName,
   }) async {
     _isLoading = true;
     notifyListeners();
@@ -104,6 +160,8 @@ class AuthProvider with ChangeNotifier {
       namaBank: namaBank,
       strFile: strFile,
       ijazahFile: ijazahFile,
+      strFileName: strFileName,
+      ijazahFileName: ijazahFileName,
     );
     
     _isLoading = false;
@@ -139,6 +197,12 @@ class AuthProvider with ChangeNotifier {
   Future<void> logout() async {
     _isLoading = true;
     notifyListeners();
+
+    try {
+      await GoogleSignIn().signOut();
+    } catch (e) {
+      // Ignore Google sign out errors if not logged in with Google
+    }
 
     await _authService.logout();
     final prefs = await SharedPreferences.getInstance();

@@ -113,18 +113,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFFFAECE9),
-              Color(0xFFEED4D4),
-              Color(0xFFCCA2A7),
-              Color(0xFFDCAAB2),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+        color: AppColors.background,
         child: Stack(
           children: [
             // Background soft aesthetic blobs
@@ -220,9 +209,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                   children: [
                                     Text.rich(
                                       TextSpan(
-                                        text: 'Kamu nggak sendirian koq,\n',
+                                        text: 'Kamu nggak\nsendirian koq,\n',
                                         style: GoogleFonts.plusJakartaSans(
-                                          fontSize: 28,
+                                          fontSize: 32,
                                           fontWeight: FontWeight.w800,
                                           color: AppColors.textDark,
                                           height: 1.3,
@@ -234,6 +223,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                               color: AppColors.primary,
                                               fontWeight: FontWeight.w800,
                                               fontStyle: FontStyle.italic,
+                                              fontSize: 32,
                                             ),
                                           ),
                                         ],
@@ -368,25 +358,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                   crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: [
                                     // Main CTA: Masuk
-                                    Container(
+                                    SizedBox(
                                       height: 54,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(16),
-                                        gradient: AppColors.primaryGradient,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: AppColors.primary.withValues(alpha: 0.25),
-                                            blurRadius: 16,
-                                            offset: const Offset(0, 6),
-                                          ),
-                                        ],
-                                      ),
                                       child: ElevatedButton(
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.transparent,
-                                          shadowColor: Colors.transparent,
+                                          backgroundColor: AppColors.primary,
+                                          elevation: 0,
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(16),
+                                            borderRadius: BorderRadius.circular(24),
                                           ),
                                         ),
                                         onPressed: () {
@@ -409,26 +388,28 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                     const SizedBox(height: 12),
 
                                     // Secondary CTA: Daftar
-                                    OutlinedButton(
-                                      style: OutlinedButton.styleFrom(
-                                        side: const BorderSide(color: AppColors.primary, width: 1.5),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(16),
+                                    SizedBox(
+                                      height: 54,
+                                      child: OutlinedButton(
+                                        style: OutlinedButton.styleFrom(
+                                          side: const BorderSide(color: AppColors.primary, width: 1.0),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(24),
+                                          ),
                                         ),
-                                        padding: const EdgeInsets.symmetric(vertical: 15),
-                                      ),
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                                        );
-                                      },
-                                      child: Text(
-                                        'Daftar Akun Baru',
-                                        style: GoogleFonts.manrope(
-                                          color: AppColors.primary,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                                          );
+                                        },
+                                        child: Text(
+                                          'Daftar Akun Baru',
+                                          style: GoogleFonts.manrope(
+                                            color: AppColors.primary,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -454,9 +435,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Icon(
-                                          Icons.shield_outlined,
-                                          color: AppColors.primary.withValues(alpha: 0.7),
-                                          size: 16,
+                                          Icons.lock_outline_rounded,
+                                          color: AppColors.primary.withValues(alpha: 0.8),
+                                          size: 18,
                                         ),
                                         const SizedBox(width: 6),
                                         Text(

@@ -54,10 +54,10 @@ class _DashboardPsikologState extends State<DashboardPsikolog> {
       appBar: AppBar(
         title: Row(
           children: [
-            const Icon(Icons.shield_outlined, color: AppColors.primary, size: 28),
+            Image.asset('assets/images/LogoFinal.png', width: 28, height: 28),
             const SizedBox(width: 8),
             const Text(
-              'Panel Psikolog',
+              'Psikolog',
               style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w800, fontSize: 22, letterSpacing: -0.5),
             ),
             const SizedBox(width: 8),

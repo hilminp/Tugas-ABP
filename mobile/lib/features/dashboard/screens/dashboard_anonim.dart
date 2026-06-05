@@ -60,7 +60,7 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
       ),
     );
 
-    final response = await paymentProvider.getUpgradeToken(50000); // Rp 50.000 for premium upgrade
+    final response = await paymentProvider.getUpgradeToken(15000); // Rp 15.000 for premium upgrade
     
     if (mounted) {
       Navigator.pop(context); // Close loading dialog
@@ -113,7 +113,7 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
       appBar: AppBar(
         title: Row(
           children: [
-            const Icon(Icons.psychology, color: AppColors.primary, size: 28),
+            Image.asset('assets/images/LogoFinal.png', width: 28, height: 28),
             const SizedBox(width: 8),
             const Text(
               'Curhatin',
@@ -900,7 +900,7 @@ class ProfileTab extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       ),
                       onPressed: onUpgradePressed,
-                      child: const Text('Upgrade Sekarang (Rp 50.000)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      child: const Text('Upgrade Sekarang (Rp 15.000)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                     )
                   ],
                 ),
