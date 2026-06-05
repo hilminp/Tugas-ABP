@@ -74,6 +74,7 @@ class AuthProvider with ChangeNotifier {
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn(
         scopes: ['email', 'profile'],
+        serverClientId: '115008072933-9r82109qfucdl9jtunbfadgcipsp6pgs.apps.googleusercontent.com',
       );
 
       // Trigger the authentication flow
