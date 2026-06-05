@@ -150,7 +150,7 @@ class PostController extends Controller
     private function maskAnonymousUser($user): void
     {
         if ($user && $user->role === 'anonim') {
-            $user->name = $user->is_premium ? "Anonim \u{2B50}" : 'Anonim';
+            $user->name = 'Anonim';
             $user->profile_image = null;
             $user->username = 'anonim';
         }

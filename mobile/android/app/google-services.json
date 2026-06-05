@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "115008072933",
+    "project_id": "curhatin-b6887",
+    "storage_bucket": "curhatin-b6887.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:115008072933:android:a70e8a8df6640c33e2b80c",
+        "android_client_info": {
+          "package_name": "com.example.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDfWuQbDsNPeQl0Y8CS6eXiV34Zn0vHfPU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

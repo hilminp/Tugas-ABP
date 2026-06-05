@@ -28,6 +28,28 @@ class AuthService {
     }
   }
 
+  // Google Login (Mobile)
+  Future<Map<String, dynamic>> loginWithGoogleBackend(String token) async {
+    try {
+      final response = await _client.post('/auth/google/mobile', data: {
+        'token': token,
+      });
+      return {
+        'success': true,
+        'data': response.data,
+      };
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': e.response?.data['message'] ?? 'Login dengan Google gagal.',
+        'is_suspended': e.response?.data['is_suspended'] == true,
+        'is_rejected': e.response?.data['is_rejected'] == true,
+        'appeal_status': e.response?.data['appeal_status'],
+        'admin_notes': e.response?.data['admin_notes'],
+      };
+    }
+  }
+
   // Register Anonim
   Future<Map<String, dynamic>> registerAnonim(
     String email,
@@ -63,10 +85,12 @@ class AuthService {
     required String namaBank,
     required File strFile,
     required File ijazahFile,
+    String? strFileName,
+    String? ijazahFileName,
   }) async {
     try {
-      String strFileName = strFile.path.split('/').last;
-      String ijazahFileName = ijazahFile.path.split('/').last;
+      String finalStrName = strFileName ?? strFile.path.split('/').last;
+      String finalIjazahName = ijazahFileName ?? ijazahFile.path.split('/').last;
 
       FormData formData = FormData.fromMap({
         'email': email,
@@ -76,8 +100,8 @@ class AuthService {
         'spesialisasi': spesialisasi,
         'no_rekening': noRekening,
         'nama_bank': namaBank,
-        'str_file': await MultipartFile.fromFile(strFile.path, filename: strFileName),
-        'ijazah_file': await MultipartFile.fromFile(ijazahFile.path, filename: ijazahFileName),
+        'str_file': await MultipartFile.fromFile(strFile.path, filename: finalStrName),
+        'ijazah_file': await MultipartFile.fromFile(ijazahFile.path, filename: finalIjazahName),
       });
 
       final response = await _client.post(

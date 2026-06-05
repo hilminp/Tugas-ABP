@@ -412,9 +412,45 @@ class _FeedTabState extends State<FeedTab> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      post.user.name,
-                                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 14),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          post.user.name,
+                                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 14),
+                                        ),
+                                        if (post.user.isPremium) ...[
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  const Color(0xFFD4AF37).withValues(alpha: 0.2),
+                                                  const Color(0xFFFFDF00).withValues(alpha: 0.2),
+                                                ],
+                                              ),
+                                              borderRadius: BorderRadius.circular(12),
+                                              border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.3)),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: const [
+                                                Icon(Icons.diamond, color: Color(0xFFB8860B), size: 10),
+                                                SizedBox(width: 2),
+                                                Text(
+                                                  'PREMIUM',
+                                                  style: TextStyle(
+                                                    color: Color(0xFFB8860B),
+                                                    fontSize: 8,
+                                                    fontWeight: FontWeight.bold,
+                                                    letterSpacing: 0.5,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ],
                                     ),
                                     Text(
                                       post.user.role.toUpperCase(),

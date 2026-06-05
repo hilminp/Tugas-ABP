@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/auth_provider.dart';
 import '../../../core/theme/colors.dart';
@@ -25,13 +26,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   
   // Psychologist specific inputs
-  final _spesialisasiController = TextEditingController();
+  String? _selectedSpesialisasi;
   final _rekeningController = TextEditingController();
-  final _bankController = TextEditingController();
+  String? _selectedBank;
   
   // Dummy file paths for demonstration (simulate picking STR & Ijazah files)
   File? _strFile;
+  String? _strFileName;
   File? _ijazahFile;
+  String? _ijazahFileName;
+  bool _agreeToTerms = false;
   
   String? _errorMessage;
 
@@ -46,36 +50,88 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
-    _spesialisasiController.dispose();
     _rekeningController.dispose();
-    _bankController.dispose();
     super.dispose();
   }
 
-  // Simulate file picking
-  void _pickStrFile() {
-    // For complete implementation, import 'package:file_picker/file_picker.dart'
-    // Here we simulate picking a dummy file
-    setState(() {
-      _strFile = File('/dummy_path/str_file.pdf');
-    });
+  void _showTermsAndConditionsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Syarat & Ketentuan Psikolog', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        content: const SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Dengan mendaftar sebagai Psikolog, Anda menyetujui:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              SizedBox(height: 12),
+              Text('1. Anda adalah psikolog profesional dengan STR yang sah dan masih berlaku.', style: TextStyle(fontSize: 13)),
+              SizedBox(height: 6),
+              Text('2. Data, identitas, dan dokumen (STR & Ijazah) yang dilampirkan adalah benar dan dapat dipertanggungjawabkan.', style: TextStyle(fontSize: 13)),
+              SizedBox(height: 6),
+              Text('3. Bersedia memberikan layanan konsultasi sesuai standar dan kode etik psikologi.', style: TextStyle(fontSize: 13)),
+              SizedBox(height: 6),
+              Text('4. Curhatin berhak memverifikasi dan menolak atau menangguhkan akun jika ditemukan pelanggaran.', style: TextStyle(fontSize: 13)),
+              SizedBox(height: 6),
+              Text('5. Menjaga penuh kerahasiaan identitas dan sesi pasien/klien.', style: TextStyle(fontSize: 13)),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Mengerti', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
-  void _pickIjazahFile() {
-    setState(() {
-      _ijazahFile = File('/dummy_path/ijazah_file.pdf');
-    });
+  Future<void> _pickStrFile() async {
+    final result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+    );
+    if (result != null && result.files.single.path != null) {
+      setState(() {
+        _strFile = File(result.files.single.path!);
+        _strFileName = result.files.single.name;
+      });
+    }
+  }
+
+  Future<void> _pickIjazahFile() async {
+    final result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+    );
+    if (result != null && result.files.single.path != null) {
+      setState(() {
+        _ijazahFile = File(result.files.single.path!);
+        _ijazahFileName = result.files.single.name;
+      });
+    }
   }
 
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
     
     // Validate files for psychologist registration
-    if (_selectedRole == 'psikolog' && (_strFile == null || _ijazahFile == null)) {
-      setState(() {
-        _errorMessage = 'File STR dan Ijazah wajib diunggah.';
-      });
-      return;
+    if (_selectedRole == 'psikolog') {
+      if (_strFile == null || _ijazahFile == null) {
+        setState(() {
+          _errorMessage = 'File STR dan Ijazah wajib diunggah.';
+        });
+        return;
+      }
+      if (!_agreeToTerms) {
+        setState(() {
+          _errorMessage = 'Anda harus menyetujui Syarat dan Ketentuan.';
+        });
+        return;
+      }
     }
 
     setState(() {
@@ -97,11 +153,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         email: _emailController.text.trim(),
         username: _usernameController.text.trim(),
         password: _passwordController.text,
-        spesialisasi: _spesialisasiController.text.trim(),
+        spesialisasi: _selectedSpesialisasi ?? '',
         noRekening: _rekeningController.text.trim(),
-        namaBank: _bankController.text.trim(),
+        namaBank: _selectedBank ?? '',
         strFile: _strFile!,
         ijazahFile: _ijazahFile!,
+        strFileName: _strFileName,
+        ijazahFileName: _ijazahFileName,
       );
     }
 
@@ -328,31 +386,58 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 16),
 
                     // Spesialisasi
-                    TextFormField(
-                      controller: _spesialisasiController,
+                    DropdownButtonFormField<String>(
+                      value: _selectedSpesialisasi,
                       decoration: InputDecoration(
                         labelText: 'Spesialisasi Kategori',
-                        hintText: 'e.g. kesehatan_mental, kecemasan_stres',
                         prefixIcon: const Icon(Icons.category_outlined, color: AppColors.primary),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                       ),
-                      validator: (val) => _selectedRole == 'psikolog' && (val == null || val.trim().isEmpty)
-                          ? 'Wajib diisi'
+                      items: const [
+                        DropdownMenuItem(value: 'kesehatan_mental', child: Text('Kesehatan Mental')),
+                        DropdownMenuItem(value: 'kecemasan_stres', child: Text('Kecemasan & Stres')),
+                        DropdownMenuItem(value: 'hubungan_percintaan', child: Text('Hubungan & Percintaan')),
+                        DropdownMenuItem(value: 'keluarga', child: Text('Keluarga')),
+                        DropdownMenuItem(value: 'sosial_pertemanan', child: Text('Sosial & Pertemanan')),
+                      ],
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedSpesialisasi = val;
+                        });
+                      },
+                      validator: (val) => _selectedRole == 'psikolog' && (val == null || val.isEmpty)
+                          ? 'Wajib dipilih'
                           : null,
                     ),
                     const SizedBox(height: 16),
 
                     // Nama Bank
-                    TextFormField(
-                      controller: _bankController,
+                    DropdownButtonFormField<String>(
+                      value: _selectedBank,
                       decoration: InputDecoration(
                         labelText: 'Nama Bank',
-                        hintText: 'BCA, Mandiri, BRI...',
                         prefixIcon: const Icon(Icons.account_balance_outlined, color: AppColors.primary),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                       ),
-                      validator: (val) => _selectedRole == 'psikolog' && (val == null || val.trim().isEmpty)
-                          ? 'Wajib diisi'
+                      items: const [
+                        DropdownMenuItem(value: 'BCA', child: Text('Bank Central Asia (BCA)')),
+                        DropdownMenuItem(value: 'MANDIRI', child: Text('Bank Mandiri')),
+                        DropdownMenuItem(value: 'BNI', child: Text('Bank Negara Indonesia (BNI)')),
+                        DropdownMenuItem(value: 'BRI', child: Text('Bank Rakyat Indonesia (BRI)')),
+                        DropdownMenuItem(value: 'CIMB', child: Text('CIMB Niaga')),
+                        DropdownMenuItem(value: 'BSI', child: Text('Bank Syariah Indonesia (BSI)')),
+                        DropdownMenuItem(value: 'DANAMON', child: Text('Bank Danamon')),
+                        DropdownMenuItem(value: 'PERMATA', child: Text('Bank Permata')),
+                        DropdownMenuItem(value: 'MAYBANK', child: Text('Maybank Indonesia')),
+                        DropdownMenuItem(value: 'BTN', child: Text('Bank Tabungan Negara (BTN)')),
+                      ],
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedBank = val;
+                        });
+                      },
+                      validator: (val) => _selectedRole == 'psikolog' && (val == null || val.isEmpty)
+                          ? 'Wajib dipilih'
                           : null,
                     ),
                     const SizedBox(height: 16),
@@ -417,6 +502,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             padding: EdgeInsets.only(left: 8.0),
                             child: Icon(Icons.check_circle, color: AppColors.success),
                           ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: Checkbox(
+                            value: _agreeToTerms,
+                            activeColor: AppColors.primary,
+                            onChanged: (val) {
+                              setState(() {
+                                _agreeToTerms = val ?? false;
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _showTermsAndConditionsDialog(context),
+                            child: RichText(
+                              text: const TextSpan(
+                                style: TextStyle(fontSize: 12, color: AppColors.textMedium, fontFamily: 'Plus Jakarta Sans'),
+                                children: [
+                                  TextSpan(text: 'Saya menyetujui '),
+                                  TextSpan(
+                                    text: 'Syarat & Ketentuan serta Kebijakan Privasi',
+                                    style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+                                  ),
+                                  TextSpan(text: ' yang berlaku untuk Psikolog di Curhatin.'),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ],

@@ -32,6 +32,7 @@ Route::post('/register/psikolog', [RegistrationController::class, 'storePsikolog
 Route::post('/register/anonim', [RegistrationController::class, 'storeAnonim']);
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
+Route::post('/auth/google/mobile', [GoogleAuthController::class, 'handleGoogleMobile']);
 
 
 // Protected Routes

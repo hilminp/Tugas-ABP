@@ -57,6 +57,44 @@ class GoogleAuthController extends Controller
             ], 422);
         }
 
+        return $this->processGoogleUser($googleUser);
+    }
+
+    /**
+     * Handle mobile app Google login by verifying the provided access token.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function handleGoogleMobile(Request $request)
+    {
+        $request->validate([
+            'token' => 'required|string',
+        ]);
+
+        try {
+            /** @var \Laravel\Socialite\Two\GoogleProvider $driver */
+            $driver = Socialite::driver('google');
+            $googleUser = $driver->userFromToken($request->token);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Google Mobile Auth exception: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all()
+            ]);
+            return response()->json([
+                'message' => 'Gagal memverifikasi token Google dari mobile.',
+                'error' => $e->getMessage()
+            ], 422);
+        }
+
+        return $this->processGoogleUser($googleUser);
+    }
+
+    /**
+     * Process the Google User object, register/login, and return a token.
+     */
+    private function processGoogleUser($googleUser)
+    {
         // Try to find the user by google_id
         $user = User::where('google_id', $googleUser->getId())->first();
 
@@ -136,8 +174,12 @@ class GoogleAuthController extends Controller
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
+                'username' => $user->username,
+                'email' => $user->email,
                 'role' => $user->role,
                 'is_admin' => $user->is_admin,
+                'is_premium' => $user->is_premium,
+                'profile_image' => $user->profile_image,
             ]
         ]);
     }

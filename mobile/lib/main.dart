@@ -182,10 +182,10 @@ class _LoadingScreenState extends State<LoadingScreen> with SingleTickerProvider
                   color: AppColors.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.psychology,
-                  size: 80,
-                  color: AppColors.primary,
+                child: Image.asset(
+                  'assets/images/LogoFinal.png',
+                  width: 80,
+                  height: 80,
                 ),
               ),
             ),
