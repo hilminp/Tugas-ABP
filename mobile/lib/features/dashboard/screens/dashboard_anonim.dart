@@ -97,6 +97,43 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
     }
   }
 
+  void _showChatbotAdvisory(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.info_outline, color: AppColors.primary),
+            SizedBox(width: 8),
+            Expanded(child: Text('Sebelum mulai curhat', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+          ],
+        ),
+        content: const Text(
+          'Chatbot ini dibuat untuk menemani, bukan menggantikan bantuan profesional. Jika terasa berat, hubungi Psikolog yang sudah terdaftar.',
+          style: TextStyle(fontSize: 14, color: AppColors.textMedium),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal', style: TextStyle(color: AppColors.textMedium)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ChatbotScreen()),
+              );
+            },
+            child: const Text('Mengerti', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<AuthProvider>(context).user;
@@ -176,12 +213,7 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.accent,
         tooltip: 'Sahabat Mental AI',
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const ChatbotScreen()),
-          );
-        },
+        onPressed: () => _showChatbotAdvisory(context),
         child: const Icon(Icons.spa, color: Colors.white, size: 28),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
