@@ -105,8 +105,6 @@ class _DashboardPsikologState extends State<DashboardPsikolog> {
       bottomNavigationBar: Consumer<ConsultationProvider>(
         builder: (context, consProvider, child) {
           final friendNotifs = consProvider.friendNotificationsCount;
-          final sessionNotifs = consProvider.sessionNotificationsCount;
-          final totalNotifs = friendNotifs + sessionNotifs;
 
           return BottomNavigationBar(
             currentIndex: _currentIndex,

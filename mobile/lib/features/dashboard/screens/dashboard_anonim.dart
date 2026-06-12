@@ -163,8 +163,6 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
                     : const Icon(Icons.notifications_none, color: AppColors.primary),
                 onPressed: () {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationTab()));
-                  Provider.of<ConsultationProvider>(context, listen: false).markFriendNotificationsAsSeen();
-                  Provider.of<ConsultationProvider>(context, listen: false).markSessionNotificationsAsSeen();
                 },
               );
             },
@@ -189,10 +187,6 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       bottomNavigationBar: Consumer<ConsultationProvider>(
         builder: (context, consProvider, child) {
-          final friendNotifs = consProvider.friendNotificationsCount;
-          final sessionNotifs = consProvider.sessionNotificationsCount;
-          final totalNotifs = friendNotifs + sessionNotifs;
-
           return BottomNavigationBar(
             currentIndex: _currentIndex,
             onTap: (index) {
