@@ -256,7 +256,7 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
         backgroundColor: AppColors.accent,
         tooltip: 'Sahabat Mental AI',
         onPressed: () => _showChatbotAdvisory(context),
-        child: const Icon(Icons.spa, color: Colors.white, size: 28),
+        child: const Icon(Icons.smart_toy, color: Colors.white, size: 28),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       bottomNavigationBar: Consumer<ConsultationProvider>(
@@ -327,8 +327,9 @@ class _SearchPsikologTabState extends State<SearchPsikologTab> {
     {'key': '', 'label': 'Semua'},
     {'key': 'kesehatan_mental', 'label': 'Kesehatan Mental'},
     {'key': 'kecemasan_stres', 'label': 'Kecemasan & Stres'},
-    {'key': 'depresi', 'label': 'Depresi'},
-    {'key': 'karir_akademik', 'label': 'Karir & Akademik'},
+    {'key': 'hubungan_percintaan', 'label': 'Hubungan & Percintaan'},
+    {'key': 'keluarga', 'label': 'Keluarga'},
+    {'key': 'sosial_pertemanan', 'label': 'Sosial & Pertemanan'},
   ];
 
   @override

@@ -251,6 +251,7 @@ const DashboardAnonim = () => {
     const [requestedPsychologistIds, setRequestedPsychologistIds] = useState([]);
     const [psychologistStatuses, setPsychologistStatuses] = useState({});
     const [feedbackModal, setFeedbackModal] = useState({ isOpen: false, psychologistId: null, psychologistName: '' });
+    const [connectModal, setConnectModal] = useState({ isOpen: false, psychologistId: null, psychologistName: '', complaint: '' });
     const [feedbackRating, setFeedbackRating] = useState(5);
     const [feedbackComment, setFeedbackComment] = useState('');
     const [submittingFeedback, setSubmittingFeedback] = useState(false);
@@ -654,15 +655,27 @@ const DashboardAnonim = () => {
         ? PSYCHOLOGIST_CATEGORIES.find((c) => c.value === selectedCategory)?.label || selectedCategory
         : 'Semua Kategori';
 
-    const handleAddPsychologist = async (psychologistId) => {
+    const handleOpenConnectModal = (psychologistId, psychologistName) => {
         if (!hasAccess) { handleUpgradePremium(); return; }
-        if (sendingRequestId) return;
+        setConnectModal({
+            isOpen: true,
+            psychologistId,
+            psychologistName,
+            complaint: ''
+        });
+    };
+
+    const handleConfirmConnect = async (e) => {
+        e.preventDefault();
+        const { psychologistId, complaint } = connectModal;
+        if (sendingRequestId || !psychologistId) return;
         setSendingRequestId(psychologistId);
         try {
-            const res = await api.post(`/friend/${psychologistId}`, { category: selectedCategory });
+            const res = await api.post(`/friend/${psychologistId}`, { category: complaint });
             setStatusModal({ isOpen: true, type: 'success', message: res.data?.message || 'Permintaan konsultasi terkirim.' });
             setRequestedPsychologistIds((prev) => (prev.includes(psychologistId) ? prev : [...prev, psychologistId]));
             setPsychologistStatuses((prev) => ({ ...prev, [psychologistId]: 'pending' }));
+            setConnectModal({ isOpen: false, psychologistId: null, psychologistName: '', complaint: '' });
         } catch (error) {
             setStatusModal({ isOpen: true, type: 'error', message: error.response?.data?.message || 'Gagal mengirim permintaan ke psikolog.' });
         } finally {
@@ -822,7 +835,7 @@ const DashboardAnonim = () => {
                                                                     <button
                                                                         type="button"
                                                                         className="psychologist-contact-btn flex-1"
-                                                                        onClick={() => handleAddPsychologist(psychologist.id)}
+                                                                        onClick={() => handleOpenConnectModal(psychologist.id, psychologist.name)}
                                                                         disabled={isRequestDisabled}
                                                                     >
                                                                         {!hasAccess ? 'Premium Diperlukan'
@@ -1422,6 +1435,54 @@ const DashboardAnonim = () => {
                                 )}
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ─── Hubungi/Request Sesi Modal (Premium User) ─── */}
+            {connectModal.isOpen && (
+                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity" onClick={() => setConnectModal({ ...connectModal, isOpen: false })} />
+                    <div className="relative bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl animate-in fade-in zoom-in duration-300">
+                        <div className="text-center mb-8">
+                            <div className="w-20 h-20 bg-[#A46477]/10 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-lg">
+                                <span className="material-symbols-outlined text-4xl text-[#A46477]">chat</span>
+                            </div>
+                            <h3 className="text-2xl font-black text-slate-800 tracking-tight">Hubungi {connectModal.psychologistName}</h3>
+                            <p className="text-stone-500 mt-2 font-medium text-sm leading-relaxed">
+                                Tuliskan secara singkat keluhan atau alasan Anda ingin berkonsultasi:
+                            </p>
+                        </div>
+
+                        <form onSubmit={handleConfirmConnect}>
+                            <div className="mb-8">
+                                <textarea
+                                    className="w-full bg-stone-50 border-2 border-stone-100 rounded-2xl p-4 text-slate-700 font-medium placeholder:text-stone-300 focus:border-[#A46477]/30 focus:bg-white outline-none transition-all resize-none h-32 text-sm"
+                                    placeholder="e.g. Masalah kecemasan kerja, stres akademik, dll."
+                                    value={connectModal.complaint}
+                                    onChange={(e) => setConnectModal({ ...connectModal, complaint: e.target.value })}
+                                    required
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setConnectModal({ ...connectModal, isOpen: false })}
+                                    className="flex-1 py-4 rounded-2xl font-bold text-stone-500 bg-stone-100 hover:bg-stone-200 transition-all active:scale-95"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={sendingRequestId}
+                                    className="flex-1 py-4 rounded-2xl font-bold text-white bg-[#A46477] shadow-lg shadow-[#A46477]/20 hover:bg-[#8a5263] transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:translate-y-0"
+                                >
+                                    {sendingRequestId ? 'Mengirim...' : 'Ajukan Sesi'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

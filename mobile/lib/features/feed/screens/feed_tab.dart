@@ -265,10 +265,14 @@ class _FeedTabState extends State<FeedTab> {
               ConstrainedBox(
                 constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.45),
                 child: post.comments.isEmpty
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 40.0),
+                    ? const SizedBox(
+                        height: 100,
                         child: Center(
-                          child: Text('Belum ada komentar. Jadilah yang pertama!', style: TextStyle(color: AppColors.textMedium, fontSize: 14)),
+                          child: Text(
+                            'Belum ada komentar. Jadilah yang pertama!', 
+                            style: TextStyle(color: AppColors.textMedium, fontSize: 14),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       )
                     : ListView.builder(
@@ -624,49 +628,57 @@ class _FeedTabState extends State<FeedTab> {
                           ],
                           
                           const SizedBox(height: 12),
-                          const Divider(),
-                          
-                          // Action bar: Likes & Comments counts
-                          Row(
-                            children: [
-                              InkWell(
-                                onTap: () => feedProvider.toggleLike(post.id),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        post.isLiked ? Icons.favorite : Icons.favorite_border,
-                                        color: post.isLiked ? AppColors.accent : AppColors.textMedium,
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        '${post.likesCount}',
-                                        style: const TextStyle(fontSize: 13, color: AppColors.textMedium),
-                                      ),
-                                    ],
+                          Container(
+                            padding: const EdgeInsets.all(4.0),
+                            decoration: BoxDecoration(
+                              color: AppColors.background,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: AppColors.secondary.withValues(alpha: 0.5), width: 1),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                InkWell(
+                                  onTap: () => feedProvider.toggleLike(post.id),
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          post.isLiked ? Icons.favorite : Icons.favorite_border,
+                                          color: post.isLiked ? AppColors.accent : AppColors.textMedium,
+                                          size: 18,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          '${post.likesCount}',
+                                          style: const TextStyle(fontSize: 12, color: AppColors.textMedium, fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 24),
-                              InkWell(
-                                onTap: () => _showCommentsBottomSheet(context, post.id),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.mode_comment_outlined, color: AppColors.textMedium, size: 20),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        '${post.commentsCount}',
-                                        style: const TextStyle(fontSize: 13, color: AppColors.textMedium),
-                                      ),
-                                    ],
+                                const SizedBox(width: 8),
+                                InkWell(
+                                  onTap: () => _showCommentsBottomSheet(context, post.id),
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.mode_comment_outlined, color: AppColors.textMedium, size: 18),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          '${post.commentsCount}',
+                                          style: const TextStyle(fontSize: 12, color: AppColors.textMedium, fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ],
                       ),

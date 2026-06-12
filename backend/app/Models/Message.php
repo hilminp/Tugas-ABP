@@ -16,6 +16,11 @@ class Message extends Model
         'image',
     ];
 
+    protected $casts = [
+        'sender_id' => 'integer',
+        'recipient_id' => 'integer',
+    ];
+
     public function sender()
     {
         return $this->belongsTo(User::class, 'sender_id');

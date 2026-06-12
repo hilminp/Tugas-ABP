@@ -27,9 +27,15 @@ class ConsultationSessionModel {
 
   factory ConsultationSessionModel.fromJson(Map<String, dynamic> json) {
     return ConsultationSessionModel(
-      id: json['id'] as int,
-      userId: json['user_id'] as int?,
-      psychologistId: json['psychologist_id'] as int,
+      id: json['id'] is int 
+          ? json['id'] as int 
+          : int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      userId: json['user_id'] is int 
+          ? json['user_id'] as int 
+          : int.tryParse(json['user_id']?.toString() ?? ''),
+      psychologistId: json['psychologist_id'] is int 
+          ? json['psychologist_id'] as int 
+          : int.tryParse(json['psychologist_id']?.toString() ?? '') ?? 0,
       sessionDate: json['session_date'] as String? ?? '',
       sessionTime: json['session_time'] as String? ?? '',
       status: json['status'] as String? ?? 'available',

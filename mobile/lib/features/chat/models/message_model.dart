@@ -18,9 +18,15 @@ class MessageModel {
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
     return MessageModel(
-      id: json['id'] as int,
-      senderId: json['sender_id'] as int,
-      recipientId: json['recipient_id'] as int,
+      id: json['id'] is int 
+          ? json['id'] as int 
+          : int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      senderId: json['sender_id'] is int 
+          ? json['sender_id'] as int 
+          : int.tryParse(json['sender_id']?.toString() ?? '') ?? 0,
+      recipientId: json['recipient_id'] is int 
+          ? json['recipient_id'] as int 
+          : int.tryParse(json['recipient_id']?.toString() ?? '') ?? 0,
       body: json['body'] as String?,
       image: json['image'] as String?,
       createdAt: json['created_at'] as String? ?? '',
