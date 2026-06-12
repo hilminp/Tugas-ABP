@@ -54,7 +54,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Gagal memilih gambar: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: AppColors.success,
           ),
         );
       }
@@ -83,7 +83,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(result['message']),
-        backgroundColor: result['success'] ? AppColors.success : AppColors.error,
+        backgroundColor: result['success']
+            ? AppColors.success
+            : AppColors.error,
       ),
     );
 
@@ -98,9 +100,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final user = authProvider.user;
 
     if (user == null) {
-      return const Scaffold(
-        body: Center(child: Text('User tidak ditemukan.')),
-      );
+      return const Scaffold(body: Center(child: Text('User tidak ditemukan.')));
     }
 
     ImageProvider? avatarImage;
@@ -114,10 +114,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Profil'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Edit Profil'), centerTitle: true),
       body: Stack(
         children: [
           // Background blobs
@@ -167,7 +164,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.primary.withValues(alpha: 0.1),
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.1,
+                                  ),
                                   blurRadius: 16,
                                   offset: const Offset(0, 8),
                                 ),
@@ -239,18 +238,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               readOnly: true,
                               decoration: InputDecoration(
                                 labelText: 'Nama Lengkap',
-                                prefixIcon: const Icon(Icons.person_outline, color: AppColors.textMedium),
+                                prefixIcon: const Icon(
+                                  Icons.person_outline,
+                                  color: AppColors.textMedium,
+                                ),
                                 helperText: 'Nama lengkap tidak dapat diubah.',
-                                helperStyle: const TextStyle(color: AppColors.textMedium, fontSize: 11),
+                                helperStyle: const TextStyle(
+                                  color: AppColors.textMedium,
+                                  fontSize: 11,
+                                ),
                                 fillColor: Colors.grey[50],
                                 filled: true,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
-                                  borderSide: BorderSide(color: Colors.grey[200]!),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey[200]!,
+                                  ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
-                                  borderSide: BorderSide(color: Colors.grey[200]!),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey[200]!,
+                                  ),
                                 ),
                               ),
                             ),
@@ -261,7 +270,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               controller: _usernameController,
                               decoration: InputDecoration(
                                 labelText: 'Username',
-                                prefixIcon: const Icon(Icons.alternate_email, color: AppColors.primary),
+                                prefixIcon: const Icon(
+                                  Icons.alternate_email,
+                                  color: AppColors.primary,
+                                ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
@@ -287,7 +299,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       height: 52,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
-                        gradient: _isSubmitting ? null : AppColors.primaryGradient,
+                        gradient: _isSubmitting
+                            ? null
+                            : AppColors.primaryGradient,
                         color: _isSubmitting ? Colors.grey[400] : null,
                         boxShadow: [
                           if (!_isSubmitting)
@@ -311,12 +325,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             ? const SizedBox(
                                 width: 24,
                                 height: 24,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.save_outlined, color: Colors.white),
+                                  Icon(
+                                    Icons.save_outlined,
+                                    color: Colors.white,
+                                  ),
                                   SizedBox(width: 8),
                                   Text(
                                     'Simpan Perubahan',

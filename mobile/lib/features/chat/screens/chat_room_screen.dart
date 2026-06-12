@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../providers/chat_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/theme/colors.dart';
@@ -35,7 +36,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       // Setup periodic polling to simulate live chat on local environment (every 4 seconds)
       _pollingTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
         if (mounted) {
-          Provider.of<ChatProvider>(context, listen: false).refreshMessages(widget.friendId);
+          Provider.of<ChatProvider>(
+            context,
+            listen: false,
+          ).refreshMessages(widget.friendId);
         }
       });
     });
@@ -50,7 +54,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   void _loadMessages() {
-    Provider.of<ChatProvider>(context, listen: false).fetchMessages(widget.friendId);
+    Provider.of<ChatProvider>(
+      context,
+      listen: false,
+    ).fetchMessages(widget.friendId);
   }
 
   void _scrollToBottom() {
@@ -74,32 +81,35 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     });
 
     final provider = Provider.of<ChatProvider>(context, listen: false);
-    final result = await provider.sendMessage(widget.friendId, text.isNotEmpty ? text : null, image);
-    
-    if (!result['success'] && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message'] ?? 'Gagal mengirim pesan.'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-    }
+    await provider.sendMessage(
+      widget.friendId,
+      text.isNotEmpty ? text : null,
+      image,
+    );
     _scrollToBottom();
   }
 
-  void _simulateImageAttachment() {
-    // Simulate image picking
-    setState(() {
-      _selectedImage = File('/dummy_path/attachment_image.png');
-    });
-    
-    // Quick dialogue info
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Simulasi gambar disematkan. Tekan kirim untuk mengunggah.'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+  void _pickImage() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Gagal memilih gambar.'),
+            backgroundColor: AppColors.success,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -116,11 +126,22 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.friendName, style: const TextStyle(color: AppColors.textDark, fontSize: 16, fontWeight: FontWeight.bold)),
             Text(
-              chatProvider.isLocked ? 'Konsultasi Terkunci' : 'Konsultasi Aktif',
+              widget.friendName,
+              style: const TextStyle(
+                color: AppColors.textDark,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              chatProvider.isLocked
+                  ? 'Konsultasi Terkunci'
+                  : 'Konsultasi Aktif',
               style: TextStyle(
-                color: chatProvider.isLocked ? AppColors.error : AppColors.success,
+                color: chatProvider.isLocked
+                    ? AppColors.error
+                    : AppColors.success,
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
               ),
@@ -143,18 +164,29 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           if (chatProvider.isLocked)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 12.0,
+              ),
               color: const Color(0xFFFEF2F2),
               child: Row(
                 children: [
-                  const Icon(Icons.lock_outline, color: AppColors.error, size: 20),
+                  const Icon(
+                    Icons.lock_outline,
+                    color: AppColors.error,
+                    size: 20,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      chatProvider.lockMessage.isNotEmpty 
-                          ? chatProvider.lockMessage 
+                      chatProvider.lockMessage.isNotEmpty
+                          ? chatProvider.lockMessage
                           : 'Sesi konsultasi terkunci. Lakukan penjadwalan sesi konsultasi terlebih dahulu.',
-                      style: const TextStyle(color: AppColors.error, fontSize: 12, fontWeight: FontWeight.w500),
+                      style: const TextStyle(
+                        color: AppColors.error,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ],
@@ -163,8 +195,11 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
           // Messages List
           Expanded(
-            child: chatProvider.isLoadingMessages && chatProvider.messages.isEmpty
-                ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+            child:
+                chatProvider.isLoadingMessages && chatProvider.messages.isEmpty
+                ? const Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  )
                 : RefreshIndicator(
                     onRefresh: () async => _loadMessages(),
                     color: AppColors.primary,
@@ -176,30 +211,40 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       itemBuilder: (ctx, index) {
                         final msg = chatProvider.messages[index];
                         final isMe = msg.senderId == myUser?.id;
-                        
+
                         return Align(
-                          alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                          alignment: isMe
+                              ? Alignment.centerRight
+                              : Alignment.centerLeft,
                           child: Container(
                             constraints: BoxConstraints(
-                              maxWidth: MediaQuery.of(context).size.width * 0.72,
+                              maxWidth:
+                                  MediaQuery.of(context).size.width * 0.72,
                             ),
                             margin: const EdgeInsets.only(bottom: 12.0),
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 12.0,
+                            ),
                             decoration: BoxDecoration(
                               color: isMe ? AppColors.primary : Colors.white,
                               borderRadius: BorderRadius.only(
                                 topLeft: const Radius.circular(16),
                                 topRight: const Radius.circular(16),
-                                bottomLeft: isMe ? const Radius.circular(16) : Radius.zero,
-                                bottomRight: isMe ? Radius.zero : const Radius.circular(16),
+                                bottomLeft: isMe
+                                    ? const Radius.circular(16)
+                                    : Radius.zero,
+                                bottomRight: isMe
+                                    ? Radius.zero
+                                    : const Radius.circular(16),
                               ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.02),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  )
-                                ],
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.02),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -210,24 +255,32 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                                     borderRadius: BorderRadius.circular(12),
                                     child: Image.network(
                                       // Local/Remote storage URL resolving helper
-                                      msg.image!.startsWith('http') 
-                                          ? msg.image! 
+                                      msg.image!.startsWith('http')
+                                          ? msg.image!
                                           : '${ApiClient.defaultStorageUrl}/${msg.image}',
-                                      errorBuilder: (context, error, stackTrace) => Container(
-                                        height: 150,
-                                        color: Colors.grey[200],
-                                        alignment: Alignment.center,
-                                        child: const Icon(Icons.broken_image_outlined, color: AppColors.textMedium),
-                                      ),
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              Container(
+                                                height: 150,
+                                                color: Colors.grey[200],
+                                                alignment: Alignment.center,
+                                                child: const Icon(
+                                                  Icons.broken_image_outlined,
+                                                  color: AppColors.textMedium,
+                                                ),
+                                              ),
                                     ),
                                   ),
-                                  if (msg.body != null) const SizedBox(height: 8),
+                                  if (msg.body != null)
+                                    const SizedBox(height: 8),
                                 ],
                                 if (msg.body != null)
                                   Text(
                                     msg.body!,
                                     style: TextStyle(
-                                      color: isMe ? Colors.white : AppColors.textDark,
+                                      color: isMe
+                                          ? Colors.white
+                                          : AppColors.textDark,
                                       fontSize: 14,
                                     ),
                                   ),
@@ -249,8 +302,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 children: [
                   const Icon(Icons.image, color: AppColors.primary),
                   const SizedBox(width: 8),
-                  const Expanded(
-                    child: Text('attachment_image.png (Simulasi Gambar)', style: TextStyle(fontSize: 12, color: AppColors.textMedium)),
+                  Expanded(
+                    child: Text(
+                      _selectedImage!.path.split('/').last,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textMedium,
+                      ),
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close, color: AppColors.error),
@@ -263,22 +322,35 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           // Input field or lock overlay
           Container(
             color: Colors.white,
-            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20, top: 12),
+            padding: const EdgeInsets.only(
+              left: 16,
+              right: 16,
+              bottom: 20,
+              top: 12,
+            ),
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.add_photo_alternate_outlined, color: AppColors.primary),
-                  onPressed: chatProvider.isLocked ? null : _simulateImageAttachment,
+                  icon: const Icon(
+                    Icons.add_photo_alternate_outlined,
+                    color: AppColors.primary,
+                  ),
+                  onPressed: chatProvider.isLocked ? null : _pickImage,
                 ),
                 Expanded(
                   child: TextField(
                     controller: _messageController,
                     enabled: !chatProvider.isLocked,
                     decoration: InputDecoration(
-                      hintText: chatProvider.isLocked ? 'Konsultasi terkunci...' : 'Ketik pesan konsultasi...',
+                      hintText: chatProvider.isLocked
+                          ? 'Konsultasi terkunci...'
+                          : 'Ketik pesan konsultasi...',
                       fillColor: AppColors.background,
                       filled: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide.none,
@@ -290,7 +362,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 const SizedBox(width: 8),
                 Container(
                   decoration: BoxDecoration(
-                    color: chatProvider.isLocked ? Colors.grey[300] : AppColors.primary,
+                    color: chatProvider.isLocked
+                        ? Colors.grey[300]
+                        : AppColors.primary,
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(

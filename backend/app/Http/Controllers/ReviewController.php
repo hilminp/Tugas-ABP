@@ -39,6 +39,17 @@ class ReviewController extends Controller
              return response()->json(['message' => 'Hanya pasien yang dapat memberikan review.'], 403);
         }
 
+        // Check if user already rated this psychologist
+        $existingReview = Review::where('psychologist_id', $psychologistId)
+            ->where('patient_id', $patient->id)
+            ->first();
+        
+        if ($existingReview) {
+            return response()->json([
+                'message' => 'Anda sudah memberikan rating untuk psikolog ini. Hanya dapat memberikan 1 rating.'
+            ], 422);
+        }
+
         $validated = $request->validate([
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:1000',
@@ -54,7 +65,7 @@ class ReviewController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Review berhasil dikirim.',
+            'message' => 'Terimakasih telah memberi rating.',
             'review' => $review
         ]);
     }
