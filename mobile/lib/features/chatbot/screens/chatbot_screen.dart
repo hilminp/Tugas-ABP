@@ -63,8 +63,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   }
 
   void _triggerPremiumCheckout() async {
-    final paymentProvider = Provider.of<PaymentProvider>(context, listen: false);
-    
+    final paymentProvider = Provider.of<PaymentProvider>(
+      context,
+      listen: false,
+    );
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -81,7 +84,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
     // Standard upgrade price 50000 IDR
     final response = await paymentProvider.getUpgradeToken(50000);
-    
+
     if (mounted) {
       Navigator.pop(context); // Close loading dialog
     }
@@ -94,10 +97,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         final success = await Navigator.push<bool>(
           context,
           MaterialPageRoute(
-            builder: (_) => MidtransPaymentScreen(
-              snapToken: snapToken,
-              orderId: orderId,
-            ),
+            builder: (_) =>
+                MidtransPaymentScreen(snapToken: snapToken, orderId: orderId),
           ),
         );
 
@@ -113,7 +114,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(response['message'] ?? 'Gagal memproses pembayaran.'),
-            backgroundColor: AppColors.error,
+            backgroundColor: AppColors.success,
           ),
         );
       }
@@ -139,7 +140,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               children: [
                 Text(
                   'Sahabat Mental',
-                  style: TextStyle(color: AppColors.textDark, fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: AppColors.textDark,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   'Dukungan AI 24/7',
@@ -173,29 +178,38 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               itemBuilder: (ctx, index) {
                 final msg = botProvider.messages[index];
                 final isBot = msg['role'] == 'assistant';
-                
+
                 return Align(
-                  alignment: isBot ? Alignment.centerLeft : Alignment.centerRight,
+                  alignment: isBot
+                      ? Alignment.centerLeft
+                      : Alignment.centerRight,
                   child: Container(
                     constraints: BoxConstraints(
                       maxWidth: MediaQuery.of(context).size.width * 0.75,
                     ),
                     margin: const EdgeInsets.only(bottom: 12.0),
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 12.0,
+                    ),
                     decoration: BoxDecoration(
                       color: isBot ? Colors.white : AppColors.primary,
                       borderRadius: BorderRadius.only(
                         topLeft: const Radius.circular(16),
                         topRight: const Radius.circular(16),
-                        bottomLeft: isBot ? Radius.zero : const Radius.circular(16),
-                        bottomRight: isBot ? const Radius.circular(16) : Radius.zero,
+                        bottomLeft: isBot
+                            ? Radius.zero
+                            : const Radius.circular(16),
+                        bottomRight: isBot
+                            ? const Radius.circular(16)
+                            : Radius.zero,
                       ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.02),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
-                        )
+                        ),
                       ],
                     ),
                     child: Text(
@@ -215,15 +229,24 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           // Options widget (e.g. Upgrade Premium redirect option)
           if (botProvider.options.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
               child: Wrap(
                 spacing: 8.0,
                 children: botProvider.options.map((option) {
                   final isUpgrade = option == 'Lanjut ke Pembayaran';
                   return ActionChip(
-                    backgroundColor: isUpgrade ? AppColors.accent : Colors.white,
-                    side: BorderSide(color: isUpgrade ? AppColors.accent : AppColors.secondary),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    backgroundColor: isUpgrade
+                        ? AppColors.accent
+                        : Colors.white,
+                    side: BorderSide(
+                      color: isUpgrade ? AppColors.accent : AppColors.secondary,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                     label: Text(
                       option,
                       style: TextStyle(
@@ -246,7 +269,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 child: SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    color: AppColors.primary,
+                    strokeWidth: 2,
+                  ),
                 ),
               ),
             ),
@@ -254,7 +280,12 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           // Input field
           Container(
             color: Colors.white,
-            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20, top: 12),
+            padding: const EdgeInsets.only(
+              left: 16,
+              right: 16,
+              bottom: 20,
+              top: 12,
+            ),
             child: Row(
               children: [
                 Expanded(
@@ -264,7 +295,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                       hintText: 'Ketik pesan Anda...',
                       fillColor: AppColors.background,
                       filled: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide.none,

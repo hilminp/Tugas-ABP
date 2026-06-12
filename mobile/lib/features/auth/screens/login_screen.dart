@@ -16,15 +16,15 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   bool _showPassword = false;
   String? _errorMessage;
-  
+
   // Suspension State fields
   bool _isSuspended = false;
   String? _appealStatus;
   String? _adminNotes;
-  
+
   // Re-registration State
   bool _isRejected = false;
 
@@ -37,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() {
       _errorMessage = null;
       _isSuspended = false;
@@ -76,7 +76,13 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             const Icon(Icons.shield_outlined, color: AppColors.primary),
             const SizedBox(width: 8),
-            Text('Ajukan Banding', style: GoogleFonts.plusJakartaSans(color: AppColors.textDark, fontWeight: FontWeight.bold)),
+            Text(
+              'Ajukan Banding',
+              style: GoogleFonts.plusJakartaSans(
+                color: AppColors.textDark,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
         content: Column(
@@ -106,33 +112,49 @@ class _LoginScreenState extends State<LoginScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal', style: TextStyle(color: AppColors.textMedium)),
+            child: const Text(
+              'Batal',
+              style: TextStyle(color: AppColors.textMedium),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             onPressed: () async {
               if (reasonController.text.trim().isEmpty) return;
               Navigator.pop(ctx);
-              
-              final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+              final authProvider = Provider.of<AuthProvider>(
+                context,
+                listen: false,
+              );
               final result = await authProvider.submitAppeal(
                 email: _emailController.text.trim(),
                 password: _passwordController.text,
                 reason: reasonController.text.trim(),
               );
-              
+
               if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(result['message']),
-                  backgroundColor: result['success'] ? AppColors.success : AppColors.error,
+                  backgroundColor: result['success']
+                      ? AppColors.success
+                      : AppColors.error,
                 ),
               );
             },
-            child: const Text('Kirim Banding', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Kirim Banding',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -145,16 +167,30 @@ class _LoginScreenState extends State<LoginScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Daftar Ulang', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
-        content: const Text('Apakah Anda yakin ingin menghapus data lama Anda dan mendaftar ulang sebagai Psikolog?'),
+        title: Text(
+          'Daftar Ulang',
+          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Apakah Anda yakin ingin menghapus data lama Anda dan mendaftar ulang sebagai Psikolog?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Batal', style: TextStyle(color: AppColors.textMedium)),
+            child: const Text(
+              'Batal',
+              style: TextStyle(color: AppColors.textMedium),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Ya, Lanjutkan', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Ya, Lanjutkan',
+              style: TextStyle(
+                color: AppColors.error,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -162,17 +198,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (confirm == true && mounted) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final result = await authProvider.reapply(_emailController.text.trim(), _passwordController.text);
-      
+      final result = await authProvider.reapply(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(result['message']),
-            backgroundColor: result['success'] ? AppColors.success : AppColors.error,
+            backgroundColor: result['success']
+                ? AppColors.success
+                : AppColors.error,
           ),
         );
         if (result['success']) {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen(initialRole: 'psikolog')));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const RegisterScreen(initialRole: 'psikolog'),
+            ),
+          );
         }
       }
     }
@@ -181,7 +227,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final isLoading = Provider.of<AuthProvider>(context).isLoading;
-    
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -208,360 +254,559 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         child: Stack(
-        children: [
-          // Background organic blobs
-          Positioned(
-            top: -50,
-            right: -50,
-            child: Container(
-              width: 250,
-              height: 250,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFFFCE9EC).withValues(alpha: 0.6),
+          children: [
+            // Background organic blobs
+            Positioned(
+              top: -50,
+              right: -50,
+              child: Container(
+                width: 250,
+                height: 250,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFFCE9EC).withValues(alpha: 0.6),
+                ),
               ),
             ),
-          ),
-          Positioned(
-            bottom: -80,
-            left: -50,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFFFDB2C7).withValues(alpha: 0.3),
+            Positioned(
+              bottom: -80,
+              left: -50,
+              child: Container(
+                width: 300,
+                height: 300,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFFDB2C7).withValues(alpha: 0.3),
+                ),
               ),
             ),
-          ),
-          
-          SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
-                    ),
-                    child: IntrinsicHeight(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            const SizedBox(height: 20),
-                            
-                            // App Brand Logo & Name
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(
-                                  'assets/images/LogoFinal.png',
-                                  width: 38,
-                                  height: 38,
-                                  fit: BoxFit.contain,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Curhatin',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.textDark,
-                                    letterSpacing: 0.5,
+
+            SafeArea(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: IntrinsicHeight(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24.0,
+                            vertical: 20.0,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              const SizedBox(height: 20),
+
+                              // App Brand Logo & Name
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    'assets/images/LogoFinal.png',
+                                    width: 38,
+                                    height: 38,
+                                    fit: BoxFit.contain,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Curhatin',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.textDark,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              const Center(
+                                child: Text(
+                                  'Safe Space to Share Your Burden',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.textMedium,
                                   ),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            const Center(
-                              child: Text(
-                                'Safe Space to Share Your Burden',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: AppColors.textMedium,
-                                ),
                               ),
-                            ),
-                            
-                            const Spacer(flex: 1),
-                            
-                            // Form Card
-                            Card(
-                              elevation: 4,
-                              shadowColor: AppColors.primary.withValues(alpha: 0.05),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                              color: Colors.white,
-                              child: Padding(
-                                padding: const EdgeInsets.all(24.0),
-                                child: Form(
-                                  key: _formKey,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                                    children: [
-                                      Text(
-                                        'Selamat Datang Kembali',
-                                        style: GoogleFonts.plusJakartaSans(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.textDark,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      const Text(
-                                        'Silakan masuk untuk melanjutkan konsultasi Anda.',
-                                        style: TextStyle(fontSize: 13, color: AppColors.textMedium),
-                                      ),
-                                      const SizedBox(height: 24),
-                                      
-                                      // Error message or alert
-                                      if (_errorMessage != null)
-                                        Container(
-                                          padding: const EdgeInsets.all(12),
-                                          margin: const EdgeInsets.only(bottom: 16),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFFEF2F2),
-                                            borderRadius: BorderRadius.circular(12),
-                                            border: Border.all(color: const Color(0xFFFEE2E2)),
+
+                              const Spacer(flex: 1),
+
+                              // Form Card
+                              Card(
+                                elevation: 4,
+                                shadowColor: AppColors.primary.withValues(
+                                  alpha: 0.05,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                                color: Colors.white,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(24.0),
+                                  child: Form(
+                                    key: _formKey,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        Text(
+                                          'Selamat Datang Kembali',
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.textDark,
                                           ),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                _errorMessage!,
-                                                style: const TextStyle(color: AppColors.error, fontSize: 13, fontWeight: FontWeight.w500),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        const Text(
+                                          'Silakan masuk untuk melanjutkan konsultasi Anda.',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: AppColors.textMedium,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 24),
+
+                                        // Error message or alert
+                                        if (_errorMessage != null)
+                                          Container(
+                                            padding: const EdgeInsets.all(12),
+                                            margin: const EdgeInsets.only(
+                                              bottom: 16,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFFEF2F2),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              border: Border.all(
+                                                color: const Color(0xFFFEE2E2),
                                               ),
-                                              if (_isSuspended) ...[
-                                                const SizedBox(height: 8),
-                                                if (_appealStatus == 'pending')
-                                                  const Row(
-                                                    children: [
-                                                      Icon(Icons.access_time_filled, color: AppColors.warning, size: 16),
-                                                      SizedBox(width: 6),
-                                                      Text(
-                                                        'Banding sedang ditinjau admin...',
-                                                        style: TextStyle(color: AppColors.warning, fontSize: 12, fontWeight: FontWeight.bold),
+                                            ),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  _errorMessage!,
+                                                  style: const TextStyle(
+                                                    color: AppColors.error,
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                                if (_isSuspended) ...[
+                                                  const SizedBox(height: 8),
+                                                  if (_appealStatus ==
+                                                      'pending')
+                                                    const Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons
+                                                              .access_time_filled,
+                                                          color:
+                                                              AppColors.warning,
+                                                          size: 16,
+                                                        ),
+                                                        SizedBox(width: 6),
+                                                        Text(
+                                                          'Banding sedang ditinjau admin...',
+                                                          style: TextStyle(
+                                                            color: AppColors
+                                                                .warning,
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    )
+                                                  else if (_appealStatus ==
+                                                      'rejected')
+                                                    Container(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                            8,
+                                                          ),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              8,
+                                                            ),
                                                       ),
-                                                    ],
-                                                  )
-                                                else if (_appealStatus == 'rejected')
-                                                  Container(
-                                                    padding: const EdgeInsets.all(8),
-                                                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-                                                    child: Text(
-                                                      'Banding Ditolak: "${_adminNotes ?? 'Silakan patuhi panduan.'}"',
-                                                      style: const TextStyle(color: AppColors.error, fontSize: 11, fontStyle: FontStyle.italic),
+                                                      child: Text(
+                                                        'Banding Ditolak: "${_adminNotes ?? 'Silakan patuhi panduan.'}"',
+                                                        style: const TextStyle(
+                                                          color:
+                                                              AppColors.error,
+                                                          fontSize: 11,
+                                                          fontStyle:
+                                                              FontStyle.italic,
+                                                        ),
+                                                      ),
+                                                    )
+                                                  else
+                                                    ElevatedButton(
+                                                      style: ElevatedButton.styleFrom(
+                                                        backgroundColor:
+                                                            Colors.white,
+                                                        side: const BorderSide(
+                                                          color:
+                                                              AppColors.warning,
+                                                        ),
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                8,
+                                                              ),
+                                                        ),
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 12,
+                                                              vertical: 4,
+                                                            ),
+                                                      ),
+                                                      onPressed:
+                                                          _showAppealDialog,
+                                                      child: const Text(
+                                                        'Ajukan Banding',
+                                                        style: TextStyle(
+                                                          color:
+                                                              AppColors.warning,
+                                                          fontSize: 12,
+                                                        ),
+                                                      ),
                                                     ),
-                                                  )
-                                                else
+                                                ],
+                                                if (_isRejected) ...[
+                                                  const SizedBox(height: 8),
                                                   ElevatedButton(
                                                     style: ElevatedButton.styleFrom(
-                                                      backgroundColor: Colors.white,
-                                                      side: const BorderSide(color: AppColors.warning),
-                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                                      backgroundColor:
+                                                          Colors.white,
+                                                      side: const BorderSide(
+                                                        color: AppColors.error,
+                                                      ),
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              8,
+                                                            ),
+                                                      ),
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 12,
+                                                            vertical: 4,
+                                                          ),
                                                     ),
-                                                    onPressed: _showAppealDialog,
-                                                    child: const Text('Ajukan Banding', style: TextStyle(color: AppColors.warning, fontSize: 12)),
-                                                  ),
-                                              ],
-                                              if (_isRejected) ...[
-                                                const SizedBox(height: 8),
-                                                ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor: Colors.white,
-                                                    side: const BorderSide(color: AppColors.error),
-                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                                  ),
-                                                  onPressed: _handleReapply,
-                                                  child: const Text('Hapus Data & Daftar Ulang', style: TextStyle(color: AppColors.error, fontSize: 12)),
-                                                ),
-                                              ]
-                                            ],
-                                          ),
-                                        ),
-                                      
-                                      // Email Field
-                                      TextFormField(
-                                        controller: _emailController,
-                                        keyboardType: TextInputType.emailAddress,
-                                        decoration: InputDecoration(
-                                          labelText: 'Alamat Email',
-                                          hintText: 'name@example.com',
-                                          prefixIcon: const Icon(Icons.mail_outline, color: AppColors.primary),
-                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(16),
-                                            borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.5)),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(16),
-                                            borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                                          ),
-                                        ),
-                                        validator: (val) => val == null || !val.contains('@') ? 'Masukkan email yang valid' : null,
-                                      ),
-                                      const SizedBox(height: 18),
-                                      
-                                      // Password Field
-                                      TextFormField(
-                                        controller: _passwordController,
-                                        obscureText: !_showPassword,
-                                        decoration: InputDecoration(
-                                          labelText: 'Kata Sandi',
-                                          hintText: '••••••••',
-                                          prefixIcon: const Icon(Icons.lock_outline, color: AppColors.primary),
-                                          suffixIcon: IconButton(
-                                            onPressed: () => setState(() => _showPassword = !_showPassword),
-                                            icon: Icon(
-                                              _showPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                                              color: AppColors.textMedium,
-                                            ),
-                                          ),
-                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(16),
-                                            borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.5)),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(16),
-                                            borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                                          ),
-                                        ),
-                                        validator: (val) => val == null || val.length < 6 ? 'Password minimal 6 karakter' : null,
-                                      ),
-                                      const SizedBox(height: 24),
-                                      
-                                      // Submit Button with Gradient
-                                      Container(
-                                        height: 52,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(16),
-                                          gradient: isLoading ? null : AppColors.primaryGradient,
-                                          color: isLoading ? Colors.grey[400] : null,
-                                          boxShadow: [
-                                            if (!isLoading)
-                                              BoxShadow(
-                                                color: AppColors.primary.withValues(alpha: 0.3),
-                                                blurRadius: 12,
-                                                offset: const Offset(0, 4),
-                                              ),
-                                          ],
-                                        ),
-                                        child: ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.transparent,
-                                            shadowColor: Colors.transparent,
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                          ),
-                                          onPressed: isLoading ? null : _submit,
-                                          child: isLoading
-                                              ? const SizedBox(
-                                                  width: 24,
-                                                  height: 24,
-                                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                                )
-                                              : const Row(
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  children: [
-                                                    Icon(Icons.login, color: Colors.white),
-                                                    SizedBox(width: 8),
-                                                    Text(
-                                                      'Masuk',
+                                                    onPressed: _handleReapply,
+                                                    child: const Text(
+                                                      'Hapus Data & Daftar Ulang',
                                                       style: TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight: FontWeight.bold,
-                                                        color: Colors.white,
+                                                        color: AppColors.error,
+                                                        fontSize: 12,
                                                       ),
                                                     ),
-                                                  ],
-                                                ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 16),
-                                      
-                                      // Google Login Button
-                                      SizedBox(
-                                        height: 52,
-                                        child: OutlinedButton.icon(
-                                          style: OutlinedButton.styleFrom(
-                                            side: BorderSide(color: Colors.grey.shade300),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                            backgroundColor: Colors.white,
-                                          ),
-                                          onPressed: isLoading ? null : () async {
-                                            final authProvider = Provider.of<AuthProvider>(context, listen: false);
-                                            final result = await authProvider.loginWithGoogle();
-                                            if (!result['success']) {
-                                              if (mounted) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(content: Text(result['message'] ?? 'Login Google gagal'), backgroundColor: AppColors.error),
-                                                );
-                                              }
-                                            } else {
-                                              if (mounted) Navigator.pop(context);
-                                            }
-                                          },
-                                          icon: Container(
-                                            width: 24,
-                                            height: 24,
-                                            decoration: const BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Colors.blue,
+                                                  ),
+                                                ],
+                                              ],
                                             ),
-                                            child: const Center(child: Text('G', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
                                           ),
-                                          label: const Text('Lanjutkan dengan Google', style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w600)),
+
+                                        // Email Field
+                                        TextFormField(
+                                          controller: _emailController,
+                                          keyboardType:
+                                              TextInputType.emailAddress,
+                                          decoration: InputDecoration(
+                                            labelText: 'Alamat Email',
+                                            hintText: 'name@example.com',
+                                            prefixIcon: const Icon(
+                                              Icons.mail_outline,
+                                              color: AppColors.primary,
+                                            ),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              borderSide: BorderSide(
+                                                color: AppColors.secondary
+                                                    .withValues(alpha: 0.5),
+                                              ),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              borderSide: const BorderSide(
+                                                color: AppColors.primary,
+                                                width: 2,
+                                              ),
+                                            ),
+                                          ),
+                                          validator: (val) =>
+                                              val == null || !val.contains('@')
+                                              ? 'Masukkan email yang valid'
+                                              : null,
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            
-                            const Spacer(flex: 2),
-                            
-                            // Bottom Links
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  'Belum punya akun? ',
-                                  style: TextStyle(color: AppColors.textMedium, fontSize: 13),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                                    );
-                                  },
-                                  child: const Text(
-                                    'Daftar Sekarang',
-                                    style: TextStyle(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
+                                        const SizedBox(height: 18),
+
+                                        // Password Field
+                                        TextFormField(
+                                          controller: _passwordController,
+                                          obscureText: !_showPassword,
+                                          decoration: InputDecoration(
+                                            labelText: 'Kata Sandi',
+                                            hintText: '••••••••',
+                                            prefixIcon: const Icon(
+                                              Icons.lock_outline,
+                                              color: AppColors.primary,
+                                            ),
+                                            suffixIcon: IconButton(
+                                              onPressed: () => setState(
+                                                () => _showPassword =
+                                                    !_showPassword,
+                                              ),
+                                              icon: Icon(
+                                                _showPassword
+                                                    ? Icons
+                                                          .visibility_off_outlined
+                                                    : Icons.visibility_outlined,
+                                                color: AppColors.textMedium,
+                                              ),
+                                            ),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              borderSide: BorderSide(
+                                                color: AppColors.secondary
+                                                    .withValues(alpha: 0.5),
+                                              ),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              borderSide: const BorderSide(
+                                                color: AppColors.primary,
+                                                width: 2,
+                                              ),
+                                            ),
+                                          ),
+                                          validator: (val) =>
+                                              val == null || val.length < 6
+                                              ? 'Password minimal 6 karakter'
+                                              : null,
+                                        ),
+                                        const SizedBox(height: 24),
+
+                                        // Submit Button with Gradient
+                                        Container(
+                                          height: 52,
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                            gradient: isLoading
+                                                ? null
+                                                : AppColors.primaryGradient,
+                                            color: isLoading
+                                                ? Colors.grey[400]
+                                                : null,
+                                            boxShadow: [
+                                              if (!isLoading)
+                                                BoxShadow(
+                                                  color: AppColors.primary
+                                                      .withValues(alpha: 0.3),
+                                                  blurRadius: 12,
+                                                  offset: const Offset(0, 4),
+                                                ),
+                                            ],
+                                          ),
+                                          child: ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  Colors.transparent,
+                                              shadowColor: Colors.transparent,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(16),
+                                              ),
+                                            ),
+                                            onPressed: isLoading
+                                                ? null
+                                                : _submit,
+                                            child: isLoading
+                                                ? const SizedBox(
+                                                    width: 24,
+                                                    height: 24,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                          color: Colors.white,
+                                                          strokeWidth: 2,
+                                                        ),
+                                                  )
+                                                : const Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Icon(
+                                                        Icons.login,
+                                                        color: Colors.white,
+                                                      ),
+                                                      SizedBox(width: 8),
+                                                      Text(
+                                                        'Masuk',
+                                                        style: TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+
+                                        // Google Login Button
+                                        SizedBox(
+                                          height: 52,
+                                          child: OutlinedButton.icon(
+                                            style: OutlinedButton.styleFrom(
+                                              side: BorderSide(
+                                                color: Colors.grey.shade300,
+                                              ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(16),
+                                              ),
+                                              backgroundColor: Colors.white,
+                                            ),
+                                            onPressed: isLoading
+                                                ? null
+                                                : () async {
+                                                    final authProvider =
+                                                        Provider.of<
+                                                          AuthProvider
+                                                        >(
+                                                          context,
+                                                          listen: false,
+                                                        );
+                                                    final result =
+                                                        await authProvider
+                                                            .loginWithGoogle();
+                                                    if (!result['success']) {
+                                                      if (mounted) {
+                                                        ScaffoldMessenger.of(
+                                                          context,
+                                                        ).showSnackBar(
+                                                          SnackBar(
+                                                            content: Text(
+                                                              result['message'] ??
+                                                                  'Login Google gagal',
+                                                            ),
+                                                            backgroundColor:
+                                                                AppColors
+                                                                    .success,
+                                                          ),
+                                                        );
+                                                      }
+                                                    } else {
+                                                      if (mounted)
+                                                        Navigator.pop(context);
+                                                    }
+                                                  },
+                                            icon: Container(
+                                              width: 24,
+                                              height: 24,
+                                              decoration: const BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Colors.blue,
+                                              ),
+                                              child: const Center(
+                                                child: Text(
+                                                  'G',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            label: const Text(
+                                              'Lanjutkan dengan Google',
+                                              style: TextStyle(
+                                                color: AppColors.textDark,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                          ],
+                              ),
+
+                              const Spacer(flex: 2),
+
+                              // Bottom Links
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    'Belum punya akun? ',
+                                    style: TextStyle(
+                                      color: AppColors.textMedium,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              const RegisterScreen(),
+                                        ),
+                                      );
+                                    },
+                                    child: const Text(
+                                      'Daftar Sekarang',
+                                      style: TextStyle(
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
