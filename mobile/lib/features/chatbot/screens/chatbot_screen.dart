@@ -131,11 +131,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.spa, color: AppColors.primary),
-            SizedBox(width: 8),
-            Column(
+            Image.asset('assets/images/LogoFinal.png', width: 32, height: 32),
+            const SizedBox(width: 8),
+            const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
