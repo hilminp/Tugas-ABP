@@ -72,13 +72,10 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn(
-        scopes: ['email', 'profile'],
-        serverClientId: '115008072933-9r82109qfucdl9jtunbfadgcipsp6pgs.apps.googleusercontent.com',
-      );
-
-      // Trigger the authentication flow
+      final GoogleSignIn googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
+      await googleSignIn.signInSilently(); // optional silent sign-in
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
 
       if (googleUser == null) {
         // User canceled the sign-in flow

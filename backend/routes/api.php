@@ -15,6 +15,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ConsultationSessionController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Http\Request;
 
 Route::get('/status', function () {
@@ -98,6 +99,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/session-notifications', [ConsultationSessionController::class, 'notifications']);
     Route::post('/sessions/mark-seen', [ConsultationSessionController::class, 'markAsSeen']);
     Route::get('/my-booked-sessions', [ConsultationSessionController::class, 'myBookedSessions']);
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/mark-seen', [NotificationController::class, 'markAllAsSeen']);
 
     // Admin Group
     Route::prefix('admin')->middleware(\App\Http\Middleware\EnsureAdmin::class)->group(function () {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../auth/models/user_model.dart';
 import '../models/consultation_session_model.dart';
+import '../models/notification_model.dart';
 import '../services/consultation_service.dart';
 
 class ConsultationProvider with ChangeNotifier {
@@ -17,6 +18,7 @@ class ConsultationProvider with ChangeNotifier {
   int _totalReviews = 0;
   int _sessionNotificationsCount = 0;
   int _friendNotificationsCount = 0;
+  List<NotificationModel> _notifications = [];
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -32,6 +34,7 @@ class ConsultationProvider with ChangeNotifier {
   int get totalReviews => _totalReviews;
   int get sessionNotificationsCount => _sessionNotificationsCount;
   int get friendNotificationsCount => _friendNotificationsCount;
+  List<NotificationModel> get notifications => _notifications;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -288,6 +291,39 @@ class ConsultationProvider with ChangeNotifier {
     try {
       await _consultationService.markFriendNotificationsSeen();
       _friendNotificationsCount = 0;
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  // Fetch All Notifications
+  Future<void> fetchNotifications() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      _notifications = await _consultationService.getNotifications();
+    } catch (e) {
+      _errorMessage = 'Gagal memuat notifikasi.';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Mark All Notifications Seen
+  Future<void> markAllNotificationsAsSeen() async {
+    try {
+      await _consultationService.markAllNotificationsSeen();
+      _sessionNotificationsCount = 0;
+      _friendNotificationsCount = 0;
+      _notifications = _notifications.map((n) => NotificationModel(
+        id: n.id,
+        type: n.type,
+        title: n.title,
+        message: n.message,
+        isSeen: true,
+        createdAt: n.createdAt,
+      )).toList();
       notifyListeners();
     } catch (_) {}
   }

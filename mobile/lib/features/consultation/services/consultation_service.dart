@@ -1,6 +1,7 @@
 import '../../../core/network/api_client.dart';
 import '../../auth/models/user_model.dart';
 import '../models/consultation_session_model.dart';
+import '../models/notification_model.dart';
 import 'package:dio/dio.dart';
 
 class ConsultationService {
@@ -270,6 +271,24 @@ class ConsultationService {
   Future<void> markFriendNotificationsSeen() async {
     try {
       await _client.post('/friend-requests/mark-seen');
+    } catch (_) {}
+  }
+
+  // 22. Get All Notifications
+  Future<List<NotificationModel>> getNotifications() async {
+    try {
+      final response = await _client.get('/notifications');
+      final List<dynamic> list = response.data['notifications'] ?? [];
+      return list.map((json) => NotificationModel.fromJson(json)).toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // 23. Mark All Notifications Seen
+  Future<void> markAllNotificationsSeen() async {
+    try {
+      await _client.post('/notifications/mark-seen');
     } catch (_) {}
   }
 }

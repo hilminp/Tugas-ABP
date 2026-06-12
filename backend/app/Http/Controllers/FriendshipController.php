@@ -13,33 +13,52 @@ class FriendshipController extends Controller
         $me = $request->user();
         $meId = $me->id;
 
-        $friendships = Friendship::where(function ($query) use ($meId) {
-                $query->where('user_id', $meId)->orWhere('friend_id', $meId);
-            })
-            ->with(['requester:id,role', 'recipient:id,role'])
+        // Ambil semua friendship yang dibuat oleh user ini ke psikolog
+        // (user_id = me, friend_id = psikolog)
+        $outgoing = Friendship::where('user_id', $meId)
+            ->with(['recipient:id,role'])
+            ->get();
+
+        // Ambil semua friendship dari psikolog ke user ini
+        // (user_id = psikolog, friend_id = me) - dibuat saat accept
+        $incoming = Friendship::where('friend_id', $meId)
+            ->with(['requester:id,role'])
             ->get();
 
         $statuses = [];
-        foreach ($friendships as $friendship) {
-            $otherUserId = $friendship->user_id === $meId ? $friendship->friend_id : $friendship->user_id;
-            $otherRole = $friendship->user_id === $meId
-                ? optional($friendship->recipient)->role
-                : optional($friendship->requester)->role;
 
+        // Prioritaskan outgoing requests (user → psikolog)
+        foreach ($outgoing as $friendship) {
+            $otherRole = optional($friendship->recipient)->role;
             if ($otherRole !== 'psikolog') {
                 continue;
             }
+            $otherUserId = $friendship->friend_id;
+            // 'accepted' selalu menang
+            if (($statuses[$otherUserId] ?? null) !== 'accepted') {
+                $statuses[$otherUserId] = $friendship->status;
+            }
+        }
 
-            $currentStatus = $statuses[$otherUserId] ?? null;
-            if ($currentStatus === 'accepted') {
+        // Proses incoming (psikolog → user), hanya update jika belum ada atau bisa upgrade ke 'accepted'
+        foreach ($incoming as $friendship) {
+            $otherRole = optional($friendship->requester)->role;
+            if ($otherRole !== 'psikolog') {
                 continue;
             }
-
-            $statuses[$otherUserId] = $friendship->status;
+            $otherUserId = $friendship->user_id;
+            // Jika ada record dari psikolog ke user dengan status 'accepted',
+            // artinya permintaan sudah diterima
+            if ($friendship->status === 'accepted') {
+                $statuses[$otherUserId] = 'accepted';
+            } elseif (!isset($statuses[$otherUserId])) {
+                $statuses[$otherUserId] = $friendship->status;
+            }
         }
 
         return response()->json(['statuses' => $statuses]);
     }
+
 
     public function send(\Illuminate\Http\Request $request, $id)
     {
@@ -93,7 +112,9 @@ class FriendshipController extends Controller
         $meId = $user->id;
 
         if ($user->role === 'psikolog') {
+            // Psikolog hanya melihat permintaan yang masih PENDING (belum diproses)
             $requests = Friendship::where('friend_id', $meId)
+                ->where('status', 'pending')
                 ->select('friendships.*')
                 ->addSelect(['latest_session_status' => ConsultationSession::select('status')
                     ->whereColumn('user_id', 'friendships.user_id')
@@ -105,6 +126,7 @@ class FriendshipController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
         } else {
+            // Anonim user melihat semua request yang mereka kirimkan (untuk tracking status)
             $requests = Friendship::where('user_id', $meId)
                 ->select('friendships.*')
                 ->addSelect(['latest_session_status' => ConsultationSession::select('status')
@@ -119,6 +141,7 @@ class FriendshipController extends Controller
         }
         return response()->json(['requests' => $requests]);
     }
+
 
     public function notifications(\Illuminate\Http\Request $request)
     {
