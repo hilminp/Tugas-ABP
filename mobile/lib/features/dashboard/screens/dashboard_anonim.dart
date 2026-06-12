@@ -175,18 +175,6 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
         backgroundColor: AppColors.background,
         elevation: 0,
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12.0),
-            child: CircleAvatar(
-              backgroundColor: AppColors.secondary.withValues(alpha: 0.3),
-              radius: 18,
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                icon: const Icon(Icons.refresh, color: AppColors.primary, size: 20),
-                onPressed: _loadInitialData,
-              ),
-            ),
-          ),
           Consumer<ConsultationProvider>(
             builder: (context, consProvider, child) {
               final totalNotifs = consProvider.friendNotificationsCount + consProvider.sessionNotificationsCount;
@@ -214,7 +202,7 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
         backgroundColor: AppColors.accent,
         tooltip: 'Sahabat Mental AI',
         onPressed: () => _showChatbotAdvisory(context),
-        child: const Icon(Icons.spa, color: Colors.white, size: 28),
+        child: const Icon(Icons.smart_toy, color: Colors.white, size: 28),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       bottomNavigationBar: Consumer<ConsultationProvider>(
@@ -279,8 +267,9 @@ class _SearchPsikologTabState extends State<SearchPsikologTab> {
     {'key': '', 'label': 'Semua'},
     {'key': 'kesehatan_mental', 'label': 'Kesehatan Mental'},
     {'key': 'kecemasan_stres', 'label': 'Kecemasan & Stres'},
-    {'key': 'depresi', 'label': 'Depresi'},
-    {'key': 'karir_akademik', 'label': 'Karir & Akademik'},
+    {'key': 'hubungan_percintaan', 'label': 'Hubungan & Percintaan'},
+    {'key': 'keluarga', 'label': 'Keluarga'},
+    {'key': 'sosial_pertemanan', 'label': 'Sosial & Pertemanan'},
   ];
 
   @override
@@ -651,7 +640,13 @@ class _SearchPsikologTabState extends State<SearchPsikologTab> {
                                             Expanded(
                                               flex: 2,
                                               child: ElevatedButton.icon(
-                                                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: AppColors.primary, 
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                                                  minimumSize: const Size(0, 36),
+                                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                ),
                                                 onPressed: () {
                                                   Navigator.push(
                                                     context,
@@ -663,29 +658,47 @@ class _SearchPsikologTabState extends State<SearchPsikologTab> {
                                                     ),
                                                   );
                                                 },
-                                                icon: const Icon(Icons.chat_bubble_outline, size: 16, color: Colors.white),
-                                                label: const Text('Chat', style: TextStyle(fontSize: 12, color: Colors.white)),
+                                                icon: const Icon(Icons.chat_bubble_outline, size: 14, color: Colors.white),
+                                                label: const Text(
+                                                  'Chat', 
+                                                  style: TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
                                               ),
                                             ),
-                                            const SizedBox(width: 4),
+                                            const SizedBox(width: 6),
                                             Expanded(
-                                              flex: 2,
+                                              flex: 3,
                                               child: OutlinedButton.icon(
-                                                style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.accent), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                                                style: OutlinedButton.styleFrom(
+                                                  side: const BorderSide(color: AppColors.accent), 
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                                                  minimumSize: const Size(0, 36),
+                                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                ),
                                                 onPressed: () => _showBookSessionSheet(context, psiko),
-                                                icon: const Icon(Icons.calendar_month, size: 16, color: AppColors.accent),
-                                                label: const Text('Jadwalkan', style: TextStyle(fontSize: 12, color: AppColors.accent)),
+                                                icon: const Icon(Icons.calendar_month, size: 14, color: AppColors.accent),
+                                                label: const Text(
+                                                  'Jadwalkan', 
+                                                  style: TextStyle(fontSize: 11, color: AppColors.accent, fontWeight: FontWeight.bold),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
                                               ),
                                             ),
-                                            const SizedBox(width: 4),
+                                            const SizedBox(width: 6),
                                             IconButton(
+                                              constraints: const BoxConstraints(minWidth: 36, minHeight: 36, maxWidth: 36, maxHeight: 36),
+                                              padding: EdgeInsets.zero,
                                               style: IconButton.styleFrom(
                                                 backgroundColor: Colors.amber[50],
                                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), side: const BorderSide(color: Colors.amber)),
                                                 padding: EdgeInsets.zero,
                                               ),
                                               onPressed: () => _showReviewDialog(context, psiko),
-                                              icon: const Icon(Icons.star, color: Colors.amber, size: 20),
+                                              icon: const Icon(Icons.star, color: Colors.amber, size: 18),
                                             ),
                                           ],
                                         )

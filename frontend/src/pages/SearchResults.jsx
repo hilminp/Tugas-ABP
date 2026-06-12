@@ -30,9 +30,16 @@ const SearchResults = () => {
         fetchResults();
     }, [query]);
 
-    const handleAddFriend = async (id) => {
+    const handleAddFriend = async (id, psychologistName) => {
+        const complaint = window.prompt(`Tuliskan secara singkat keluhan atau alasan Anda ingin berkonsultasi dengan ${psychologistName || 'psikolog ini'}:`);
+        if (complaint === null) return; // User canceled the prompt
+        const cleanComplaint = complaint.trim();
+        if (!cleanComplaint) {
+            alert('Keluhan atau alasan wajib diisi.');
+            return;
+        }
         try {
-            const res = await api.post(`/friend/${id}`);
+            const res = await api.post(`/friend/${id}`, { category: cleanComplaint });
             alert(res.data.message || 'Friend request sent!');
         } catch (err) {
             alert(err.response?.data?.message || 'Failed to send request');
@@ -117,7 +124,7 @@ const SearchResults = () => {
                                 {!adminViewing && (
                                     <button 
                                         className="btn" 
-                                        onClick={() => handleAddFriend(u.id)}
+                                        onClick={() => handleAddFriend(u.id, u.name)}
                                         disabled={u.is_suspended}
                                         style={{ opacity: u.is_suspended ? 0.5 : 1 }}
                                     >
