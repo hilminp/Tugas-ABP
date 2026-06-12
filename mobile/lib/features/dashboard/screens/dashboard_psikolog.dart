@@ -9,6 +9,7 @@ import '../../../core/network/api_client.dart';
 import 'edit_profile_screen.dart';
 import '../../feed/screens/feed_tab.dart';
 import '../../feed/providers/feed_provider.dart';
+import 'notification_tab.dart';
 
 class DashboardPsikolog extends StatefulWidget {
   const DashboardPsikolog({super.key});
@@ -78,42 +79,45 @@ class _DashboardPsikologState extends State<DashboardPsikolog> {
               ),
             ),
             const SizedBox(width: 8),
-            if (user?.isVerified == true)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Text(
-                  'TERVERIFIKASI',
-                  style: TextStyle(
-                    color: AppColors.success,
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              )
-            else
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.amber.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Text(
-                  'PENDING VERIFIKASI',
-                  style: TextStyle(
-                    color: Colors.amber,
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+
           ],
         ),
         backgroundColor: AppColors.background,
         actions: [
+          Consumer<ConsultationProvider>(
+            builder: (context, consProvider, child) {
+              final totalNotifs =
+                  consProvider.friendNotificationsCount +
+                  consProvider.sessionNotificationsCount;
+              return IconButton(
+                icon: totalNotifs > 0
+                    ? Badge(
+                        backgroundColor: Colors.red,
+                        label: Text(
+                          '$totalNotifs',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.notifications_none,
+                          color: AppColors.primary,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.notifications_none,
+                        color: AppColors.primary,
+                      ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const NotificationTab()),
+                  );
+                },
+              );
+            },
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 12.0),
             child: IconButton(

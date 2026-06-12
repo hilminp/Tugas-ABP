@@ -683,36 +683,21 @@ class _SearchPsikologTabState extends State<SearchPsikologTab> {
                       if (context.mounted) {
                         Navigator.pop(ctx);
                         if (res['success'] != false) {
-                          // Show thank you dialog on success
+                          // Show brief success popup
                           showDialog(
                             context: context,
                             barrierDismissible: false,
                             builder: (ctx) => AlertDialog(
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                              title: const Text(
-                                'Terimakasih!',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                              content: const Text(
-                                'Terimakasih telah memberi rating. Rating Anda sangat membantu.',
-                                style: TextStyle(fontSize: 14),
-                              ),
+                              title: const Text('Sukses Terkirim', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary)),
+                              content: const Text('Rating berhasil terkirim.', style: TextStyle(fontSize: 14)),
                               actions: [
                                 ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primary,
-                                  ),
+                                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
                                   onPressed: () => Navigator.pop(ctx),
-                                  child: const Text(
-                                    'OK',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
+                                  child: const Text('OK', style: TextStyle(color: Colors.white)),
                                 ),
                               ],
                             ),
