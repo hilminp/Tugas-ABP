@@ -13,6 +13,7 @@ import '../../payment/providers/payment_provider.dart';
 import '../../payment/screens/midtrans_payment_screen.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/services/home_widget_service.dart';
 import 'notification_tab.dart';
 
 class DashboardAnonim extends StatefulWidget {
@@ -149,6 +150,144 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
     );
   }
 
+  void _showMoodPickerBottomSheet(BuildContext context) {
+    final user = Provider.of<AuthProvider>(context, listen: false).user;
+
+    // Cek jika bukan premium
+    if (user?.isPremium != true) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.star, color: Colors.amber),
+              SizedBox(width: 8),
+              Expanded(child: Text('Khusus Premium', style: TextStyle(fontWeight: FontWeight.bold))),
+            ],
+          ),
+          content: const Text(
+            'Fitur merubah Mood di Widget Layar Beranda hanya tersedia untuk pengguna Premium. Upgrade sekarang untuk membuka fitur ini!',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Batal', style: TextStyle(color: AppColors.textMedium)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+              onPressed: () {
+                Navigator.pop(ctx);
+                _triggerPremiumUpgrade();
+              },
+              child: const Text('Upgrade', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    // Jika premium, tampilkan pilihan mood
+    final List<Map<String, String>> moods = [
+      {'emoji': '🤩', 'display': '🤩', 'label': 'Senang', 'msg': 'Terus pertahankan energi positifmu!'},
+      {'emoji': '😌', 'display': '😌', 'label': 'Tenang', 'msg': 'Nikmati kedamaian dan ketenangan ini.'},
+      {'emoji': '😭', 'display': 'assets/images/owl_sad_transparent.png', 'label': 'Sedih', 'msg': 'Tidak apa-apa merasa sedih. Badai pasti berlalu.'},
+      {'emoji': '😰', 'display': '😰', 'label': 'Cemas', 'msg': 'Tarik napas dalam. Kamu memegang kendali.'},
+      {'emoji': '😡', 'display': '😡', 'label': 'Marah', 'msg': 'Luapkan perlahan, lalu tenangkan hatimu.'},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Bagaimana perasaanmu hari ini?',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textDark,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Pilih mood untuk ditampilkan di Widget Layar Berandamu',
+              style: TextStyle(fontSize: 13, color: AppColors.textMedium),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 0.85,
+              ),
+              itemCount: moods.length,
+              itemBuilder: (ctx, idx) {
+                final mood = moods[idx];
+                return InkWell(
+                  onTap: () async {
+                    Navigator.pop(ctx); // tutup bottom sheet
+                    
+                    // Simpan ke widget (asumsikan streak saat ini adalah 3 untuk demo)
+                    await HomeWidgetService.updateStreak(
+                      123, 
+                      mood['msg']!, 
+                      emoticon: mood['emoji']!
+                    );
+
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Mood diatur ke ${mood['label']}! Cek Home Screen Anda.'),
+                          backgroundColor: AppColors.success,
+                        ),
+                      );
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.secondary.withOpacity(0.3)),
+                      borderRadius: BorderRadius.circular(16),
+                      color: AppColors.background,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        mood['display']!.contains('assets/') 
+                          ? Image.asset(mood['display']!, width: 48, height: 48, fit: BoxFit.contain)
+                          : Text(mood['display']!, style: const TextStyle(fontSize: 32)),
+                        const SizedBox(height: 8),
+                        Text(
+                          mood['label']!,
+                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<AuthProvider>(context).user;
@@ -214,6 +353,12 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
                 onPressed: _loadInitialData,
               ),
             ),
+          ),
+          // Tombol Test Home Widget
+          IconButton(
+            icon: const Icon(Icons.mood, color: AppColors.primary),
+            tooltip: 'Pilih Mood Widget',
+            onPressed: () => _showMoodPickerBottomSheet(context),
           ),
           Consumer<ConsultationProvider>(
             builder: (context, consProvider, child) {
