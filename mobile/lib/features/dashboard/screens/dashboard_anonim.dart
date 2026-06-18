@@ -190,11 +190,11 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
 
     // Jika premium, tampilkan pilihan mood
     final List<Map<String, String>> moods = [
-      {'emoji': '🤩', 'display': '🤩', 'label': 'Senang', 'msg': 'Terus pertahankan energi positifmu!'},
-      {'emoji': '😌', 'display': '😌', 'label': 'Tenang', 'msg': 'Nikmati kedamaian dan ketenangan ini.'},
+      {'emoji': '🤩', 'display': 'assets/images/happy_icon.png', 'label': 'Senang', 'msg': 'Terus pertahankan energi positifmu!'},
+      {'emoji': '😌', 'display': 'assets/images/tenang_icon.png', 'label': 'Tenang', 'msg': 'Nikmati kedamaian dan ketenangan ini.'},
       {'emoji': '😭', 'display': 'assets/images/owl_sad_transparent.png', 'label': 'Sedih', 'msg': 'Tidak apa-apa merasa sedih. Badai pasti berlalu.'},
-      {'emoji': '😰', 'display': '😰', 'label': 'Cemas', 'msg': 'Tarik napas dalam. Kamu memegang kendali.'},
-      {'emoji': '😡', 'display': '😡', 'label': 'Marah', 'msg': 'Luapkan perlahan, lalu tenangkan hatimu.'},
+      {'emoji': '😰', 'display': 'assets/images/cemas_icon.png', 'label': 'Cemas', 'msg': 'Tarik napas dalam. Kamu memegang kendali.'},
+      {'emoji': '😡', 'display': 'assets/images/marah_icon.png', 'label': 'Marah', 'msg': 'Luapkan perlahan, lalu tenangkan hatimu.'},
     ];
 
     showModalBottomSheet(
@@ -260,7 +260,7 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
                   borderRadius: BorderRadius.circular(16),
                   child: Container(
                     decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.secondary.withOpacity(0.3)),
+                      border: Border.all(color: AppColors.secondary.withValues(alpha: 0.3)),
                       borderRadius: BorderRadius.circular(16),
                       color: AppColors.background,
                     ),

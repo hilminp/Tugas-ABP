@@ -21,10 +21,27 @@ class StreakWidgetProvider : HomeWidgetProvider() {
                 val streakText = widgetData.getString("streak_text", "0")
                 val messageText = widgetData.getString("message_text", "Sedih banget...")
 
-                // Jika mood nya Sedih (😭), tampilkan gambar burung hantu sedih
+                // Tampilkan gambar sesuai mood yang dipilih
                 if (emoticonText == "😭") {
                     setViewVisibility(R.id.widget_emoticon_image, View.VISIBLE)
                     setViewVisibility(R.id.widget_emoticon, View.GONE)
+                    setImageViewResource(R.id.widget_emoticon_image, R.drawable.owl_sad_transparent)
+                } else if (emoticonText == "🤩") {
+                    setViewVisibility(R.id.widget_emoticon_image, View.VISIBLE)
+                    setViewVisibility(R.id.widget_emoticon, View.GONE)
+                    setImageViewResource(R.id.widget_emoticon_image, R.drawable.happy_icon)
+                } else if (emoticonText == "😰") {
+                    setViewVisibility(R.id.widget_emoticon_image, View.VISIBLE)
+                    setViewVisibility(R.id.widget_emoticon, View.GONE)
+                    setImageViewResource(R.id.widget_emoticon_image, R.drawable.cemas_icon)
+                } else if (emoticonText == "😡") {
+                    setViewVisibility(R.id.widget_emoticon_image, View.VISIBLE)
+                    setViewVisibility(R.id.widget_emoticon, View.GONE)
+                    setImageViewResource(R.id.widget_emoticon_image, R.drawable.marah_icon)
+                } else if (emoticonText == "😌") {
+                    setViewVisibility(R.id.widget_emoticon_image, View.VISIBLE)
+                    setViewVisibility(R.id.widget_emoticon, View.GONE)
+                    setImageViewResource(R.id.widget_emoticon_image, R.drawable.tenang_icon)
                 } else {
                     setViewVisibility(R.id.widget_emoticon_image, View.GONE)
                     setViewVisibility(R.id.widget_emoticon, View.VISIBLE)
