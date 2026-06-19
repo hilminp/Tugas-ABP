@@ -31,6 +31,7 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadInitialData();
+      _showMoodPickerBottomSheet(context);
     });
   }
 
@@ -268,7 +269,12 @@ class _DashboardAnonimState extends State<DashboardAnonim> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         mood['display']!.contains('assets/') 
-                          ? Image.asset(mood['display']!, width: 48, height: 48, fit: BoxFit.contain)
+                          ? Image.asset(
+                              mood['display']!, 
+                              width: mood['label'] == 'Marah' ? 56 : 48, 
+                              height: mood['label'] == 'Marah' ? 56 : 48, 
+                              fit: BoxFit.contain,
+                            )
                           : Text(mood['display']!, style: const TextStyle(fontSize: 32)),
                         const SizedBox(height: 8),
                         Text(

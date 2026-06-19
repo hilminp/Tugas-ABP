@@ -21,27 +21,36 @@ class StreakWidgetProvider : HomeWidgetProvider() {
                 val streakText = widgetData.getString("streak_text", "0")
                 val messageText = widgetData.getString("message_text", "Sedih banget...")
 
+                val density = context.resources.displayMetrics.density
+                val defaultPaddingPx = (8 * density).toInt()
+
                 // Tampilkan gambar sesuai mood yang dipilih
                 if (emoticonText == "😭") {
                     setViewVisibility(R.id.widget_emoticon_image, View.VISIBLE)
                     setViewVisibility(R.id.widget_emoticon, View.GONE)
                     setImageViewResource(R.id.widget_emoticon_image, R.drawable.owl_sad_transparent)
+                    setViewPadding(R.id.widget_emoticon_image, defaultPaddingPx, defaultPaddingPx, defaultPaddingPx, defaultPaddingPx)
                 } else if (emoticonText == "🤩") {
                     setViewVisibility(R.id.widget_emoticon_image, View.VISIBLE)
                     setViewVisibility(R.id.widget_emoticon, View.GONE)
                     setImageViewResource(R.id.widget_emoticon_image, R.drawable.happy_icon)
+                    setViewPadding(R.id.widget_emoticon_image, defaultPaddingPx, defaultPaddingPx, defaultPaddingPx, defaultPaddingPx)
                 } else if (emoticonText == "😰") {
                     setViewVisibility(R.id.widget_emoticon_image, View.VISIBLE)
                     setViewVisibility(R.id.widget_emoticon, View.GONE)
                     setImageViewResource(R.id.widget_emoticon_image, R.drawable.cemas_icon)
+                    setViewPadding(R.id.widget_emoticon_image, defaultPaddingPx, defaultPaddingPx, defaultPaddingPx, defaultPaddingPx)
                 } else if (emoticonText == "😡") {
                     setViewVisibility(R.id.widget_emoticon_image, View.VISIBLE)
                     setViewVisibility(R.id.widget_emoticon, View.GONE)
                     setImageViewResource(R.id.widget_emoticon_image, R.drawable.marah_icon)
+                    // Set padding to 0 so the angry icon appears larger
+                    setViewPadding(R.id.widget_emoticon_image, 0, 0, 0, 0)
                 } else if (emoticonText == "😌") {
                     setViewVisibility(R.id.widget_emoticon_image, View.VISIBLE)
                     setViewVisibility(R.id.widget_emoticon, View.GONE)
                     setImageViewResource(R.id.widget_emoticon_image, R.drawable.tenang_icon)
+                    setViewPadding(R.id.widget_emoticon_image, defaultPaddingPx, defaultPaddingPx, defaultPaddingPx, defaultPaddingPx)
                 } else {
                     setViewVisibility(R.id.widget_emoticon_image, View.GONE)
                     setViewVisibility(R.id.widget_emoticon, View.VISIBLE)
