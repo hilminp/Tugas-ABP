@@ -6,7 +6,7 @@
     android:background="@drawable/widget_bg"
     android:gravity="center"
     android:orientation="vertical"
-    android:padding="12dp">
+    android:padding="6dp">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -20,6 +20,7 @@
             android:layout_height="match_parent"
             android:src="@drawable/owl_sad_transparent"
             android:scaleType="fitCenter"
+            android:padding="8dp"
             android:visibility="visible" />
 
         <TextView
@@ -28,7 +29,7 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:text="😭"
-            android:textSize="56sp"
+            android:textSize="72sp"
             android:visibility="gone" />
     </FrameLayout>
 

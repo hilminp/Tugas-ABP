@@ -278,47 +278,50 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             ),
 
           // Input field
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.only(
-              left: 16,
-              right: 16,
-              bottom: 20,
-              top: 12,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: InputDecoration(
-                      hintText: 'Ketik pesan Anda...',
-                      fillColor: AppColors.background,
-                      filled: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
+          SafeArea(
+            top: false,
+            child: Container(
+              color: Colors.white,
+              padding: const EdgeInsets.only(
+                left: 16,
+                right: 16,
+                bottom: 8,
+                top: 12,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _messageController,
+                      decoration: InputDecoration(
+                        hintText: 'Ketik pesan Anda...',
+                        fillColor: AppColors.background,
+                        filled: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
-                      ),
+                      onSubmitted: (_) => _sendMessage(),
                     ),
-                    onSubmitted: (_) => _sendMessage(),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  decoration: const BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
+                  const SizedBox(width: 8),
+                  Container(
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.send, color: Colors.white),
+                      onPressed: _sendMessage,
+                    ),
                   ),
-                  child: IconButton(
-                    icon: const Icon(Icons.send, color: Colors.white),
-                    onPressed: _sendMessage,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
